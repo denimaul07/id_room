@@ -1,0 +1,16 @@
+                          {
+  "settings": {
+    "layout_type": {
+      "class": "ltr",
+      "val": true
+    },
+    "layout": "Rome",
+    "sidebar_setting": "stroke-svg"
+  },
+  "color": {
+    "layout_version": "light",
+    "primary_color": "#374558",
+    "secondary_color": "#000000"
+  }
+}
+    

@@ -1,0 +1,66 @@
+{
+  "data": [
+    {
+      "headTitle1": "Main Menu",
+      "headTitle2": "Dashboards,Widgets & Layout.",
+      "type": "headtitle"
+    },
+    {
+        "title": "Dashboard",
+        "path": "/dashboard",
+        "icon": "stroke-home",
+        "iconf":"fill-home",
+        "type": "link",   
+        "roles" : ["superAdmin","staff","admin"],
+        "active": false
+    },
+    {
+      "headTitle1": "Application",
+      "headTitle2": "Dashboards,Widgets & Layout.",
+      "type": "headtitle"
+    },
+
+    {
+      "title": "Activity Log",
+      "path": "/activity-log",
+      "icon": "stroke-support-tickets",
+      "iconf":"fill-support-tickets",
+      "type": "link",
+      "roles" : ["superAdmin","admin"],
+      "active": false
+    },
+
+    {
+      "title": "Master Data",
+      "icon": "stroke-widget",
+      "iconf":"fill-widget",
+      "type": "sub",   
+      "roles" : ["superAdmin","admin"],
+      "active": false,
+      "children": [
+        {
+          "path": "/users",
+          "title": "Users",
+          "type": "link",
+          "roles" : ["superAdmin","admin"],
+          "active": false
+        },
+        {
+          "path": "/departements",
+          "title": "Departement",
+          "type": "link",
+          "roles" : ["superAdmin","admin"],
+          "active": false
+        }
+      
+      ]
+    }
+
+  
+
+      
+    
+
+
+  ]
+}

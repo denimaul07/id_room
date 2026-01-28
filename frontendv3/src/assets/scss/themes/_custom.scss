@@ -1,0 +1,74 @@
+/**===================== custom CSS Start ==========================**/
+// you can add your custom css here
+.primary .svg-fill {
+    fill: #0275d8;
+  }
+  .primary .svg-fill:not(.half-circle) {
+    stroke: #0275d8;
+  }
+  .widget-1 .widget-round.primary {
+    border-color: #0275d8;
+  }
+  
+  .biru .svg-fill {
+    fill: #43a2e0;
+  }
+  .biru .svg-fill:not(.half-circle) {
+    stroke: #43a2e0;
+  }
+  .widget-1 .widget-round.biru {
+    border-color: #43a2e0;
+  }
+  
+  .danger .svg-fill {
+    fill: #cf6a87;
+  }
+  .danger .svg-fill:not(.half-circle) {
+    stroke: #cf6a87;
+  }
+  .widget-1 .widget-round.danger {
+    border-color: #cf6a87;
+  }table-biru
+  
+
+  .hijau-tall .svg-fill {
+    fill: #175f41;
+  }
+  .hijau-tall .svg-fill:not(.half-circle) {
+    stroke: #175f41;
+  }
+  .widget-1 .widget-round.hijau-tall {
+    border-color: #175f41;
+  }
+
+  .hijau .svg-fill {
+    fill: #30d691;
+  }
+  .hijau .svg-fill:not(.half-circle) {
+    stroke: #30d691;
+  }
+  .widget-1 .widget-round.hijau {
+    border-color: #30d691;
+  }
+  
+  .widget-1 .widget-round .bg-round .half-circle {
+    background: transparent;
+  }
+
+  .table-styling .table-biru,
+  .table-styling.table-biru {
+    background-color: #1e3a8a;
+    color: #fff;
+    border: 3px solid #1e3a8a;
+  }
+  .table-styling .table-biru thead,
+  .table-styling.table-biru thead {
+    background-color: #1e3a8a;
+    border: 3px solid #1e3a8a;
+  }
+  .table-styling .table-biru th,
+  .table-styling .table-biru td,
+  .table-styling.table-biru th,
+  .table-styling.table-biru td {
+    background-color: transparent;
+  }
