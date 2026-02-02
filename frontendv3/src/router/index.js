@@ -11,6 +11,9 @@ const departements = () => import('@/pages/departements.vue');
 const forgot_password = () => import('@/pages/forgot_password.vue');
 const activityLog = () => import('@/pages/activity-log.vue');
 
+const cms = () => import('@/pages/cms/index.vue');
+const site_setting = () => import('@/pages/cms/settings/site_setting.vue');
+
 
 const routes = [
   {
@@ -79,6 +82,36 @@ const routes = [
         path: '/activity-log',
         name: 'activity-log',
         component: activityLog,
+        meta: {
+          requiresAuth: true
+        }
+      },
+    ]
+  },
+
+  {
+    path: '/settings',
+    component: Body,
+    children: [
+      {
+        path: '/settings',
+        name: 'settings',
+        component: cms,
+        meta: {
+          requiresAuth: true
+        }
+      },
+    ]
+  },
+
+  {
+    path: '/site_setting',
+    component: Body,
+    children: [
+      {
+        path: '/site_setting',
+        name: 'site_setting',
+        component: site_setting,
         meta: {
           requiresAuth: true
         }

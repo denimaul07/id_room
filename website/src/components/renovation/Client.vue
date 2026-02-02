@@ -5,7 +5,7 @@
         <div class="flex-1 min-w-[320px]">
             <div class="h-1 w-10 bg-gradient-to-r from-teal-400 to-purple-400 mb-4 rounded"></div>
             <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 leading-tight">
-            Kisah sukses dalam <br /> kata-kata mereka sendiri
+            Kisah sukses dalam <br /> renovasi rumah
             </h2>
             <p class="text-gray-500 mb-6 max-w-md">Baca apa yang dikatakan klien kami yang puas tentang pengalaman mereka dengan platform kami.</p>
     
@@ -34,30 +34,19 @@
 </template>
 
 <script setup>
-const testimonials = [
-  {
-    name: 'Lily Brooks',
-    country: 'South Africa',
-    avatar: 'https://randomuser.me/api/portraits/women/65.jpg',
-    text: 'Booking our dream home was incredibly easy with Dreams Estate. The interface was user-friendly.'
-  },
-  {
-    name: 'Ethan Wells',
-    country: 'United Kingdom',
-    avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    text: 'Booking our dream home was so simple with Dreams Estate. The site was easy to use!'
-  },
-  {
-    name: 'Daniel Cooper',
-    country: 'United States of America',
-    avatar: 'https://randomuser.me/api/portraits/men/44.jpg',
-    text: 'Dreams Estate made home booking a breeze. Super easy and stress-free!'
-  },
-  {
-    name: 'Emma Davidson',
-    country: 'Japan',
-    avatar: 'https://randomuser.me/api/portraits/women/68.jpg',
-    text: 'Dreams Estate made booking our dream home effortless. The interface was so easy to navigate!'
-  }
-]
+    import { computed } from 'vue'
+    import { useInfoStore } from '@/store/info'
+    import { storeToRefs } from 'pinia'
+    const { data: info } = storeToRefs(useInfoStore())
+    const currentInfo = computed(() => {
+        return info.value?.[0] ?? {}
+    })
+    const testimonials = computed(() => {
+        return currentInfo.value.testimoni?.map(t => ({
+            name: t.nama,
+            country: t.location,
+            text: t.desc,
+            avatar: import.meta.env.VITE_PATH_FILE_BASE_URL + '/storage/' + t.image
+        })) || []
+    })
 </script>

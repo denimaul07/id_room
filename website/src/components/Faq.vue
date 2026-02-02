@@ -14,7 +14,7 @@
                     <div>
                         <h3 class="font-bold text-xl text-gray-900 mb-4">General FAQ’s</h3>
                         <div
-                            v-for="(item, index) in items"
+                            v-for="(item, index) in currentInfo.faqs"
                             :key="index"
                             class="border rounded-lg mb-3 overflow-hidden"
                             >
@@ -23,7 +23,7 @@
                                 @click="toggle(index)"
                                 class="w-full flex justify-between items-center px-5 py-4 text-left font-semibold bg-white hover:bg-gray-50"
                             >
-                                <span>{{ item.title }}</span>
+                                <span>{{ item.pertanyaan }}</span>
                                 <svg
                                 class="w-5 h-5 transition-transform duration-300"
                                 :class="active === index ? 'rotate-180' : ''"
@@ -42,7 +42,7 @@
                                 :class="active === index ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'"
                             >
                                 <div class="px-5 pb-4 text-gray-600">
-                                {{ item.content }}
+                                {{ item.jawaban }}
                                 </div>
                             </div>
                             </div>
@@ -54,27 +54,16 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+    import { storeToRefs } from 'pinia'
+    import { useInfoStore } from '@/store/info'
+    import { ref, watch, onMounted, computed } from 'vue'
 
-const active = ref(0)
+    const active = ref(0)
+    const { data: info } = storeToRefs(useInfoStore())
+    const currentInfo = computed(() => info.value?.[0] ?? {})
 
-const items = [
-    {
-        title: 'Kenapa memilih IDROOM?',
-        content: 'Kami menyediakan properti terverifikasi dengan proses yang transparan dan mudah.',
-    },
-    {
-        title: 'Apakah harga transparan?',
-        content: 'Ya, semua harga ditampilkan secara jelas tanpa biaya tersembunyi.',
-    },
-    {
-        title: 'Bagaimana proses kerja sama?',
-        content: 'Mulai dari konsultasi, survey, hingga serah terima properti.',
-    },
-]
-
-const toggle = (index) => {
-    active.value = active.value === index ? null : index
-}
+    const toggle = (index) => {
+        active.value = active.value === index ? null : index
+    }
 </script>
 

@@ -12,7 +12,7 @@
             </div>
             <div class="flex flex-wrap justify-center gap-8 min-h-[420px] relative">
                 <div
-                    v-for="(img, idx) in images"
+                    v-for="(img, idx) in currentInfo.portofolio"
                     :key="idx"
                     :class="[
                         'bg-white rounded-2xl shadow-xl overflow-hidden flex items-center justify-center relative transition-transform duration-300',
@@ -23,10 +23,10 @@
                     ]"
                 >
                     <img
-                        :src="img.src"
+                        :src="imageBaseUrl + img.image"
                         :alt="img.alt"
                         class="w-full h-full object-cover rounded-xl transition-transform duration-300 cursor-pointer hover:scale-110"
-                        @click="openModal(img.src, img.alt)"
+                        @click="openModal(imageBaseUrl + img.image, img.alt)"
                     />
                 </div>
                 <!-- Modal -->
@@ -45,20 +45,15 @@
 
 
 <script setup>
-import { ref } from 'vue';
-import renov from '@/assets/banner/renov.png';
-import banner from '@/assets/banner/banner-bg.webp';
+import { ref, computed } from 'vue'
+import { useInfoStore } from '@/store/info'
+import { storeToRefs } from 'pinia'
+const { data: info } = storeToRefs(useInfoStore())
+const currentInfo = computed(() => {
+    return info.value?.[0] ?? {}
+})
 
-const images = [
-        { src: renov, alt: 'Renovasi' },
-        { src: banner, alt: 'Banner' },
-        { src: renov, alt: 'Renovasi' },
-        { src: banner, alt: 'Banner' },
-        { src: renov, alt: 'Renovasi' },
-        { src: banner, alt: 'Banner' },
-        { src: renov, alt: 'Renovasi' },
-        { src: banner, alt: 'Banner' },
-];
+const imageBaseUrl = import.meta.env.VITE_PATH_FILE_BASE_URL + '/storage/'
 
 const modalOpen = ref(false);
 const modalImg = ref('');

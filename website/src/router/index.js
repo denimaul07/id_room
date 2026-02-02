@@ -7,6 +7,8 @@ import Jual from '@/views/Jual.vue'
 import InteriorRenovation from '@/views/InteriorRenovation.vue'
 import TentangKami from '@/views/Tentang-Kami.vue'
 import Kontak from '@/views/Kontak.vue'
+import privacyPolicy from '@/views/PrivacyPolicy.vue'
+import termsConditions from '@/views/TermsConditions.vue'
 
 const routes = [
     {
@@ -43,6 +45,16 @@ const routes = [
         component: Kontak
     },
     {
+        path: '/kebijakan-privasi',
+        name: 'privacy-policy',
+        component: privacyPolicy
+    },
+    {
+        path: '/syarat-dan-ketentuan',
+        name: 'terms-and-conditions',
+        component: termsConditions
+    },
+    {
         path: '/:pathMatch(.*)*',
         name: 'NotFound',
         component: NotFound
@@ -51,7 +63,10 @@ const routes = [
 
 const router = createRouter({
     history: createWebHistory(),
-    routes
+    routes,
+    scrollBehavior() {
+        return { top: 0 }
+    }
 })
 
 NProgress.configure({

@@ -1,8 +1,14 @@
 <script setup>
-    import { ref, watch } from 'vue'
+    import { storeToRefs } from 'pinia'
+    import { useInfoStore } from '@/store/info'
+    import { ref, watch, onMounted, computed } from 'vue'
     import NavItem from '@/components/ui/NavItem.vue'
 
+    const { data: info } = storeToRefs(useInfoStore())
+    const currentInfo = computed(() => info.value?.[0] ?? {})
+    const imageBaseUrl = import.meta.env.VITE_PATH_FILE_BASE_URL + '/storage/'
     const drawerOpen = ref(false)
+
 
     // lock scroll when drawer open
     watch(drawerOpen, (val) => {
@@ -12,16 +18,16 @@
 
 
 <template>
-    <nav class="bg-gray-900 text-white sticky top-0 z-50">
+    <nav :style="{ backgroundColor: currentInfo?.navBarColor, color: currentInfo?.navBarTextColor }" class="sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
 
         <!-- Logo -->
         <router-link to="/" class="flex items-center">
-            <img src="@/assets/navbar/logo.png" alt="ID Room" class="h-12" />
+            <img :src="imageBaseUrl + currentInfo?.logo" alt="ID Room" class="h-12" />
         </router-link>
 
         <!-- Desktop Menu -->
-        <ul class="hidden md:flex gap-6 text-gray-300 font-medium">
+        <ul class="hidden md:flex gap-6 font-medium" :style="{ color: currentInfo?.navBarTextColor }">
             <NavItem label="Beranda" to="/" />
             <NavItem label="Sewa Properti" to="/sewa-properti" />
             <NavItem label="Jual Properti" to="/jual-properti" />
@@ -32,11 +38,21 @@
 
         <!-- Actions Desktop -->
         <div class="hidden md:flex gap-3">
-            <button class="bg-[#d5bd7d] px-4 py-2 text-sm hover:bg-[#d5b356]">
-            Sign In
+            <button  :style="{
+                    '--btn-bg': currentInfo.primaryColor,
+                    '--btn-bg-hover': currentInfo.primaryColorHover,
+                    '--btn-text-color': currentInfo.primaryTextColor
+                }"   class="px-4 py-2 text-sm bg-[var(--btn-bg)] text-[var(--btn-text-color)] hover:bg-[var(--btn-bg-hover)] transition-colors duration-300">
+                Sign In
             </button>
-            <button class="bg-white text-gray-900 px-4 py-2 text-sm hover:bg-gray-100">
-            Register
+            <button
+                :style="{
+                    '--btn-bg': currentInfo.secondColor,
+                    '--btn-bg-hover': currentInfo.secondColorHover,
+                    '--btn-text-color': currentInfo.secondTextColor
+                }" class="px-4 py-2 text-sm bg-[var(--btn-bg)] text-[var(--btn-text-color)] hover:bg-[var(--btn-bg-hover)] transition-colors duration-300"
+            >  
+            Register 
             </button>
         </div>
 
@@ -82,8 +98,8 @@
         <!-- Menu -->
         <ul class="flex-1 px-6 py-8 space-y-6 text-lg font-medium">
             <NavItem label="Beranda" to="/" @click="drawerOpen = false" />
-            <NavItem label="Sewa Properti" to="/disewakan" @click="drawerOpen = false" />
-            <NavItem label="Jual Properti" to="/dijual" @click="drawerOpen = false" />
+            <NavItem label="Sewa Properti" to="/sewa-properti" @click="drawerOpen = false" />
+            <NavItem label="Jual Properti" to="/jual-properti" @click="drawerOpen = false" />
             <NavItem label="Interior & Renovasi Properti" to="/interior-renovation" @click="drawerOpen = false" />
             <NavItem label="Tentang Kami" to="/tentang-kami" @click="drawerOpen = false" />
             <NavItem label="Hubungi Kami" to="/hubungi-kami" @click="drawerOpen = false" />

@@ -3,20 +3,15 @@
     <section class="bg-slate-100 py-20">
         <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center gap-12">
             <div class="flex-1">
-                <span class="inline-block bg-purple-600 text-white text-base font-semibold rounded-lg px-4 py-1 mb-4"> Mengapa Memilih Kami</span>
+                <span class="inline-block text-white text-base font-semibold rounded-lg px-4 py-1 mb-4" :style="{ backgroundColor: currentInfo.primaryColor }"> Mengapa Memilih Kami</span>
                 <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-4 leading-tight">
-                    Solusi Properti yang Mudah,<br />
-                    Transparan, dan Terpercaya
+                    {{ currentInfo.titleSectionRenov }}
                 </h1>
-                <p class="text-gray-500 text-lg mb-8 leading-relaxed">
-                    idROOM Interior menghadirkan solusi desain lengkap untuk menciptakan ruang yang fungsional dan estetik.
-
-                    Dengan pengalaman lebih dari 10 tahun di industri desain interior, kami telah membantu ratusan klien menciptakan ruang impian mereka. Tim desainer profesional kami akan bekerja sama dengan Anda untuk memahami kebutuhan, gaya, dan anggaran Anda. Dari konsep awal hingga realisasi akhir, kami mengelola setiap aspek proyek dengan detail dan dedikasi tinggi. Kami percaya bahwa desain interior yang baik tidak hanya mempercantik ruang, tetapi juga meningkatkan kualitas hidup penghuninya.
-                </p>
+                <p class="text-gray-500 text-lg mb-8 leading-relaxed" v-html="currentInfo.descSectionRenov"></p>
             </div>
             <div class="flex-1 min-w-[320px] flex justify-end w-full">
                 <iframe
-                    src="https://www.youtube.com/embed/5InnN7Cjffo?si=3BwSF6YUWEvsawx2"
+                    :src="currentInfo.urlRenov"
                     frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen
@@ -27,3 +22,14 @@
         </div>
     </section>
 </template>
+
+<script setup>
+    import { ref, computed } from 'vue'
+    import { useInfoStore } from '@/store/info'
+    import { storeToRefs } from 'pinia'
+    const { data: info } = storeToRefs(useInfoStore())
+    const currentInfo = computed(() => {
+        return info.value?.[0] ?? {}
+    })
+
+</script>

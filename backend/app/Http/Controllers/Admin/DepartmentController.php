@@ -102,8 +102,6 @@ class DepartmentController extends Controller
         ];
 
         $validate= Validator::make($request->all(), $rules);
-
-        $validate= Validator::make($request->all(), $rules);
         if ($validate->fails()) {
             $response = [
                 'data' => $validate->errors(),

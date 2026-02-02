@@ -24,10 +24,16 @@ $api->version('v1', function ($api) {
         $api->group(['middleware' => 'login.attempt.limiter'], function ($api) {
             $api->post('/login', 'App\Http\Controllers\Auth\AuthController@login');
         });
-        // $api->group(['middleware' => 'api.auth'], function($api){
+
         $api->post('/token/refresh', 'App\Http\Controllers\Auth\RefreshTokenController@refresh');
         $api->post('/logout', 'App\Http\Controllers\Auth\RefreshTokenController@logout');
-        // });
+
+
+    });
+
+    $api->group(['prefix' => 'public'], function ($api) {
+        $api->get('/info', 'App\Http\Controllers\PublicController@info');
+        $api->post('/contact-me', 'App\Http\Controllers\PublicController@contactMe');
     });
 
 
@@ -53,14 +59,48 @@ $api->version('v1', function ($api) {
 
 
         // Akses Admin
-        $api->group(['middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
-            $api->get('/index', 'App\Http\Controllers\SettingController@index');
-            $api->post('/index', 'App\Http\Controllers\SettingController@store');
-            $api->put('/index', 'App\Http\Controllers\SettingController@update');
+        $api->group(['middleware' => ['jwt.auth', 'role:superAdmin']], function ($api) {
 
-            $api->get('/type', 'App\Http\Controllers\SettingController@type');
-            $api->post('/type', 'App\Http\Controllers\SettingController@storeType');
-            $api->put('/type', 'App\Http\Controllers\SettingController@updateType');
+            $api->get('/site_setting', 'App\Http\Controllers\SettingController@index');
+            $api->post('/site_setting', 'App\Http\Controllers\SettingController@update');
+            $api->post('/site_setting_contact_me', 'App\Http\Controllers\SettingController@update_contact_me');
+            $api->post('/site_setting_about_me', 'App\Http\Controllers\SettingController@update_about_me');
+            $api->post('/site_setting_renovasi', 'App\Http\Controllers\SettingController@update_renovasi');
+
+            $api->get('/faq', 'App\Http\Controllers\FaqController@index');
+            $api->post('/faq', 'App\Http\Controllers\FaqController@store');
+            $api->put('/faq', 'App\Http\Controllers\FaqController@update');
+            $api->delete('/faq', 'App\Http\Controllers\FaqController@delete');
+
+            $api->get('/mitra', 'App\Http\Controllers\MitraController@index');
+            $api->post('/mitra_store', 'App\Http\Controllers\MitraController@store');
+            $api->post('/mitra_update', 'App\Http\Controllers\MitraController@update');
+            $api->delete('/mitra', 'App\Http\Controllers\MitraController@delete');
+
+            $api->get('/social_media', 'App\Http\Controllers\SocialMediaController@index');
+            $api->post('/social_media', 'App\Http\Controllers\SocialMediaController@store');
+            $api->put('/social_media', 'App\Http\Controllers\SocialMediaController@update');
+            $api->delete('/social_media', 'App\Http\Controllers\SocialMediaController@delete');
+
+            $api->get('/services', 'App\Http\Controllers\ServiceMeController@index'); 
+            $api->post('/services', 'App\Http\Controllers\ServiceMeController@store');
+            $api->put('/services', 'App\Http\Controllers\ServiceMeController@update');
+            $api->delete('/services', 'App\Http\Controllers\ServiceMeController@delete');
+
+            $api->get('/portofolio', 'App\Http\Controllers\PortofolioController@index');
+            $api->post('/portofolio_store', 'App\Http\Controllers\PortofolioController@store');
+            $api->post('/portofolio_update', 'App\Http\Controllers\PortofolioController@update');
+            $api->delete('/portofolio', 'App\Http\Controllers\PortofolioController@delete');
+
+            $api->get('/process', 'App\Http\Controllers\ProcessWorkController@index'); 
+            $api->post('/process', 'App\Http\Controllers\ProcessWorkController@store');
+            $api->put('/process', 'App\Http\Controllers\ProcessWorkController@update');
+            $api->delete('/process', 'App\Http\Controllers\ProcessWorkController@delete');
+
+            $api->get('/testimoni', 'App\Http\Controllers\TestimoniController@index');
+            $api->post('/testimoni_store', 'App\Http\Controllers\TestimoniController@store');
+            $api->post('/testimoni_update', 'App\Http\Controllers\TestimoniController@update');
+            $api->delete('/testimoni', 'App\Http\Controllers\TestimoniController@destroy');
 
             $api->get('/users', 'App\Http\Controllers\Admin\AdminUserController@index');
             $api->post('/users', 'App\Http\Controllers\Admin\AdminUserController@store');
@@ -69,6 +109,8 @@ $api->version('v1', function ($api) {
             $api->get('/store', 'App\Http\Controllers\Admin\DepartmentController@index');
             $api->post('/store', 'App\Http\Controllers\Admin\DepartmentController@store');
             $api->put('/store', 'App\Http\Controllers\Admin\DepartmentController@update');
+
+    
             
 
         });

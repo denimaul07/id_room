@@ -8,7 +8,7 @@
       >
         <img
           style="width: 100%; height: 100%; object-fit: cover"
-          :src="'https://app.askaraaktiv.com/api/storage/foto/' + foto"
+          :src="pathUrl + '/storage/foto/' + foto"
           alt=""
         />
       </div>
@@ -20,7 +20,7 @@
       >
         <img
           style="width: 100%; height: 100%; object-fit: cover"
-          :src="'https://app.askaraaktiv.com/api/storage/foto/user.png'"
+          :src="pathUrl + '/storage/foto/user.png'"
           alt=""
         />
       </div>
@@ -202,6 +202,7 @@ import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 import { ref, onMounted } from "vue";
 import waitingicon from "@/assets/images/logo/loading.gif";
+const pathUrl = import.meta.env.VITE_PATH_FILE_BASE_URL;
 import Swal from "sweetalert2";
 const token = localStorage.getItem("access_token_iss");
 Api.defaults.headers.common["Authorization"] = "Bearer " + token;

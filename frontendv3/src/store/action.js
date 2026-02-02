@@ -20,8 +20,16 @@ const apiGetData = async (url = "", paramsData = {}) => {
         return response.data;
     })
     .catch((error) => {  
-        
-        const ResObj = error.response.data?.message || Object.values(error.response.data);
+        // Cek jika ada response.data.data (biasanya untuk validasi field)
+        let ResObj;
+        if (error.response.data?.data) {
+            // Gabungkan semua pesan error dari setiap field
+            ResObj = Object.values(error.response.data.data)
+            .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
+            .join('<br>');
+        } else {
+            ResObj = error.response.data?.message || Object.values(error.response.data);
+        }
         const errorId = error.response.data?.error_id || 'Unknown';
         const title = error.response.data?.title || 'Oops... !';
 
@@ -44,7 +52,16 @@ const apiPostData = async (url = "", paramsData = "", notif=true) => {
         
     })
     .catch((error) => {
-        const ResObj = error.response.data?.message || Object.values(error.response.data);
+        // Cek jika ada response.data.data (biasanya untuk validasi field)
+        let ResObj;
+        if (error.response.data?.data) {
+            // Gabungkan semua pesan error dari setiap field
+            ResObj = Object.values(error.response.data.data)
+            .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
+            .join('<br>');
+        } else {
+            ResObj = error.response.data?.message || Object.values(error.response.data);
+        }
         const errorId = error.response.data?.error_id || 'Unknown';
         const title = error.response.data?.title || 'Oops... !';
 
@@ -72,7 +89,16 @@ const apiPostDataWithReturn = async (url = "", paramsData = "", axiosConfig = {}
             }
         })
         .catch((error) => {
-            const ResObj = error.response.data?.message || Object.values(error.response.data);
+            // Cek jika ada response.data.data (biasanya untuk validasi field)
+            let ResObj;
+            if (error.response.data?.data) {
+                // Gabungkan semua pesan error dari setiap field
+                ResObj = Object.values(error.response.data.data)
+                .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
+                .join('<br>');
+            } else {
+                ResObj = error.response.data?.message || Object.values(error.response.data);
+            }
             const errorId = error.response.data?.error_id || 'Unknown';
             const title = error.response.data?.title || 'Oops... !';
 
@@ -120,7 +146,16 @@ const apiPutData = async (url = "", paramsData = "", notif=true) => {
         }
     })
     .catch((error) => {
-        const ResObj = error.response.data?.message || Object.values(error.response.data);
+        // Cek jika ada response.data.data (biasanya untuk validasi field)
+        let ResObj;
+        if (error.response.data?.data) {
+            // Gabungkan semua pesan error dari setiap field
+            ResObj = Object.values(error.response.data.data)
+            .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
+            .join('<br>');
+        } else {
+            ResObj = error.response.data?.message || Object.values(error.response.data);
+        }
         const errorId = error.response.data?.error_id || 'Unknown';
         const title = error.response.data?.title || 'Oops... !';
 
@@ -141,7 +176,16 @@ const apiDeleteData = async (url = "", paramsData = {}) => {
     
     })
     .catch((error) => {
-        const ResObj = error.response.data?.message || Object.values(error.response.data);
+        // Cek jika ada response.data.data (biasanya untuk validasi field)
+        let ResObj;
+        if (error.response.data?.data) {
+            // Gabungkan semua pesan error dari setiap field
+            ResObj = Object.values(error.response.data.data)
+            .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
+            .join('<br>');
+        } else {
+            ResObj = error.response.data?.message || Object.values(error.response.data);
+        }
         const errorId = error.response.data?.error_id || 'Unknown';
         const title = error.response.data?.title || 'Oops... !';
 
@@ -164,7 +208,16 @@ const apiExportExcel = async (url = "", paramsData = {}, title = 'Data') => {
         document.body.appendChild(link);
         link.click();
     }).catch((error) => {
-        const ResObj = error.response.data?.message || Object.values(error.response.data);
+        // Cek jika ada response.data.data (biasanya untuk validasi field)
+        let ResObj;
+        if (error.response.data?.data) {
+            // Gabungkan semua pesan error dari setiap field
+            ResObj = Object.values(error.response.data.data)
+            .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
+            .join('<br>');
+        } else {
+            ResObj = error.response.data?.message || Object.values(error.response.data);
+        }
         const errorId = error.response.data?.error_id || 'Unknown';
         const title = error.response.data?.title || 'Oops... !';
 
@@ -184,36 +237,22 @@ const apiCetakPDF = async (url = "", paramsData = {}) => {
         });
         return response.data; // Mengembalikan data response ke pemanggil
     } catch (error) {
-        let errorMessage = "Terjadi kesalahan saat mengunduh file.";
-        let errorId = "Unknown";
-        let title = "Oops... !";
-
-        if (error.response && error.response.data) {
-            const contentType = error.response.headers['content-type'] || "";
-
-            if (contentType.includes("application/json")) {
-                try {
-                    // Konversi Blob ke JSON
-                    const errorText = await error.response.data.text();
-                    const jsonError = JSON.parse(errorText);
-
-                    errorMessage = jsonError.message || "Terjadi kesalahan saat mengunduh file.";
-                    errorId = jsonError.error_id || "Unknown";
-                    title = jsonError.title || "Oops... !";
-                } catch (jsonError) {
-                    console.error("Error parsing JSON from Blob:", jsonError);
-                }
-            } else if (contentType.includes("text/plain")) {
-                try {
-                    // Jika response dalam bentuk teks biasa
-                    errorMessage = await error.response.data.text();
-                } catch (textError) {
-                    console.error("Error reading text response:", textError);
-                }
-            }
+        // Cek jika ada response.data.data (biasanya untuk validasi field)
+        let ResObj;
+        if (error.response && error.response.data && error.response.data.data) {
+            // Gabungkan semua pesan error dari setiap field
+            ResObj = Object.values(error.response.data.data)
+            .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
+            .join('<br>');
+        } else if (error.response && error.response.data) {
+            ResObj = error.response.data?.message || Object.values(error.response.data);
+        } else {
+            ResObj = "Terjadi kesalahan saat mengunduh file.";
         }
+        const errorId = error.response?.data?.error_id || 'Unknown';
+        const title = error.response?.data?.title || 'Oops... !';
 
-        sweetError(title, errorMessage, errorId);
+        sweetError(title, ResObj.toString(), errorId);
         return false;
     }
 }
@@ -229,9 +268,20 @@ const apiDownloadFile = async (url = "", paramsData = {}) => {
         });
         return response.data; // Mengembalikan data response ke pemanggil
     } catch (error) {
-        const ResObj = error.response.data?.message || Object.values(error.response.data);
-        const errorId = error.response.data?.error_id || 'Unknown';
-        const title = error.response.data?.title || 'Oops... !';
+        // Cek jika ada response.data.data (biasanya untuk validasi field)
+        let ResObj;
+        if (error.response && error.response.data && error.response.data.data) {
+            // Gabungkan semua pesan error dari setiap field
+            ResObj = Object.values(error.response.data.data)
+            .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
+            .join('<br>');
+        } else if (error.response && error.response.data) {
+            ResObj = error.response.data?.message || Object.values(error.response.data);
+        } else {
+            ResObj = "Terjadi kesalahan saat mengunduh file.";
+        }
+        const errorId = error.response?.data?.error_id || 'Unknown';
+        const title = error.response?.data?.title || 'Oops... !';
 
         sweetError(title, ResObj.toString(), errorId);
         return false;

@@ -31,6 +31,32 @@
     },
 
     {
+      "title": "CMS",
+      "icon": "stroke-social",
+      "iconf":"fill-social",
+      "type": "sub",   
+      "roles" : ["superAdmin","admin"],
+      "active": false,
+      "children": [
+        {
+          "path": "/settings",
+          "title": "Settings",
+          "type": "link",
+          "roles" : ["superAdmin","admin"],
+          "active": false
+        },
+        {
+          "path": "/properties",
+          "title": "Properties",
+          "type": "link",
+          "roles" : ["superAdmin"],
+          "active": false
+        }
+      
+      ]
+    },
+
+    {
       "title": "Master Data",
       "icon": "stroke-widget",
       "iconf":"fill-widget",
@@ -55,12 +81,6 @@
       
       ]
     }
-
-  
-
-      
-    
-
 
   ]
 }
