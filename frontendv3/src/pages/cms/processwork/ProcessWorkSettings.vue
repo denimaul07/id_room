@@ -15,35 +15,38 @@
             </tr>
             </thead>
             <tbody>
-            <tr v-if="state.listData.length === 0">
-                <td colspan="6" class="text-center">No Process Work Added</td>
-            </tr>
-            <tr v-for="(item, index) in state.listData" :key="index" v-else>
-                <td class="text-center">{{ index + 1 }}</td>
-                <td class="text-center text-nowrap">
-                <a-tooltip title="View / Edit">
-                    <a-button type="primary" size="small" @click="view(item)" class="bg-dark">
-                    <template #icon>
-                        <EyeOutlined />
-                    </template>
-                    </a-button>
-                </a-tooltip>
-                <a-tooltip title="Delete">
-                    <a-button type="primary" size="small" class="bg-danger ms-2" @click="deleteItem(item)">
-                    <template #icon>
-                        <DeleteOutlined />
-                    </template>
-                    </a-button>
-                </a-tooltip>
-                </td>
-                <td class="text-center text-nowrap">{{ item.title }}</td>
-                <td class="text-center">{{ item.desc }}</td>
-                <td class="text-center text-nowrap"><i :class="item.icon"></i> {{ item.icon }}</td>
-                <td class="text-center text-nowrap">
-                <span v-if="item.isActive === 0" class="badge bg-success">Active</span>
-                <span v-else class="badge bg-danger">Inactive</span>
-                </td>
-            </tr>
+              <tr v-if="loading">
+                  <td colspan="6" class="text-center"><a-skeleton active /></td>
+              </tr>
+              <tr v-else-if="state.listData.length === 0">
+                  <td colspan="6" class="text-center">No Process Work Added</td>
+              </tr>
+              <tr v-for="(item, index) in state.listData" :key="index" v-else>
+                  <td class="text-center">{{ index + 1 }}</td>
+                  <td class="text-center text-nowrap">
+                  <a-tooltip title="View / Edit">
+                      <a-button type="primary" size="small" @click="view(item)" class="bg-dark">
+                      <template #icon>
+                          <EyeOutlined />
+                      </template>
+                      </a-button>
+                  </a-tooltip>
+                  <a-tooltip title="Delete">
+                      <a-button type="primary" size="small" class="bg-danger ms-2" @click="deleteItem(item)">
+                      <template #icon>
+                          <DeleteOutlined />
+                      </template>
+                      </a-button>
+                  </a-tooltip>
+                  </td>
+                  <td class="text-center text-nowrap">{{ item.title }}</td>
+                  <td class="text-center">{{ item.desc }}</td>
+                  <td class="text-center text-nowrap"><i :class="item.icon"></i> {{ item.icon }}</td>
+                  <td class="text-center text-nowrap">
+                  <span v-if="item.isActive === 0" class="badge bg-success">Active</span>
+                  <span v-else class="badge bg-danger">Inactive</span>
+                  </td>
+              </tr>
             </tbody>
         </table>
         </div>

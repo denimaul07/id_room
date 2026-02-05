@@ -4,6 +4,7 @@ namespace App\Services\ProcessWork;
 use App\Models\ProcessWork;
 use Illuminate\Support\Str;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Auth;
 
 class ProcessWorkService
 {
@@ -14,7 +15,7 @@ class ProcessWorkService
 
     public function create(array $data)
     {
-        return ProcessWork::create([
+        $item = ProcessWork::create([
             'odata' => (string) Str::uuid(),
             'odata_setting' => $data['odata_setting'],
             'title'        => $data['title'],
@@ -22,6 +23,13 @@ class ProcessWorkService
             'icon'         => $data['icon'],
             'isActive'     => $data['isActive'],
         ]);
+        activity()
+            ->performedOn($item)
+            ->causedBy(Auth::user())
+            ->withProperties(['attributes' => $data])
+            ->event('create')
+            ->log('created process work');
+        return $item;
     }
 
     public function update($odata, array $data)
@@ -35,6 +43,12 @@ class ProcessWorkService
         $item->icon = $data['icon'];
         $item->isActive = $data['isActive'];
         $item->save();
+        activity()
+            ->performedOn($item)
+            ->causedBy(Auth::user())
+            ->withProperties(['attributes' => $data])
+            ->event('update')
+            ->log('updated process work');
         return $item;
     }
 
@@ -44,6 +58,12 @@ class ProcessWorkService
         if (!$item) {
             throw new HttpResponseException(response()->json(['error' => 'ProcessWork not found'], 404));
         }
-        return $item->delete();
+        $item->delete();
+        activity()
+            ->performedOn($item)
+            ->causedBy(Auth::user())
+            ->event('delete')
+            ->log('deleted process work');
+        return true;
     }
 }

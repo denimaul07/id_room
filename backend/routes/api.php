@@ -29,11 +29,14 @@ $api->version('v1', function ($api) {
         $api->post('/logout', 'App\Http\Controllers\Auth\RefreshTokenController@logout');
 
 
+
     });
 
     $api->group(['prefix' => 'public'], function ($api) {
         $api->get('/info', 'App\Http\Controllers\PublicController@info');
         $api->post('/contact-me', 'App\Http\Controllers\PublicController@contactMe');
+        $api->get('/province', 'App\Http\Controllers\PublicController@getProvince');
+        $api->get('/city', 'App\Http\Controllers\PublicController@getCity');
     });
 
 
@@ -53,6 +56,30 @@ $api->version('v1', function ($api) {
             $api->delete('/destroy','App\Http\Controllers\ActivityLogsController@destroy');
             $api->delete('/clear_all','App\Http\Controllers\ActivityLogsController@clearAll');
 
+    });
+
+    $api->group(['prefix' => 'membership', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+        $api->get('/index', 'App\Http\Controllers\MembershipController@index');
+        $api->post('/index', 'App\Http\Controllers\MembershipController@store');
+        $api->put('/index', 'App\Http\Controllers\MembershipController@update');
+
+    });
+
+    $api->group(['prefix' => 'membership_benefit', 'middleware' => ['jwt.auth']], function ($api) {
+        $api->get('/index', 'App\Http\Controllers\MembershipBenefitController@index');
+        $api->post('/index', 'App\Http\Controllers\MembershipBenefitController@store');
+        $api->get('/getBenefit', 'App\Http\Controllers\MembershipBenefitController@show');
+        $api->put('/index', 'App\Http\Controllers\MembershipBenefitController@update');
+        $api->delete('/index', 'App\Http\Controllers\MembershipBenefitController@delete');
+
+    });
+
+    $api->group(['prefix' => 'properties', 'middleware' => ['jwt.auth']], function ($api) {
+        $api->get('/index', 'App\Http\Controllers\PropertiesController@index');
+        // $api->get('/index', 'App\Http\Controllers\PropertiesController@show');
+        $api->post('/index', 'App\Http\Controllers\PropertiesController@store');
+        $api->put('/index', 'App\Http\Controllers\PropertiesController@update');
+        $api->delete('/index', 'App\Http\Controllers\PropertiesController@destroy');
     });
 
     $api->group(['prefix' => 'setting', 'middleware' => ['jwt.auth']], function ($api) {

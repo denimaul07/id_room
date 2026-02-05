@@ -21,14 +21,25 @@
     },
 
     {
-      "title": "Activity Log",
-      "path": "/activity-log",
-      "icon": "stroke-support-tickets",
-      "iconf":"fill-support-tickets",
-      "type": "link",
+      "title": "Membership",
+      "path": "/membership",
+      "icon": "person-badge",
+      "iconf":"fill-person-badge",
+      "type": "link",   
       "roles" : ["superAdmin","admin"],
       "active": false
     },
+
+    {
+      "title": "Properties",
+      "path": "/properties-list",
+      "icon": "buildings",
+      "iconf":"buildings",
+      "type": "link",   
+      "roles" : ["superAdmin","admin"],
+      "active": false
+    },
+
 
     {
       "title": "CMS",
@@ -54,6 +65,17 @@
         }
       
       ]
+    },
+
+    
+    {
+      "title": "Activity Log",
+      "path": "/activity-log",
+      "icon": "stroke-support-tickets",
+      "iconf":"fill-support-tickets",
+      "type": "link",
+      "roles" : ["superAdmin","admin"],
+      "active": false
     },
 
     {

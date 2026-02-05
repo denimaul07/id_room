@@ -13,8 +13,11 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-if="state.listData.length === 0">
-                        <td colspan="5" class="text-center">No FAQ Added</td>
+                    <tr v-if="loading">
+                        <td colspan="5" class="text-center"><a-skeleton active /></td>
+                    </tr>
+                    <tr v-else-if="state.listData.length === 0">
+                        <td colspan="5" class="text-center"><a-empty description="No FAQ Added" /></td>
                     </tr>
                     <tr v-for="(item, index) in state.listData" :key="index" v-else>
                         <td class="text-center">{{ index + 1 }}</td>

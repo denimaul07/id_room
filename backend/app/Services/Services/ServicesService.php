@@ -16,9 +16,7 @@ class ServicesService
 
     public function create(array $data)
     {
-
-
-        return Services::create([
+        $service = Services::create([
             'odata' => (string) Str::uuid(),
             'odata_setting' => $data['odata_setting'],
             'title'        => $data['title'],
@@ -27,7 +25,13 @@ class ServicesService
             'icon'         => $data['icon'],
             'isActive'      => $data['isActive'],
         ]);
-
+        activity()
+            ->performedOn($service)
+            ->causedBy(Auth::user())
+            ->withProperties(['attributes' => $data])
+            ->event('create')
+            ->log('created service');
+        return $service;
     }
 
     public function update($odata, array $data)
@@ -36,14 +40,18 @@ class ServicesService
         if (!$Services) {
             throw new HttpResponseException(response()->json(['error' => 'Services not found'], 404));
         }
-
         $Services->title = $data['title'];
         $Services->desc = $data['desc'];
         $Services->icon = $data['icon'];
         $Services->type = $data['type'];
         $Services->isActive = $data['isActive'];
         $Services->save();
-
+        activity()
+            ->performedOn($Services)
+            ->causedBy(Auth::user())
+            ->withProperties(['attributes' => $data])
+            ->event('update')
+            ->log('updated service');
         return $Services;
     }
 
@@ -53,7 +61,12 @@ class ServicesService
         if (!$Services) {
             throw new HttpResponseException(response()->json(['error' => 'Services not found'], 404));
         }
-
-        return $Services->delete();
+        $Services->delete();
+        activity()
+            ->performedOn($Services)
+            ->causedBy(Auth::user())
+            ->event('delete')
+            ->log('deleted service');
+        return true;
     }
 }

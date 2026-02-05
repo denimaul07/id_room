@@ -7,11 +7,11 @@
         <h2 class="text-3xl md:text-4xl font-bold text-white mb-2">
           Testimonials
         </h2>
-        <div class="flex justify-center gap-2 mb-2">
-          <span class="w-12 h-1 bg-emerald-400 rounded"></span>
-          <span class="w-6 h-1 bg-purple-500 rounded"></span>
+        <div class="flex items-center justify-center mb-2">
+            <span class="inline-block w-12 h-1 rounded" :style="{ backgroundColor: currentInfo.primaryColor }"></span>
+            <span class="inline-block w-12 h-1 rounded bg-white"></span>
         </div>
-        <p class="text-white/80">What our happy client says</p>
+        <p class="text-white/80"></p>
       </div>
 
       <!-- Slider -->

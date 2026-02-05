@@ -11,6 +11,7 @@ use App\Models\Services;
 use App\Models\Portofolio;
 use App\Models\ProcessWork;
 use App\Models\Testimoni;
+use App\Models\Membership;
 
 class Setting extends Model
 {
@@ -44,6 +45,11 @@ class Setting extends Model
         return $this->hasMany(Services::class, 'odata_setting', 'odata')->where('type', 'ID Room')->where('isActive', 0);
     }
 
+    public function servicesHomeAll()
+    {
+        return $this->hasMany(Services::class, 'odata_setting', 'odata')->whereIn('type', ['Home'])->where('isActive', 0);
+    }
+
     public function portofolio()
     {
         return $this->hasMany(Portofolio::class, 'odata_setting', 'odata')->where('isActive', 0);
@@ -62,6 +68,11 @@ class Setting extends Model
     public function testimoniHome()
     {
         return $this->hasMany(Testimoni::class, 'odata_setting', 'odata')->whereJsonContains('type', 'ID Room')->where('isActive', 0);
+    }
+
+    public function membership()
+    {
+        return $this->hasMany(Membership::class, 'odata_setting', 'odata')->where('isActive', 0);
     }
 
 }

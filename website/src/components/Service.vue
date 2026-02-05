@@ -3,9 +3,9 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="text-center mb-8">
                 <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Layanan Kami</h2>
-                <div class="flex items-center justify-center gap-2 mb-2">
-                    <span class="inline-block w-12 h-1 rounded bg-emerald-400 mr-1"></span>
-                    <span class="inline-block w-6 h-1 rounded bg-purple-500"></span>
+                <div class="flex items-center justify-center mb-2">
+                    <span class="inline-block w-12 h-1 rounded" :style="{ backgroundColor: currentInfo.primaryColor }"></span>
+                    <span class="inline-block w-12 h-1 rounded bg-black"></span>
                 </div>
                 <p class="text-gray-500">Berbagai solusi desain interior untuk kebutuhan Anda</p>
             </div>

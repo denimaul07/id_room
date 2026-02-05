@@ -13,6 +13,8 @@ const activityLog = () => import('@/pages/activity-log.vue');
 
 const cms = () => import('@/pages/cms/index.vue');
 const site_setting = () => import('@/pages/cms/settings/site_setting.vue');
+const membership = () => import('@/pages/membership/index.vue');
+const properties = () => import('@/pages/properties/index.vue');
 
 
 const routes = [
@@ -71,6 +73,36 @@ const routes = [
         }
       },
 
+    ]
+  },
+
+  {
+    path: '/membership',
+    component: Body,
+    children: [
+      {
+        path: '/membership',
+        name: 'membership',
+        component: membership,
+        meta: {
+          requiresAuth: true
+        }
+      },
+    ]
+  },
+
+  {
+    path: '/properties-list',
+    component: Body,
+    children: [
+      {
+        path: '/properties-list',
+        name: 'properties',
+        component: properties,
+        meta: {
+          requiresAuth: true
+        }
+      },
     ]
   },
 

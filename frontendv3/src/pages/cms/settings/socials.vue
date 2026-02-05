@@ -14,6 +14,9 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <tr v-if="loading">
+                        <td colspan="6" class="text-center"><a-skeleton active /></td>
+                    </tr>
                     <tr v-if="state.listData.length === 0">
                         <td colspan="6" class="text-center">No Social Media Added</td>
                     </tr>

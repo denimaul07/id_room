@@ -4,6 +4,7 @@ namespace App\Services\Testimoni;
 use App\Models\Testimoni;
 use Illuminate\Support\Str;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Auth;
 
 class TestimoniService
 {
@@ -22,7 +23,7 @@ class TestimoniService
             $data['type'] = json_encode($data['type']);
         }
 
-        return Testimoni::create([
+        $testimoni = Testimoni::create([
             'odata' => (string) Str::uuid(),
             'odata_setting' => $data['odata_setting'],
             'nama'         => $data['nama'],
@@ -33,8 +34,13 @@ class TestimoniService
             'desc'         => $data['desc'],
             'isActive'     => $data['isActive'],
         ]);
-
-
+        activity()
+            ->performedOn($testimoni)
+            ->causedBy(Auth::user())
+            ->withProperties(['attributes' => $data])
+            ->event('create')
+            ->log('created testimoni');
+        return $testimoni;
     }
 
     public function update($odata, array $data)
@@ -47,12 +53,9 @@ class TestimoniService
             $imagePath = $data['image']->store('cms', 'public');
             $item->image = $imagePath;
         }
-
-
         if (is_array($data['type'])) {
             $data['type'] = json_encode($data['type']);
         }
-
         $item->nama = $data['nama'];
         $item->location = $data['location'];
         $item->rate = $data['rate'];
@@ -60,6 +63,12 @@ class TestimoniService
         $item->desc = $data['desc'];
         $item->isActive = $data['isActive'];
         $item->save();
+        activity()
+            ->performedOn($item)
+            ->causedBy(Auth::user())
+            ->withProperties(['attributes' => $data])
+            ->event('update')
+            ->log('updated testimoni');
         return $item;
     }
 
@@ -69,6 +78,12 @@ class TestimoniService
         if (!$item) {
             throw new HttpResponseException(response()->json(['error' => 'Testimoni not found'], 404));
         }
-        return $item->delete();
+        $item->delete();
+        activity()
+            ->performedOn($item)
+            ->causedBy(Auth::user())
+            ->event('delete')
+            ->log('deleted testimoni');
+        return true;
     }
 }

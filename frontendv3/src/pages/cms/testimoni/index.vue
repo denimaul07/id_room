@@ -17,8 +17,11 @@
             </tr>
             </thead>
             <tbody>
-            <tr v-if="state.listData.length === 0">
-                <td colspan="8" class="text-center">No Testimoni Added</td>
+            <tr v-if="loading">
+                <td colspan="9" class="text-center"><a-skeleton active /></td>
+            </tr>
+            <tr v-else-if="state.listData.length === 0">
+                <td colspan="9" class="text-center"><a-empty description="No Testimoni Added" /></td>
             </tr>
             <tr v-for="(item, index) in state.listData" :key="index" v-else>
                 <td class="text-center">{{ index + 1 }}</td>
@@ -159,6 +162,7 @@
     const pathUrl = import.meta.env.VITE_PATH_FILE_BASE_URL;
     const action = ref(null);
     const modalAdd = ref(false);
+
 
     const state = reactive({
     listData: [],

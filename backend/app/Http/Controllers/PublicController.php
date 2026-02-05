@@ -47,4 +47,30 @@ class PublicController extends Controller
             throw $th;
         }
     }
+
+    public function getProvince()
+    {
+        try {
+            $provinces = $this->settingService->getProvinces();
+            $response = [
+                'data' => $provinces
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
+
+    public function getCity()
+    {
+        try {
+            $cities = $this->settingService->getCities();
+            $response = [
+                'data' => $cities
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
 }

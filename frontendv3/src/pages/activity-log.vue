@@ -20,6 +20,17 @@
                         <a-select v-model:value="filters.subject_type" style="width: 100%">
                             <a-select-option value="">All Types</a-select-option>
                             <a-select-option value="App\Models\User">User Admin</a-select-option>
+                            <a-select-option value="App\Models\ContactMe">Contact Me</a-select-option>
+                            <a-select-option value="App\Models\Membership">Membership</a-select-option>
+                            <a-select-option value="App\Models\MembershipBenefit">Membership Benefit</a-select-option>
+                            <a-select-option value="App\Models\Faq">FAQ</a-select-option>
+                            <a-select-option value="App\Models\Mitra">Mitra</a-select-option>
+                            <a-select-option value="App\Models\ProcessWork">Process Work</a-select-option>
+                            <a-select-option value="App\Models\Portofolio">Portofolio</a-select-option>
+                            <a-select-option value="App\Models\Testimoni">Testimoni</a-select-option>
+                            <a-select-option value="App\Models\Services">Services</a-select-option>
+                            <a-select-option value="App\Models\Setting">Setting</a-select-option>
+                            <a-select-option value="App\Models\Socials">Social Media</a-select-option>
                         </a-select>
                     </div>
                     <div class="col-md-3">
@@ -46,7 +57,7 @@
                         <div class="card bg-primary text-white">
                             <div class="card-body">
                                 <h6>Total Logs</h6>
-                                <h3>{{ statistics.total }}</h3>
+                                <h3>{{ statistics.total_activities }}</h3>
                             </div>
                         </div>
                     </div>
@@ -54,7 +65,7 @@
                         <div class="card bg-success text-white">
                             <div class="card-body">
                                 <h6>Today</h6>
-                                <h3>{{ statistics.today }}</h3>
+                                <h3>{{ statistics.today_activities }}</h3>
                             </div>
                         </div>
                     </div>
@@ -62,7 +73,7 @@
                         <div class="card bg-info text-white">
                             <div class="card-body">
                                 <h6>This Week</h6>
-                                <h3>{{ statistics.week }}</h3>
+                                <h3>{{ statistics.this_week_activities }}</h3>
                             </div>
                         </div>
                     </div>
@@ -70,7 +81,7 @@
                         <div class="card bg-warning text-white">
                             <div class="card-body">
                                 <h6>This Month</h6>
-                                <h3>{{ statistics.month }}</h3>
+                                <h3>{{ statistics.this_month_activities }}</h3>
                             </div>
                         </div>
                     </div>

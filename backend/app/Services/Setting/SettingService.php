@@ -3,13 +3,17 @@ namespace App\Services\Setting;
 
 use App\Models\Setting;
 use App\Models\ContactMe;
+use App\Models\Province;
+use App\Models\City;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Str;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class SettingService
 {
+    // Tambahkan trait jika diperlukan pada model, bukan di service
     public function list()
     {
         return Setting::with('socials')->get();
@@ -58,6 +62,13 @@ class SettingService
 
         $setting->save();
 
+        activity()
+            ->performedOn($setting)
+            ->causedBy(Auth::user())
+            ->withProperties(['attributes' => $data])
+            ->event('update')
+            ->log('update setting');
+
         return $setting;
     }
 
@@ -100,6 +111,13 @@ class SettingService
 
         $setting->save();
 
+        activity()
+            ->performedOn($setting)
+            ->causedBy(Auth::user())
+            ->event('update')
+            ->withProperties(['attributes' => $data])
+            ->log('update contact me setting');
+
         return $setting;
     }
     
@@ -113,6 +131,13 @@ class SettingService
         $contact->subject = $data['subject'];
         $contact->description = $data['description'];
         $contact->save();
+
+        activity()
+            ->performedOn($contact)
+            ->causedBy(Auth::user())
+            ->withProperties(['attributes' => $data])
+            ->event('create')
+            ->log('create contact me');
 
         return $contact;
     }
@@ -134,6 +159,13 @@ class SettingService
         if (isset($data['bannerAboutMe'])) {
             $bannerAboutMePath = $data['bannerAboutMe']->store('cms', 'public');
             $setting->bannerAboutMe = $bannerAboutMePath;
+
+        activity()
+            ->performedOn($setting)
+            ->causedBy(Auth::user())
+            ->withProperties(['attributes' => $data])
+            ->event('update')
+            ->log('update about me setting');
         }
 
         if (isset($data['image1aboutme'])) {
@@ -163,6 +195,13 @@ class SettingService
 
         $setting->save();
 
+        activity()
+            ->performedOn($setting)
+            ->causedBy(Auth::user())
+            ->withProperties(['attributes' => $data])
+            ->event('update')
+            ->log('update about me setting');
+
         return $setting;
     }
 
@@ -187,13 +226,20 @@ class SettingService
 
         $setting->save();
 
+        activity()
+            ->performedOn($setting)
+            ->causedBy(Auth::user())
+            ->withProperties(['attributes' => $data])
+            ->event('update')
+            ->log('update renovasi setting');
+
         return $setting;
     }
 
      //Public
     public function public_info()
     {
-        return Setting::with(['socials', 'faqs','mitras','servicesHome','services','Portofolio','processwork','testimoni','testimoniHome'])->get([
+        return Setting::with(['socials', 'faqs','mitras','servicesHome','services','servicesHomeAll','Portofolio','processwork','testimoni','testimoniHome','membership','membership.benefits','membership.benefits.benefitDetails'])->get([
             'odata',
             'siteName', 
             'primaryColor', 
@@ -252,6 +298,16 @@ class SettingService
             'urlRenov',
 
         ]);
+    }
+
+    public function getProvinces()
+    {
+        return Province::all(['odata', 'province']);
+    }
+
+    public function getCities()
+    {
+        return City::all(['odata', 'city', 'province_odata']);
     }
 
 }   

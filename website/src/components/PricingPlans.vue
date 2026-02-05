@@ -1,95 +1,61 @@
 <template>
-    <section class="py-20 bg-base-200">
+    <section class="py-20 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4">
-
-        <!-- Title -->
-        <div class="text-center mb-14">
-            <h2 class="text-4xl font-bold text-primary">
-            Pricing Plans
-            </h2>
-            <p class="text-secondary mt-4 max-w-xl mx-auto">
-            Choose a plan that fits your business
-            </p>
-        </div>
-
-        <!-- Plans -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-
-            <!-- Basic -->
-            <div class="card bg-base-100 shadow-lg">
-            <div class="card-body text-center">
-                <h3 class="text-xl font-semibold">Basic</h3>
-                <p class="text-secondary mt-2">For individuals</p>
-
-                <div class="text-4xl font-bold text-primary my-6">
-                $19
-                <span class="text-sm font-normal text-secondary">/month</span>
+            <!-- Title -->
+            <div class="text-center mb-14">
+                <h2 class="text-4xl font-bold text-primary">Berlangganan Membership</h2>
+                <p class="text-secondary mt-4 max-w-xl mx-auto">
+                    Kelola bisnis Anda dengan paket yang tepat untuk tim Anda. Pilih paket yang sesuai dengan kebutuhan dan nikmati berbagai manfaat eksklusif dari ID Room.
+                </p>
+            </div>
+            <!-- Plans -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Standard -->
+                <div
+                    class="card bg-base-100 shadow-lg flex flex-col p-6 pricing-card cursor-pointer"
+                    v-for="plan in currentInfo.membership"
+                    :key="plan.odata"
+                    :style="{
+                        transition: 'background 0.3s, color 0.3s',
+                        background: hoveredCard === plan.odata ? (currentInfo.primaryColor || '#2563eb') : '',
+                        color: hoveredCard === plan.odata ? '#fff' : ''
+                    }"
+                    @mouseenter="hoveredCard = plan.odata"
+                    @mouseleave="hoveredCard = null"
+                >
+                    <div class="card-body flex-1 flex flex-col text-center">
+                        <h3 class="text-2xl font-bold mb-2">{{ plan.title }}</h3>
+                        <p class="text-secondary mb-4">{{ plan.desc }}</p>
+                        <div class="text-5xl font-bold text-primary my-4">{{ plan.price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }} <span class="text-base font-normal text-secondary">/bulan</span></div>
+                        <div class="text-left flex-1 pb-3">
+                            <h4 class="font-semibold mb-2">Benefits</h4>
+                            <ul class="space-y-2 text-sm text-secondary">
+                                <li v-for="benefit in plan.benefits" :key="benefit.odata" class="flex items-center gap-2">
+                                    <i v-if="benefit.value == 1" class="fa fa-check text-green-500 font-bold"></i>
+                                    <i v-else class="fa fa-times text-red-500 font-bold"></i>
+                                    <span>{{ benefit.benefit_details.name }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <button class="w-full bg-black text-white pb-3 pt-3 text-sm hover:bg-gray-800">
+                            Pilih Paket
+                        </button>   
+                    </div>
                 </div>
-
-                <ul class="space-y-3 text-sm text-secondary mb-6">
-                <li>✔ 5 Property Listings</li>
-                <li>✔ Basic Support</li>
-                <li>✔ Limited Analytics</li>
-                </ul>
-
-                <button class="btn btn-outline btn-primary w-full">
-                Get Started
-                </button>
             </div>
-            </div>
-
-            <!-- Popular -->
-            <div class="card bg-primary text-white shadow-xl scale-105">
-            <div class="card-body text-center">
-                <span class="badge badge-secondary mb-3">
-                Most Popular
-                </span>
-
-                <h3 class="text-xl font-semibold">Professional</h3>
-                <p class="opacity-80 mt-2">For real estate agents</p>
-
-                <div class="text-4xl font-bold my-6">
-                $49
-                <span class="text-sm font-normal opacity-80">/month</span>
-                </div>
-
-                <ul class="space-y-3 text-sm mb-6">
-                <li>✔ Unlimited Listings</li>
-                <li>✔ Priority Support</li>
-                <li>✔ Advanced Analytics</li>
-                </ul>
-
-                <button class="btn btn-secondary w-full">
-                Choose Plan
-                </button>
-            </div>
-            </div>
-
-            <!-- Premium -->
-            <div class="card bg-base-100 shadow-lg">
-            <div class="card-body text-center">
-                <h3 class="text-xl font-semibold">Enterprise</h3>
-                <p class="text-secondary mt-2">For large teams</p>
-
-                <div class="text-4xl font-bold text-primary my-6">
-                $99
-                <span class="text-sm font-normal text-secondary">/month</span>
-                </div>
-
-                <ul class="space-y-3 text-sm text-secondary mb-6">
-                <li>✔ Team Management</li>
-                <li>✔ Dedicated Support</li>
-                <li>✔ Custom Integrations</li>
-                </ul>
-
-                <button class="btn btn-outline btn-primary w-full">
-                Contact Sales
-                </button>
-            </div>
-            </div>
-
-        </div>
-
         </div>
     </section>
 </template>
+
+
+<script setup>
+import { computed, ref } from 'vue'
+import { useInfoStore } from '@/store/info'
+import { storeToRefs } from 'pinia'
+const { data: info } = storeToRefs(useInfoStore())
+const currentInfo = computed(() => {
+    return info.value?.[0] ?? {}
+})
+const hoveredCard = ref(null)
+</script>
+

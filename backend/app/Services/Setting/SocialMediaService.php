@@ -16,7 +16,7 @@ class SocialMediaService
 
     public function create(array $data)
     {
-        return Socials::create([
+        $social = Socials::create([
             'odata' => (string) Str::uuid(),
             'odata_setting' => $data['odata_setting'],
             'social'        => $data['social'],
@@ -24,6 +24,12 @@ class SocialMediaService
             'icon'          => $data['icon'],
             'isActive'      => $data['isActive'],
         ]);
+        activity()
+            ->performedOn($social)
+            ->causedBy(Auth::user())
+            ->withProperties(['attributes' => $data])
+            ->log('created');
+        return $social;
     }
 
     public function update($odata, array $data)
@@ -32,14 +38,16 @@ class SocialMediaService
         if (!$socialMedia) {
             throw new HttpResponseException(response()->json(['error' => 'Social Media not found'], 404));
         }
-
         $socialMedia->social = $data['social'];
         $socialMedia->url = $data['url'];
         $socialMedia->icon = $data['icon'];
         $socialMedia->isActive = $data['isActive'];
-
         $socialMedia->save();
-
+        activity()
+            ->performedOn($socialMedia)
+            ->causedBy(Auth::user())
+            ->withProperties(['attributes' => $data])
+            ->log('updated');
         return $socialMedia;
     }
 
@@ -49,7 +57,11 @@ class SocialMediaService
         if (!$socialMedia) {
             throw new HttpResponseException(response()->json(['error' => 'Social Media not found'], 404));
         }
-
-        return $socialMedia->delete();
+        $socialMedia->delete();
+        activity()
+            ->performedOn($socialMedia)
+            ->causedBy(Auth::user())
+            ->log('deleted');
+        return true;
     }
 }
