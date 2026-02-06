@@ -73,4 +73,17 @@ class PublicController extends Controller
             throw $th;
         }
     }
+
+    public function listCity(Request $request)
+    {
+        try {
+            $cities = $this->settingService->listCities();
+            $response = [
+                'data' => $cities
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
 }

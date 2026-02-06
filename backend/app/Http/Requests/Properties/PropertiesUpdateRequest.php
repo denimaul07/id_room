@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
-class PropertiesRequest extends FormRequest
+class PropertiesUpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -49,9 +49,7 @@ class PropertiesRequest extends FormRequest
             'sale_price' => 'nullable|numeric',
             'total_rooms' => 'required|integer',
             'isActive' => 'required|boolean',
-            'images' => 'required|image|mimes:webp|max:2048',
-            
-
+            'images' => 'nullable|image|mimes:webp|max:2048',
         ];
     }
 
@@ -74,7 +72,6 @@ class PropertiesRequest extends FormRequest
             'price_per_night.required' => 'The Price Per Night field is required.',
             'total_rooms.required' => 'The Total Rooms field is required.',
             'isActive.required' => 'The Active Status field is required.',
-            'images.required' => 'The Images field is required.',
             'images.image' => 'The Images must be an image file.',
             'images.mimes' => 'The Images must be a file of type: webp.',
             'images.max' => 'The Images may not be greater than 2048 kilobytes.',

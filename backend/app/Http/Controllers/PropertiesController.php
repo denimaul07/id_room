@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Properties\PropertiesRequest;
+use App\Http\Requests\Properties\PropertiesUpdateRequest;
 use App\Services\Properties\PropertiesService;
 use Illuminate\Http\Request;
 
@@ -33,24 +34,69 @@ class PropertiesController extends Controller
         }
     }
 
-    public function show(Request $request)
-    {
-        $odata = $request->odata;
-        $data = $this->PropertiesService->show($odata);
-        return response()->json(['success' => true, 'data' => $data]);
-    }
-
     public function store(PropertiesRequest $request)
     {
-        $data = $this->PropertiesService->create($request->validated());
-        return response()->json(['success' => true, 'data' => $data]);
+        try {
+            $this->PropertiesService->create($request->only([
+                'properties',
+                'type',
+                'listing_type',
+                'address',
+                'city',
+                'province',
+                'latitude',
+                'longitude',
+                'description',
+                'information',
+                'price_per_night',
+                'price_per_monthly',
+                'price_per_year',
+                'sale_price',
+                'total_rooms',
+                'isActive',
+                'images',
+            ]));
+            $response = [
+                'message' => 'Properties created successfully',
+            ];
+
+            return response()->json($response, 201);
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
-    public function update(PropertiesRequest $request)
+    public function update(PropertiesUpdateRequest $request)
     {
-        $odata = $request->odata;
-        $data = $this->PropertiesService->update($odata, $request->validated());
-        return response()->json(['success' => true, 'data' => $data]);
+        try {
+            $odata = $request->odata;
+            $this->PropertiesService->update($odata, $request->only([
+                'properties',
+                'type',
+                'listing_type',
+                'address',
+                'city',
+                'province',
+                'latitude',
+                'longitude',
+                'description',
+                'information',
+                'price_per_night',
+                'price_per_monthly',
+                'price_per_year',
+                'sale_price',
+                'total_rooms',
+                'images',
+                'isActive',
+            ]));
+            $response = [
+                'message' => 'Properties updated successfully',
+            ];
+
+            return response()->json($response, 200);
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     public function destroy(Request $request)

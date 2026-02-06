@@ -12,4 +12,6 @@ class Province extends Model
     protected $hidden = ['id'];
     protected $guarded = [];
 
+
+
 }

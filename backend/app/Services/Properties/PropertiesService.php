@@ -16,7 +16,39 @@ class PropertiesService
 
     public function create(array $data)
     {
-        return Properties::create($data);
+        if (isset($data['images'])) {
+            $imagePath = $data['images']->store('properties', 'public');
+        }
+
+        $property = Properties::create([
+            'odata' => (string) Str::uuid(),
+            'properties' => $data['properties'],
+            'type' => $data['type'],
+            'listing_type' => $data['listing_type'],
+            'address' => $data['address'],
+            'city' => $data['city'],
+            'province' => $data['province'],
+            'latitude' => $data['latitude'],
+            'longitude' => $data['longitude'],
+            'description' => $data['description'],
+            'information' => $data['information'],
+            'price_per_night' => $data['price_per_night'],
+            'price_per_monthly' => $data['price_per_monthly'],
+            'price_per_year' => $data['price_per_year'],
+            'sale_price' => $data['sale_price'],
+            'total_rooms' => $data['total_rooms'],
+            'isActive' => $data['isActive'],
+            'image' => $imagePath,
+        ]);
+
+        activity()
+            ->performedOn($property)
+            ->causedBy(Auth::user())
+            ->withProperties(['attributes' => $data])
+            ->event('create')
+            ->log('created property');
+        return $property;
+
     }
 
     public function update($odata, array $data)
@@ -25,7 +57,38 @@ class PropertiesService
         if (!$property) {
             throw new HttpResponseException(response()->json(['error' => 'Property not found'], 404));
         }
-        $property->update($data);
+
+        $property->properties = $data['properties'];
+        $property->type = $data['type'];
+        $property->listing_type = $data['listing_type'];
+        $property->address = $data['address'];
+        $property->city = $data['city'];
+        $property->province = $data['province'];
+        $property->latitude = $data['latitude'];
+        $property->longitude = $data['longitude'];
+        $property->description = $data['description'];
+        $property->information = $data['information'];
+        $property->price_per_night = $data['price_per_night'];
+        $property->price_per_monthly = $data['price_per_monthly'];
+        $property->price_per_year = $data['price_per_year'];
+        $property->sale_price = $data['sale_price'];
+        $property->total_rooms = $data['total_rooms'];
+        $property->isActive = $data['isActive'];
+
+
+        if (isset($data['images'])) {
+            $imagePath = $data['images']->store('properties', 'public');
+            $property->image = $imagePath;
+        }
+
+        $property->save();
+
+        activity()
+            ->performedOn($property)
+            ->causedBy(Auth::user())
+            ->withProperties(['attributes' => $data])
+            ->event('update')
+            ->log('updated property');
         return $property;
     }
 

@@ -5,6 +5,7 @@ use App\Models\Setting;
 use App\Models\ContactMe;
 use App\Models\Province;
 use App\Models\City;
+use App\Models\Properties;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -308,6 +309,13 @@ class SettingService
     public function getCities()
     {
         return City::all(['odata', 'city', 'province_odata']);
+    }
+
+    public function listCities()
+    {
+        return City::select('odata', 'city')
+            ->whereHas('properties')
+            ->get();
     }
 
 }   

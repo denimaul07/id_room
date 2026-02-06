@@ -37,6 +37,7 @@ $api->version('v1', function ($api) {
         $api->post('/contact-me', 'App\Http\Controllers\PublicController@contactMe');
         $api->get('/province', 'App\Http\Controllers\PublicController@getProvince');
         $api->get('/city', 'App\Http\Controllers\PublicController@getCity');
+        $api->get('/list-city', 'App\Http\Controllers\PublicController@listCity');
     });
 
 
@@ -76,9 +77,8 @@ $api->version('v1', function ($api) {
 
     $api->group(['prefix' => 'properties', 'middleware' => ['jwt.auth']], function ($api) {
         $api->get('/index', 'App\Http\Controllers\PropertiesController@index');
-        // $api->get('/index', 'App\Http\Controllers\PropertiesController@show');
-        $api->post('/index', 'App\Http\Controllers\PropertiesController@store');
-        $api->put('/index', 'App\Http\Controllers\PropertiesController@update');
+        $api->post('/store', 'App\Http\Controllers\PropertiesController@store');
+        $api->post('/update', 'App\Http\Controllers\PropertiesController@update');
         $api->delete('/index', 'App\Http\Controllers\PropertiesController@destroy');
     });
 
