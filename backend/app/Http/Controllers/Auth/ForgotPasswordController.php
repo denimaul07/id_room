@@ -42,11 +42,15 @@ class ForgotPasswordController extends Controller
 
 
 
-        return $status === Password::RESET_LINK_SENT
-
-            ? response()->json(['message' => 'Kami telah mengirimkan link reset password. Jika tidak menerima email, periksa folder spam atau hubungin TIM IT.'], 200)
-
-            : response()->json(['message' => 'Kami telah mengirimkan link reset password. Jika tidak menerima email, periksa folder spam atau hubungin TIM IT.'], 401);
+        try {
+            if ($status === Password::RESET_LINK_SENT) {
+                return response()->json(['message' => 'Kami telah mengirimkan link reset password. Jika tidak menerima email, periksa folder spam atau hubungin TIM IT.'], 200);
+            } else {
+                return response()->json(['message' => __($status)], 401);
+            }
+        } catch (\Exception $th) {
+            return response()->json(['message' => 'Terjadi kesalahan saat mengirim email reset password.', 'error' => $th->getMessage()], 500);
+        }
 
     }
 

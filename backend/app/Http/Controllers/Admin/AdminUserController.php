@@ -7,15 +7,14 @@ use Illuminate\Http\Request;
 use Dingo\Api\Routing\Helpers;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
-use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Transformers\UserTransformer;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
-use Tymon\JWTAuth\Exceptions\JWTExceptions;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Illuminate\Support\Facades\Http;
+use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AdminUserController extends Controller
 {
@@ -233,122 +232,31 @@ class AdminUserController extends Controller
         return response()->json($response, 200);
 
     }
-    
-    public function usersGroup(Request $request)
+
+
+    public function updateProfile(Request $request)
     {
         $rules = [
-            'kode' => [
-                'required'
-            ]
-        ];
-
-        $validate= Validator::make($request->all(), $rules);
-
-        if ($validate->fails()) {
-            $response = [
-                'data' => $validate->errors(),
-                'message' => 'Failed Input',
-            ];
-            return response()->json($response, 400);
-        }
-
-
-        $kode = implode(",", $request->kode);
-
-        User::where('id', $request->id)->update([
-            'group_divisi' => $kode
-        ]);
-     
-        $response = [
-            'data' => 'Password Updated',
-            'message' => 'Suceess',
-        ];
-        return response()->json($response, 200);
-    }
-    
-    public function usersNotif(Request $request)
-    {
-        $rules = [
-            'kode' => [
-                'required'
-            ]
-        ];
-
-        $validate= Validator::make($request->all(), $rules);
-
-        if ($validate->fails()) {
-            $response = [
-                'data' => $validate->errors(),
-                'message' => 'Failed Input',
-            ];
-            return response()->json($response, 400);
-        }
-
-
-        $kode = implode(",", $request->kode);
-
-        User::where('id', $request->id)->update([
-            'notif_divisi' => $kode
-        ]);
-     
-        $response = [
-            'data' => 'Password Updated',
-            'message' => 'Suceess',
-        ];
-        return response()->json($response, 200);
-    }
-
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $user = User::findOrFail($id);
-        $user->delete();
-
-        // Log activity delete user
-        activity()
-            ->causedBy(auth()->user())
-            ->event('deleted') 
-            ->performedOn($user)
-            ->withProperties(['attributes' => $user->toArray()])
-            ->log('Menghapus user');
-
-        return response()->json(['message' => 'User deleted']);
-    }
-
-    private function respondWithToken($token){
-        // Mendapatkan waktu kedaluwarsa token dalam menit dari konfigurasi JWT
-        $ttl = config('jwt.ttl');
-
-        // Menghitung waktu kedaluwarsa token dalam detik
-        $expiry = Carbon::now()->addSeconds($ttl * 60)->timestamp;
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expired_in' => $expiry
-
-        ]);
-    }
-
-    public function update_profile(Request $request)
-    {
-        $rules = [
-            'oldpass' => [
+            'name' => [
+                'required',
+                'string',
+                'min:2',
+                'max:30'
+            ],
+            'email' => [
+                'required',
+                'email',
+            ],
+            'country_code' => [
                 'required',
             ],
-            'newpass' => [
+            'phone' => [
                 'required',
-                Password::min(8)
-                ->mixedCase()
-                ->numbers()
-                ->symbols()
-                ->uncompromised(),
+            ],
+            'birth_date' => [
+                'required',
             ]
+
         ];
 
         $validate= Validator::make($request->all(), $rules);
@@ -361,244 +269,96 @@ class AdminUserController extends Controller
             return response()->json($response, 400);
         }
 
+        if($request->input('password') && $request->input('confirm_password')) {
 
-        $hashedPassword = Auth::user()->password;
-        if (\Hash::check($request->oldpass , $hashedPassword)) {
-            $user = User::findOrFail(Auth::id());
-            $user->update([
-                'password' => $request->input('newpass')
-            ]);
-
-            $response = [
-                'data' => 'Password Updated',
-                'message' => 'Suceess',
-            ];
-            return response()->json($response, 200);
-        
-        }
-        else{
-            $response = [
-                'data' => [
-                    'data' => [
-                        'old password doesnt matched'
-                    ],
+            $rules = [
+                'password' => [
                 ],
-                'message' => 'Upss Error',
+                'confirm_password' => [
+                    Password::min(6)
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols()
+                    ->uncompromised(),
+                ]
+
             ];
-            return response()->json($response, 400);
-        }
 
-        $token = auth()->login($user);
+            $validate= Validator::make($request->all(), $rules);
 
-        try{
-            $token = auth()->login($user);
-        }catch(JWTException $e){
-            throw $e;
-        }
-
-        return $this->respondWithToken($token);
-    }
-    
-    public function update_wa(Request $request)
-    {
-     
-
- 
-   
-        
-        $user = User::where('id',$request->input('id'));
-        $user->update([
-            'wa' => $request->input('wa'),
-            'status_notif' => $request->input('status_notif')
-        ]);
-
-        $response = [
-            'data' => 'Password Updated',
-            'message' => 'Suceess',
-        ];
-        return response()->json($response, 200);
-    
-      
-
-    }
-    
-    public function send_wa(Request $request)
-    {
-        
-        
-       
-        // $dataSending = Array();
-        // $dataSending["api_key"] = "N5PVJPLOPXK477VR";
-        // $dataSending["number_key"] = "DzcV1OAUXImn4Atm";
-        // $dataSending["phone_no"] = $request->input('wa');
-        // $dataSending["message"] = "Hallo ".auth()->user()->name." Anda Telah Sukses Mengaktifkan Notification System Imora. Jangan Lupa Save No ini ya";
-        // $curl = curl_init();
-        // curl_setopt_array($curl, array(
-        //   CURLOPT_URL => 'https://api.watzap.id/v1/send_message',
-        //   CURLOPT_RETURNTRANSFER => true,
-        //   CURLOPT_ENCODING => '',
-        //   CURLOPT_MAXREDIRS => 10,
-        //   CURLOPT_TIMEOUT => 0,
-        //   CURLOPT_FOLLOWLOCATION => true,
-        //   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        //   CURLOPT_CUSTOMREQUEST => 'POST',
-        //   CURLOPT_POSTFIELDS => json_encode($dataSending),
-        //   CURLOPT_HTTPHEADER => array(
-        //     'Content-Type: application/json'
-        //   ),
-        // ));
-        // $response = curl_exec($curl);
-        // curl_close($curl);
-        
-        $nowa=ltrim($request->input('wa'), '0');
-        $key='5e8e66d600e40cb88ae4b5545eb65d9e618c3a47c81a2383'; //this is demo key please change with your own key
-        $url='http://116.203.191.58/api/send_message';
-        $data = array(
-          "phone_no"  => '+62'.$nowa,
-          "key"       => $key,
-          "message"   =>  "Hallo ".auth()->user()->name." Anda Telah Sukses Mengaktifkan Notification System Imora. Jangan Lupa Save No ini ya",
-          "deliveryFlag" => True, // This optional for get status in message use api `check_delivery_status`
-        );
-        
-        // Konversi data menjadi format JSON
-        $jsonData = json_encode($data);
-        
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonData);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 360);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            'Content-Type: application/json',
-            'Content-Length: ' . strlen($jsonData)
-        ));
-        echo $res=curl_exec($ch);
-        curl_close($ch);
-
-        
- 
-     
-        $response = [
-            'message' => 'Suceess',
-        ];
-    
-        return response()->json($response, 200);
-    
-      
-
-    }
-
-    public function change_profile(Request $request){
-        $rules = [
-            'image' => 'required|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
-        ];
-
-        $validate= Validator::make($request->all(), $rules);
-
-        if ($validate->fails()) {
-            $response = [
-                'data' => $validate->errors(),
-                'message' => 'Failed Input',
-            ];
-            return response()->json($response, 400);
-        }
-
-        $name = time()."-".$request->file('image')->getClientOriginalName();
-
-        $request->file('image')->move(storage_path('app/public/foto'), $name); 
-    
-        $user = User::findOrFail($request->input('id'));
-        $user->update([
-            'foto'      =>   $name,
-        ]);
-        
-        return response()->json([ 
-            'data'   => $name,
-            'message' => 'Gambar baru berhasil disimpan.'
-        ]); 
-    
-    }
-
-    public function change_password(Request $request)
-    {
-        $rules = [
-            'new_password' => [
-                'required',
-                Password::min(8)
-                ->mixedCase()
-                ->numbers()
-                ->symbols()
-                ->uncompromised(),
-            ],
-            'confirmasi_password' => [
-                'required',
-            
-            ]
-        ];
-
-        $validate= Validator::make($request->all(), $rules);
-
-        if ($validate->fails()) {
-            $response = [
-                'data' => $validate->errors()->all(),
-                'message' => 'Failed Input',
-            ];
-            return response()->json($response, 400);
-        }
-
-        if($request->input('new_password') != $request->input('confirmasi_password')){
-            $response = [
-                'data' => [
-                    'data' => [
-                        'new password & comfirmasi password doesnt matched'
-                    ],
-                ],
-                'message' => 'Upss Error',
-            ];
-            return response()->json($response, 400);
-        }else{
-            $user = User::findOrFail($request->input('id'));
-            $user->update([
-                'password' => $request->input('new_password'),
-                'change_password' => 1
-            ]);
-
-            $response = [
-                'data' => 'Password Updated',
-                'message' => 'Suceess',
-            ];
-            return response()->json($response, 200);
-        }
-
-    }
-    
-    public function updateOdata(Request $request)
-    {
-
-        try {
-           
-            $data = User::get();
-            
-            foreach($data as $data){
-                User::where('id', $data->id)->update(['odata' => (string) Str::uuid()]);
+            if ($validate->fails()) {
+                $response = [
+                    'data' => $validate->errors()->all(),
+                    'message' => 'Failed Input',
+                ];
+                return response()->json($response, 400);
             }
-             
-             
-      
-            $response=[
-                'data' => 'sukses'
+
+            $user = User::findOrFail(Auth::user()->id);
+
+            if (\Hash::check($request->password , $hashedPassword)) {
+                $user = User::findOrFail(Auth::id());
+                $user->update([
+                    'password' => $request->input('confirm_password')
+                ]);
+
+               if ($request->hasFile('photo')) {
+                    $imagePath = $request->file('photo')->store('foto', 'public');
+                    $user->foto = $imagePath;
+                }
+                $user->update([
+                    'name'      => $request->input('name'),
+                    'email'     => $request->input('email'),
+                    'password'  => $request->input('password'),
+                    'country_code' => $request->input('country_code'),
+                    'phone' => $request->input('phone'),
+                    'birth_date' => $request->input('birth_date'),
+                    'address' => $request->input('address'),
+                    'foto' => $user->foto ?? null,
+                ]);
+
+
+                $response = [
+                    'data' => 'Profile Updated',
+                    'message' => 'Success',
+                ];
+
+                return response()->json($response, 200);
+            }else{
+                $response = [
+                    'data' => 'Current Password Not Match',
+                    'message' => 'Failed',
+                ];
+                return response()->json($response, 400);
+            }
+        }else{
+            $user = User::findOrFail(Auth::id());
+
+            if ($request->hasFile('photo')) {
+                $imagePath = $request->file('photo')->store('foto', 'public');
+                $user->foto = $imagePath;
+            }
+
+
+            $user->update([
+                'name'      => $request->input('name'),
+                'email'     => $request->input('email'),
+                'country_code' => $request->input('country_code'),
+                'phone' => $request->input('phone'),
+                'birth_date' => $request->input('birth_date'),
+                'address' => $request->input('address'),
+                'foto' =>  $user->foto ?? null,
+
+            ]);
+
+            $response = [
+                'data' => 'Profile Updated',
+                'message' => 'Suceess',
             ];
-            
-            return response()->json($response, 201);
-                
-        } catch (JWTException $th) {
-            throw $th;
+
+            return response()->json($response, 200);
         }
-
     }
-
+    
 
 }

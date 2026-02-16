@@ -1,10 +1,11 @@
 <?php
 namespace App\Http\Controllers;
+
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Setting\ContactMeRequest;
 use App\Services\Setting\SettingService;
-use App\Http\Controllers\Controller;
-use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Http\Request;
+use Tymon\JWTAuth\Exceptions\JWTException;
 
 class PublicController extends Controller
 {
@@ -19,7 +20,7 @@ class PublicController extends Controller
     {
         try {
             $settings = $this->settingService->public_info();
-            $response=[
+            $response = [
                 'data' => $settings
             ];
             return response()->json($response, 201);
@@ -78,8 +79,157 @@ class PublicController extends Controller
     {
         try {
             $cities = $this->settingService->listCities();
+            $type = $this->settingService->listType();
+            $typeCounts = $this->settingService->listTypeCounts();
+            $response = [
+                'data' => $cities,
+                'type_properties' => $type,
+                'type_properties_count' => $typeCounts
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
+
+    public function listProperties(Request $request)
+    {
+        try {
+            $limit = (int) ($request->limit ?? 9);
+            if ($limit <= 0) {
+                $limit = 9;
+            }
+            $listingType = $request->listing_type ?? null;
+            $properties = $this->settingService->listPropertiesPublic($limit, $listingType);
+            $response = [
+                'data' => $properties
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
+
+    public function listPropertiesSewa(Request $request)
+    {
+        try {
+            $search = $request->search;
+            $pagging = $request->pagging ?? 10;
+            $city = $request->city;
+            $type = $request->type;
+            $rent_type = $request->rent_type;
+            $facilities = $request->facilities;
+            $min_price = $request->min_price;
+            $max_price = $request->max_price;
+            $sort = $request->sort;
+            $price_sort = $request->price_sort;
+            if (is_string($facilities)) {
+                $facilities = array_filter(explode(',', $facilities));
+            }
+            $properties = $this->settingService->listPropertiesSewa(
+                $search,
+                $pagging,
+                $city,
+                $type,
+                $rent_type,
+                $facilities,
+                $min_price,
+                $max_price,
+                $sort,
+                $price_sort
+            );
+            $response = [
+                'data' => $properties
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
+
+    public function listPropertiesJual(Request $request)
+    {
+        try {
+            $search = $request->search;
+            $pagging = $request->pagging ?? 10;
+            $city = $request->city;
+            $type = $request->type;
+            $rent_type = $request->rent_type;
+            $facilities = $request->facilities;
+            $min_price = $request->min_price;
+            $max_price = $request->max_price;
+            $sort = $request->sort;
+            $price_sort = $request->price_sort;
+            if (is_string($facilities)) {
+                $facilities = array_filter(explode(',', $facilities));
+            }
+            $properties = $this->settingService->listPropertiesJual(
+                $search,
+                $pagging,
+                $city,
+                $type,
+                $rent_type,
+                $facilities,
+                $min_price,
+                $max_price,
+                $sort,
+                $price_sort
+            );
+            $response = [
+                'data' => $properties
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
+
+    public function popularCity(Request $request)
+    {
+        try {
+            $cities = $this->settingService->popularCity();
             $response = [
                 'data' => $cities
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
+
+    public function listPropertiesFacilities(Request $request)
+    {
+        try {
+            $facilities = $this->settingService->listPropertiesFacilities();
+            $response = [
+                'data' => $facilities
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
+
+    public function propertyDetail(Request $request)
+    {
+        try {
+            $odata = $request->odata;
+            $property = $this->settingService->getPropertyDetail($odata);
+            $response = [
+                'data' => $property
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
+
+    public function kodeNegara(Request $request)
+    {
+        try {
+            $kodeNegara = $this->settingService->kodeNegara();
+            $response = [
+                'data' => $kodeNegara
             ];
             return response()->json($response, 200);
         } catch (JWTException $th) {

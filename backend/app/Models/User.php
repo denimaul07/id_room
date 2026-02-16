@@ -2,20 +2,23 @@
 
 namespace App\Models;
 
+use App\Models\Department;
+use App\Models\UserMembership;
+use App\Notifications\VerifyEmailCustom;
+use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Tymon\JWTAuth\Contracts\JWTSubject;
-use Spatie\Permission\Traits\HasRoles;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-use App\Models\Department;
+use Spatie\Permission\Traits\HasRoles;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements JWTSubject
+class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles, LogsActivity;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, LogsActivity, MustVerifyEmailTrait;
 
     /**
      * The attributes that are mass assignable.
@@ -30,7 +33,11 @@ class User extends Authenticatable implements JWTSubject
         'kode',
         'status_users',
         'foto',
-        'change_password'
+        'phone',
+        'birth_date',
+        'address',
+        'change_password',
+        'balance',
     ];
 
     /**
@@ -67,32 +74,37 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
-    public function setPasswordAttribute($password){
-        if(!empty($password)){
+    public function setPasswordAttribute($password)
+    {
+        if (!empty($password)) {
             $this->attributes['password'] = bcrypt($password);
         }
     }
 
-    public function departments(){
-        return $this->belongsTo(Department::class,  'kode','id');
+    protected $with = ['departments', 'userMemberships'];
+
+    public function departments()
+    {
+        return $this->belongsTo(Department::class, 'kode', 'kode');
     }
 
-    protected static function boot(){
-        parent::boot();
-        static::addGlobalScope('withdepartements', 
-            function($builder){
-                $builder->with('departments');
-            }
-        );
+    public function userMemberships()
+    {
+        return $this->hasMany(UserMembership::class, 'user_id', 'id');
     }
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'email', 'role', 'kode', 'status_users','password', 'foto', 'change_password'])
+            ->logOnly(['name', 'email', 'role', 'kode', 'status_users', 'password', 'foto', 'change_password', 'address'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->setDescriptionForEvent(fn(string $eventName) => "User has been {$eventName}");
+    }
+
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new VerifyEmailCustom);
     }
 
 }

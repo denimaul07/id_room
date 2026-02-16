@@ -7,6 +7,7 @@ use App\Http\Requests\Properties\PropertiesRequest;
 use App\Http\Requests\Properties\PropertiesUpdateRequest;
 use App\Services\Properties\PropertiesService;
 use Illuminate\Http\Request;
+use Tymon\JWTAuth\Exceptions\JWTException;
 
 class PropertiesController extends Controller
 {
@@ -17,11 +18,9 @@ class PropertiesController extends Controller
         $this->PropertiesService = $PropertiesService;
     }
 
-
     public function index(Request $request)
     {
         try {
-
             $search = $request->search;
             $pagging = $request->pagging ?? 10;
             $data = $this->PropertiesService->list($search, $pagging);
@@ -55,7 +54,14 @@ class PropertiesController extends Controller
                 'total_rooms',
                 'isActive',
                 'images',
+                'banner',
+                'url_video',
             ]));
+
+            $this->PropertiesService->updatePopularCity($request->only([
+                'city',
+            ]));
+
             $response = [
                 'message' => 'Properties created successfully',
             ];
@@ -87,8 +93,15 @@ class PropertiesController extends Controller
                 'sale_price',
                 'total_rooms',
                 'images',
+                'banner',
+                'url_video',
                 'isActive',
             ]));
+
+            $this->PropertiesService->updatePopularCity($request->only([
+                'city',
+            ]));
+
             $response = [
                 'message' => 'Properties updated successfully',
             ];
@@ -104,5 +117,38 @@ class PropertiesController extends Controller
         $odata = $request->odata;
         $this->PropertiesService->delete($odata);
         return response()->json(['success' => true]);
+    }
+
+    public function getCity(Request $request)
+    {
+        try {
+            $search = $request->search;
+            $pagging = $request->pagging ?? 10;
+            $data = $this->PropertiesService->getListCity($search, $pagging);
+            $response = [
+                'data' => $data
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
+
+    public function updatePopularCity(Request $request)
+    {
+        try {
+            $this->PropertiesService->updatePopularCityByOdata($request->odata, $request->only([
+                'city',
+                'image',
+            ]));
+
+            $response = [
+                'message' => 'Popular city updated successfully',
+            ];
+
+            return response()->json($response, 200);
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 }

@@ -5,7 +5,6 @@ namespace App\Http\Requests\Properties;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Validation\Rule;
 
 class PropertiesRequest extends FormRequest
 {
@@ -39,10 +38,10 @@ class PropertiesRequest extends FormRequest
             'address' => 'required|string|max:500',
             'city' => 'required|string|max:100',
             'province' => 'required|string|max:100',
-            'latitude' => 'nullable|string|max:50',
-            'longitude' => 'nullable|string|max:50',
-            'description' => 'nullable|string',
-            'information' => 'nullable|string',
+            'latitude' => 'required|string|max:50',
+            'longitude' => 'required|string|max:50',
+            'description' => 'required|string',
+            'information' => 'required|string',
             'price_per_night' => 'required|numeric',
             'price_per_monthly' => 'nullable|numeric',
             'price_per_year' => 'nullable|numeric',

@@ -1,19 +1,25 @@
 <?php
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 /*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
+ * |--------------------------------------------------------------------------
+ * | API Routes
+ * |--------------------------------------------------------------------------
+ * |
+ * | Here is where you can register API routes for your application. These
+ * | routes are loaded by the RouteServiceProvider within a group which
+ * | is assigned the "api" middleware group. Enjoy building your API!
+ * |
+ */
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::get('/auth/verify-email/{id}/{hash}', [UserController::class, 'verifyEmail'])
+    ->middleware('signed')
+    ->name('verification.verify');
 $api = app('Dingo\Api\Routing\Router');
 $api->version('v1', function ($api) {
     $api->get('/', function () {
@@ -21,15 +27,20 @@ $api->version('v1', function ($api) {
     });
     $api->group(['prefix' => 'auth'], function ($api) {
         $api->post('/signup', 'App\Http\Controllers\UserController@store');
+        $api->post('/register', 'App\Http\Controllers\UserController@register');
+        $api->post('/contactAgent', 'App\Http\Controllers\UserController@contactAgent');
         $api->group(['middleware' => 'login.attempt.limiter'], function ($api) {
             $api->post('/login', 'App\Http\Controllers\Auth\AuthController@login');
         });
 
         $api->post('/token/refresh', 'App\Http\Controllers\Auth\RefreshTokenController@refresh');
         $api->post('/logout', 'App\Http\Controllers\Auth\RefreshTokenController@logout');
+        $api->post('/forgot-password', 'App\Http\Controllers\Auth\ForgotPasswordController@sendResetLinkEmail');
+        $api->post('/reset_password', 'App\Http\Controllers\Auth\ResetPasswordController@reset');
+    });
 
-
-
+    $api->group(['prefix' => 'member','middleware' => ['jwt.auth', 'role:users']], function ($api) {
+        $api->post('/update-profile', 'App\Http\Controllers\Admin\AdminUserController@updateProfile');
     });
 
     $api->group(['prefix' => 'public'], function ($api) {
@@ -38,8 +49,14 @@ $api->version('v1', function ($api) {
         $api->get('/province', 'App\Http\Controllers\PublicController@getProvince');
         $api->get('/city', 'App\Http\Controllers\PublicController@getCity');
         $api->get('/list-city', 'App\Http\Controllers\PublicController@listCity');
+        $api->get('/properties', 'App\Http\Controllers\PublicController@listProperties');
+        $api->get('/properties-sewa', 'App\Http\Controllers\PublicController@listPropertiesSewa');
+        $api->get('/properties-jual', 'App\Http\Controllers\PublicController@listPropertiesJual');
+        $api->get('/properties-facilities', 'App\Http\Controllers\PublicController@listPropertiesFacilities');
+        $api->get('/property-detail', 'App\Http\Controllers\PublicController@propertyDetail');
+        $api->get('/popular-city', 'App\Http\Controllers\PublicController@popularCity');
+        $api->get('/kode-negara', 'App\Http\Controllers\PublicController@kodeNegara');
     });
-
 
     $api->group(['prefix' => 'master', 'middleware' => ['jwt.auth']], function ($api) {
         $api->get('/get_department', 'App\Http\Controllers\Admin\DepartmentController@index');
@@ -48,51 +65,107 @@ $api->version('v1', function ($api) {
     });
 
     $api->group(['prefix' => 'activity_logs', 'middleware' => ['jwt.auth', 'role:superAdmin']], function ($api) {
-            $api->get('/index','App\Http\Controllers\ActivityLogController@index');
-            $api->get('/statistics','App\Http\Controllers\ActivityLogController@statistics');
-            $api->get('/user_logs','App\Http\Controllers\ActivityLogController@userLogs');
-            $api->get('/show','App\Http\Controllers\ActivityLogController@show');
-            $api->get('/by_log_name','App\Http\Controllers\ActivityLogController@byLogName');
-            $api->get('/critical','App\Http\Controllers\ActivityLogController@critical');
-            $api->delete('/destroy','App\Http\Controllers\ActivityLogsController@destroy');
-            $api->delete('/clear_all','App\Http\Controllers\ActivityLogsController@clearAll');
-
+        $api->get('/index', 'App\Http\Controllers\ActivityLogController@index');
+        $api->get('/statistics', 'App\Http\Controllers\ActivityLogController@statistics');
+        $api->get('/user_logs', 'App\Http\Controllers\ActivityLogController@userLogs');
+        $api->get('/show', 'App\Http\Controllers\ActivityLogController@show');
+        $api->get('/by_log_name', 'App\Http\Controllers\ActivityLogController@byLogName');
+        $api->get('/critical', 'App\Http\Controllers\ActivityLogController@critical');
+        $api->delete('/destroy', 'App\Http\Controllers\ActivityLogsController@destroy');
+        $api->delete('/clear_all', 'App\Http\Controllers\ActivityLogsController@clearAll');
     });
 
-    $api->group(['prefix' => 'membership', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
-        $api->get('/index', 'App\Http\Controllers\MembershipController@index');
-        $api->post('/index', 'App\Http\Controllers\MembershipController@store');
-        $api->put('/index', 'App\Http\Controllers\MembershipController@update');
+    $api->group(['prefix' => 'membership', 'middleware' => ['jwt.auth']], function ($api) {
+        $api->group(['middleware' => ['jwt.auth', 'role:users']], function ($api) {
+            $api->get('/my-membership', 'App\Http\Controllers\MembershipController@myMembership');
+            $api->get('/my-transactions', 'App\Http\Controllers\MembershipController@myTransactions');
+            $api->get('/my-booking', 'App\Http\Controllers\MembershipController@myBooking');
+            $api->get('/list-membership', 'App\Http\Controllers\MembershipController@listMembership');
+            $api->get('/list-transactions', 'App\Http\Controllers\MembershipController@listTransactions');
+            $api->get('/list-booking', 'App\Http\Controllers\MembershipController@listBooking');
+            $api->get('/printInvoice', 'App\Http\Controllers\MembershipController@printInvoice');
+            $api->post('/subscribe', 'App\Http\Controllers\MembershipController@subscribe');
+            $api->post('/webhook', 'App\Http\Controllers\MembershipController@webhook');
 
+        });
+
+        $api->group(['middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+            $api->get('/index', 'App\Http\Controllers\MembershipController@index');
+            $api->post('/index', 'App\Http\Controllers\MembershipController@store');
+            $api->put('/index', 'App\Http\Controllers\MembershipController@update');
+        });
     });
 
-    $api->group(['prefix' => 'membership_benefit', 'middleware' => ['jwt.auth']], function ($api) {
+    $api->group(['prefix' => 'membership_benefit', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+    
         $api->get('/index', 'App\Http\Controllers\MembershipBenefitController@index');
         $api->post('/index', 'App\Http\Controllers\MembershipBenefitController@store');
         $api->get('/getBenefit', 'App\Http\Controllers\MembershipBenefitController@show');
         $api->put('/index', 'App\Http\Controllers\MembershipBenefitController@update');
         $api->delete('/index', 'App\Http\Controllers\MembershipBenefitController@delete');
-
+    
     });
 
-    $api->group(['prefix' => 'properties', 'middleware' => ['jwt.auth']], function ($api) {
+    $api->group(['prefix' => 'properties', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
         $api->get('/index', 'App\Http\Controllers\PropertiesController@index');
         $api->post('/store', 'App\Http\Controllers\PropertiesController@store');
         $api->post('/update', 'App\Http\Controllers\PropertiesController@update');
         $api->delete('/index', 'App\Http\Controllers\PropertiesController@destroy');
+        $api->get('/city', 'App\Http\Controllers\PropertiesController@getCity');
+        $api->post('/updatePopularCity', 'App\Http\Controllers\PropertiesController@updatePopularCity');
+    });
+
+    $api->group(['prefix' => 'rooms', 'middleware' => ['jwt.auth']], function ($api) {
+        $api->get('/index', 'App\Http\Controllers\RoomController@index');
+        $api->post('/store', 'App\Http\Controllers\RoomController@store');
+        $api->post('/update', 'App\Http\Controllers\RoomController@update');
+        $api->delete('/index', 'App\Http\Controllers\RoomController@destroy');
+    });
+
+    $api->group(['prefix' => 'promotions', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+        $api->get('/index', 'App\Http\Controllers\PromoController@index');
+        $api->post('/store', 'App\Http\Controllers\PromoController@store');
+        $api->post('/update', 'App\Http\Controllers\PromoController@update');
+        $api->delete('/index', 'App\Http\Controllers\PromoController@destroy');
+    });
+
+    $api->group(['prefix' => 'property_facilities', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+        $api->get('/index', 'App\Http\Controllers\PropertyFacilitiesController@index');
+        $api->post('/store', 'App\Http\Controllers\PropertyFacilitiesController@store');
+        $api->post('/update', 'App\Http\Controllers\PropertyFacilitiesController@update');
+        $api->delete('/index', 'App\Http\Controllers\PropertyFacilitiesController@destroy');
+    });
+
+    $api->group(['prefix' => 'property_gallery', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+        $api->get('/index', 'App\Http\Controllers\PropertyGalleryController@index');
+        $api->post('/store', 'App\Http\Controllers\PropertyGalleryController@store');
+        $api->post('/update', 'App\Http\Controllers\PropertyGalleryController@update');
+        $api->delete('/index', 'App\Http\Controllers\PropertyGalleryController@destroy');
+    });
+
+    $api->group(['prefix' => 'room_facilities', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+        $api->get('/index', 'App\Http\Controllers\RoomFacilitiesController@index');
+        $api->post('/store', 'App\Http\Controllers\RoomFacilitiesController@store');
+        $api->post('/update', 'App\Http\Controllers\RoomFacilitiesController@update');
+        $api->delete('/index', 'App\Http\Controllers\RoomFacilitiesController@destroy');
+    });
+
+    $api->group(['prefix' => 'facilities', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+        $api->get('/index', 'App\Http\Controllers\FacilitiesController@index');
+        $api->post('/store', 'App\Http\Controllers\FacilitiesController@store');
+        $api->post('/update', 'App\Http\Controllers\FacilitiesController@update');
+        $api->delete('/index', 'App\Http\Controllers\FacilitiesController@destroy');
     });
 
     $api->group(['prefix' => 'setting', 'middleware' => ['jwt.auth']], function ($api) {
-
-
         // Akses Admin
         $api->group(['middleware' => ['jwt.auth', 'role:superAdmin']], function ($api) {
-
             $api->get('/site_setting', 'App\Http\Controllers\SettingController@index');
             $api->post('/site_setting', 'App\Http\Controllers\SettingController@update');
             $api->post('/site_setting_contact_me', 'App\Http\Controllers\SettingController@update_contact_me');
             $api->post('/site_setting_about_me', 'App\Http\Controllers\SettingController@update_about_me');
             $api->post('/site_setting_renovasi', 'App\Http\Controllers\SettingController@update_renovasi');
+            $api->post('/site_setting_jual_sewa', 'App\Http\Controllers\SettingController@update_jual_sewa');
 
             $api->get('/faq', 'App\Http\Controllers\FaqController@index');
             $api->post('/faq', 'App\Http\Controllers\FaqController@store');
@@ -109,7 +182,7 @@ $api->version('v1', function ($api) {
             $api->put('/social_media', 'App\Http\Controllers\SocialMediaController@update');
             $api->delete('/social_media', 'App\Http\Controllers\SocialMediaController@delete');
 
-            $api->get('/services', 'App\Http\Controllers\ServiceMeController@index'); 
+            $api->get('/services', 'App\Http\Controllers\ServiceMeController@index');
             $api->post('/services', 'App\Http\Controllers\ServiceMeController@store');
             $api->put('/services', 'App\Http\Controllers\ServiceMeController@update');
             $api->delete('/services', 'App\Http\Controllers\ServiceMeController@delete');
@@ -119,7 +192,7 @@ $api->version('v1', function ($api) {
             $api->post('/portofolio_update', 'App\Http\Controllers\PortofolioController@update');
             $api->delete('/portofolio', 'App\Http\Controllers\PortofolioController@delete');
 
-            $api->get('/process', 'App\Http\Controllers\ProcessWorkController@index'); 
+            $api->get('/process', 'App\Http\Controllers\ProcessWorkController@index');
             $api->post('/process', 'App\Http\Controllers\ProcessWorkController@store');
             $api->put('/process', 'App\Http\Controllers\ProcessWorkController@update');
             $api->delete('/process', 'App\Http\Controllers\ProcessWorkController@delete');
@@ -136,16 +209,6 @@ $api->version('v1', function ($api) {
             $api->get('/store', 'App\Http\Controllers\Admin\DepartmentController@index');
             $api->post('/store', 'App\Http\Controllers\Admin\DepartmentController@store');
             $api->put('/store', 'App\Http\Controllers\Admin\DepartmentController@update');
-
-    
-            
-
         });
-
     });
-    
-
-    
-
-
 });

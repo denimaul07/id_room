@@ -2,7 +2,7 @@
   <div class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden border">
     <!-- Image & Badges -->
     <div class="relative">
-      <img :src="item.image" class="h-52 w-full object-cover" loading="lazy" />
+      <img :src="imageUrl" class="h-52 w-full object-cover" loading="lazy" />
       <div class="absolute top-3 left-3 flex gap-2">
         <span v-for="b in item.badge" :key="b" class="px-2 py-1 text-xs rounded font-semibold text-white"
           :class="b === 'New' ? 'bg-pink-500' : b === 'Featured' ? 'bg-yellow-500' : 'bg-indigo-500'">
@@ -10,7 +10,7 @@
         </span>
       </div>
       <div class="absolute bottom-3 left-3 text-white font-bold text-xl">
-        ${{ item.price }} <span class="text-sm font-normal">/ Night</span>
+        {{ formattedPrice }}
       </div>
       <button class="absolute top-3 right-3 bg-white/80 rounded-full p-2 shadow hover:bg-white">
         <i class="fas fa-heart text-gray-600"></i>
@@ -27,28 +27,63 @@
           {{ item.type }}
         </span>
       </div>
-      <h3 class="font-bold text-lg mb-1">{{ item.title }}</h3>
+      <h3 class="font-bold text-lg mb-1">{{ item.properties || item.title }}</h3>
       <div class="flex items-center text-gray-500 text-sm mb-2">
         <i class="fas fa-map-marker-alt mr-1"></i>
-        17, Grove Towers, New York, USA
+        {{ item.address || '-' }}
       </div>
-      <div class="bg-gray-50 rounded-lg flex items-center justify-between px-4 py-2 mb-3 text-gray-700 text-sm font-medium">
-        <div class="flex items-center gap-1"><i class="fas fa-bed"></i> 4 Bedroom</div>
-        <div class="flex items-center gap-1"><i class="fas fa-bath"></i> 4 Bath</div>
-        <div class="flex items-center gap-1"><i class="fas fa-ruler-combined"></i> 350 Sq Ft</div>
+      <div
+        class="bg-gray-50 rounded-lg flex flex-wrap items-center gap-3 px-4 py-2 mb-3 text-gray-700 text-sm font-medium">
+        <div class="flex items-center gap-1" v-for="facility in facilities" :key="facility.odata || facility.name">
+          <i class="fas" :class="facility.icon"></i> {{ facility.name }}
+        </div>
       </div>
-      <div class="flex flex-wrap justify-between text-sm text-gray-700 mb-2">
-        <div>Listed on : <span class="font-semibold">{{ item.listedOn }}</span></div>
-        <div>Category : <span class="font-semibold">{{ item.type }}</span></div>
-        
-      </div>
-      <button class="bg-gray-900 text-white px-4 py-2 rounded-lg font-semibold text-sm">Buy Now</button>
+      <router-link :to="detailLink" class="bg-gray-900 text-white px-4 py-2 rounded-lg font-semibold text-sm">
+        Buy Now
+      </router-link>
     </div>
   </div>
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const imageBaseUrl = import.meta.env.VITE_PATH_FILE_BASE_URL + '/storage/'
+const fallbackImage = 'https://images.unsplash.com/photo-1568605114967-8130f3a36994'
+
+const props = defineProps({
   item: Object
+})
+
+const detailLink = computed(() => {
+  const odata = props.item?.odata || props.item?.id
+  return {
+    path: '/sell-details',
+    query: { odata }
+  }
+})
+
+const imageUrl = computed(() => {
+  if (!props.item?.image) return fallbackImage
+  return props.item.image.startsWith('http') ? props.item.image : imageBaseUrl + props.item.image
+})
+
+const formattedPrice = computed(() => {
+  const price = Number(props.item?.sale_price || props.item?.price || 0)
+  return price
+    ? price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)
+    : 'Rp0'
+})
+
+const listedOn = computed(() => {
+  const createdAt = props.item?.created_at
+  return createdAt ? new Date(createdAt).toLocaleDateString('id-ID') : '-'
+})
+
+const facilities = computed(() => {
+  if (!Array.isArray(props.item?.facilities)) return []
+  return props.item.facilities
+    .map((entry) => entry?.facility)
+    .filter(Boolean)
 })
 </script>

@@ -15,6 +15,7 @@ const cms = () => import('@/pages/cms/index.vue');
 const site_setting = () => import('@/pages/cms/settings/site_setting.vue');
 const membership = () => import('@/pages/membership/index.vue');
 const properties = () => import('@/pages/properties/index.vue');
+const promotions = () => import('@/pages/promotions/index.vue');
 
 
 const routes = [
@@ -99,6 +100,21 @@ const routes = [
         path: '/properties-list',
         name: 'properties',
         component: properties,
+        meta: {
+          requiresAuth: true
+        }
+      },
+    ]
+  },
+
+  {
+    path: '/promotions',
+    component: Body,
+    children: [
+      {
+        path: '/promotions',
+        name: 'promotions',
+        component: promotions,
         meta: {
           requiresAuth: true
         }

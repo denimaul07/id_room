@@ -2,11 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
+body {
+  overflow-x: hidden;
+}
+
 #nprogress .bar {
-    background: #d5bd7d; /* emerald */
-    height: 3px;
+  background: #d5bd7d; /* emerald */
+  height: 3px;
 }
 
 #nprogress .peg {
-    box-shadow: 0 0 10px #bfa94f, 0 0 5px #bfa94f;
+  box-shadow:
+    0 0 10px #bfa94f,
+    0 0 5px #bfa94f;
 }

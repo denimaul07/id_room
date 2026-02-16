@@ -6,13 +6,13 @@
       "type": "headtitle"
     },
     {
-        "title": "Dashboard",
-        "path": "/dashboard",
-        "icon": "stroke-home",
-        "iconf":"fill-home",
-        "type": "link",   
-        "roles" : ["superAdmin","staff","admin"],
-        "active": false
+      "title": "Dashboard",
+      "path": "/dashboard",
+      "icon": "stroke-home",
+      "iconf": "fill-home",
+      "type": "link",
+      "roles": ["superAdmin", "staff", "admin"],
+      "active": false
     },
     {
       "headTitle1": "Application",
@@ -24,9 +24,9 @@
       "title": "Membership",
       "path": "/membership",
       "icon": "person-badge",
-      "iconf":"fill-person-badge",
-      "type": "link",   
-      "roles" : ["superAdmin","admin"],
+      "iconf": "fill-person-badge",
+      "type": "link",
+      "roles": ["superAdmin", "admin"],
       "active": false
     },
 
@@ -34,75 +34,65 @@
       "title": "Properties",
       "path": "/properties-list",
       "icon": "buildings",
-      "iconf":"buildings",
-      "type": "link",   
-      "roles" : ["superAdmin","admin"],
+      "iconf": "buildings",
+      "type": "link",
+      "roles": ["superAdmin", "admin"],
       "active": false
     },
 
-
     {
-      "title": "CMS",
-      "icon": "stroke-social",
-      "iconf":"fill-social",
-      "type": "sub",   
-      "roles" : ["superAdmin","admin"],
-      "active": false,
-      "children": [
-        {
-          "path": "/settings",
-          "title": "Settings",
-          "type": "link",
-          "roles" : ["superAdmin","admin"],
-          "active": false
-        },
-        {
-          "path": "/properties",
-          "title": "Properties",
-          "type": "link",
-          "roles" : ["superAdmin"],
-          "active": false
-        }
-      
-      ]
+      "title": "Promotions",
+      "path": "/promotions",
+      "icon": "stroke-blog",
+      "iconf": "fill-blog",
+      "type": "link",
+      "roles": ["superAdmin", "admin"],
+      "active": false
     },
 
-    
+    {
+      "title": "settings",
+      "path": "/settings",
+      "icon": "slider",
+      "iconf": "slider",
+      "type": "link",
+      "roles": ["superAdmin"],
+      "active": false
+    },
+
     {
       "title": "Activity Log",
       "path": "/activity-log",
       "icon": "stroke-support-tickets",
-      "iconf":"fill-support-tickets",
+      "iconf": "fill-support-tickets",
       "type": "link",
-      "roles" : ["superAdmin","admin"],
+      "roles": ["superAdmin", "admin"],
       "active": false
     },
 
     {
       "title": "Master Data",
       "icon": "stroke-widget",
-      "iconf":"fill-widget",
-      "type": "sub",   
-      "roles" : ["superAdmin","admin"],
+      "iconf": "fill-widget",
+      "type": "sub",
+      "roles": ["superAdmin", "admin"],
       "active": false,
       "children": [
         {
           "path": "/users",
           "title": "Users",
           "type": "link",
-          "roles" : ["superAdmin","admin"],
+          "roles": ["superAdmin", "admin"],
           "active": false
         },
         {
           "path": "/departements",
           "title": "Departement",
           "type": "link",
-          "roles" : ["superAdmin","admin"],
+          "roles": ["superAdmin", "admin"],
           "active": false
         }
-      
       ]
     }
-
   ]
 }

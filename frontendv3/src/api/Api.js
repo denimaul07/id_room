@@ -48,15 +48,28 @@ Api.interceptors.request.use(async (config) => {
 });
 
 // **Interceptors untuk Response**
+
 Api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
 
-        if (error.response && error.response.status === 401) {
-            console.warn("⚠️ 401 Unauthorized! Redirecting to login...");
+        // Cegah infinite loop
+        if (error.response && error.response.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+            // Coba refresh token
+            const newToken = await refreshToken();
+            if (newToken) {
+                originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+                return Api(originalRequest);
+            } else {
+                await handleLogout();
+            }
+        }
+
+        // Jika sudah retry dan tetap gagal, logout
+        if (error.response && error.response.status === 401 && originalRequest._retry) {
             await handleLogout();
-            return Promise.reject(error);
         }
 
         return Promise.reject(error);

@@ -430,11 +430,9 @@
         await getBenefitOptions();
     });
 
-    watch(search, async() => {
-        useDebounceFn(async() => {
-            await getData();
-        }, 500)();
-    });
+    watch(search, useDebounceFn(async () => {
+        await getData();
+    }, 500));
 </script>
 
 <style scoped>

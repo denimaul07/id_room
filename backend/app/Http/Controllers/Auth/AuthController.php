@@ -2,27 +2,26 @@
 
 namespace App\Http\Controllers\Auth;
 
-use Illuminate\Http\Request;
-use Carbon\Carbon;
 use App\Http\Controllers\Controller;
+use App\Mail\Forgot;
 use App\Models\RefreshToken;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rules\Password;
-use Tymon\JWTAuth\Exceptions\JWTExceptions;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Tymon\JWTAuth\Exceptions\JWTException;
 use Mail;
-use App\Models\User;
-use App\Mail\Forgot;
-use Illuminate\Support\Facades\Http;
-
-
 
 class AuthController extends Controller
 {
-    public function login(Request $request){
+    public function login(Request $request)
+    {
         $rules = [
             'email' => [
                 'required',
@@ -32,81 +31,112 @@ class AuthController extends Controller
                 'required',
                 'string',
             ]
-        
-            
-            ];
-        $validate= Validator::make($request->all(), $rules);
+        ];
+        $validate = Validator::make($request->all(), $rules);
 
         if ($validate->fails()) {
             $response = [
                 'data' => $validate->errors(),
-                'message' => 'Failed Login',
+                'message' => 'Login gagal',
             ];
             return response()->json($response, 400);
         }
 
-        $credential= $request->only('email','password');
-
+        $credential = $request->only('email', 'password');
 
         try {
-            if(!$token = auth()->attempt($credential)){
-                $data = ['Email or Password is incorrect'];
-                
+            if (!$token = auth()->attempt($credential)) {
+                $data = ['Email atau password salah'];
+
                 $response = [
                     'message' => $data,
                 ];
                 return response()->json($response, 401);
-    
-                
             }
-        }catch(JWTException $e){
+        } catch (JWTException $e) {
             throw $e;
         }
 
         $user = auth()->user();
+        if ($user) {
+            $user = User::find($user->id);  // reload agar relasi roles pasti ada
+        }
+
+        if ($user && $user->status_users === 1) {
+            auth()->logout();
+            return response()->json([
+                'message' => 'Akun Anda tidak aktif.'
+            ], 403);
+        }
+
+        // Cek role admin/superadmin (case-insensitive, support superAdmin)
+        $isAdmin = false;
+        if ($user && method_exists($user, 'getRoleNames')) {
+            $roleNames = array_map('strtolower', $user->getRoleNames()->toArray());
+            if (in_array('admin', $roleNames) || in_array('superadmin', $roleNames)) {
+                $isAdmin = true;
+            }
+        }
+
+        if ($user && $user->status_users === 2 && !$isAdmin) {
+            auth()->logout();
+            return response()->json([
+                'message' => 'Email belum terverifikasi. Silakan cek email Anda.'
+            ], 403);
+        }
+
+        if ($user && method_exists($user, 'hasVerifiedEmail') && !$user->hasVerifiedEmail() && !$isAdmin) {
+            auth()->logout();
+            return response()->json([
+                'message' => 'Email belum terverifikasi. Silakan cek email Anda.'
+            ], 403);
+        }
 
         RefreshToken::where('user_id', $user->id)->delete();
 
         return $this->respondWithToken($token, $user);
-
     }
 
     private function respondWithToken($token, $user)
     {
-        // TTL access token fix 5 menit
-        $ttl = 1; // 5 menit
-        $expiry = now()->timestamp; // pastikan ini sekarang
-        $expiry = now()->addMinutes($ttl)->timestamp; // tambah 5 menit dari sekarang
+        $ttl = 5;  // 5 menit
+        $expiry = now()->addMinutes($ttl)->timestamp;
 
-
-        // 👇 generate refresh token
         $refreshToken = Str::random(64);
         $refreshExpiry = now()->addDays(1);
 
-        // simpan ke DB
         RefreshToken::create([
             'user_id' => $user->id,
             'token' => hash('sha256', $refreshToken),
             'expires_at' => $refreshExpiry,
         ]);
 
-        // update last login
         $user->update(['last_login' => now()]);
 
-        return response()->json([
-            'users'         => auth()->user(),
-            'permissions'   => auth()->user()->getPermissionsViaRoles()->pluck('name'),
-            'token'         => $token,
-            'refresh_token' => $refreshToken,
-            'token_type'    => 'bearer',
-            'expired_in'    => $expiry,
-            'refresh_exp'   => $refreshExpiry->timestamp,
-        ]);
+        return response()
+            ->json([
+                'users' => $user,
+                'permissions' => $user->getPermissionsViaRoles()->pluck('name'),
+                'token' => $token,
+                'refresh_token' => $refreshToken,
+                'token_type' => 'bearer',
+                'expired_in' => $expiry,
+            ])
+            ->cookie(
+                'refresh_token',
+                $refreshToken,
+                60 * 24,  // 1 hari (menit)
+                null,
+                null,
+                true,  // Secure (WAJIB di production https)
+                true,  // HttpOnly
+                false,
+                'Strict'
+            );
     }
 
-
-
-    private function respondRefreshWithToken($token){
+    private function respondRefreshWithToken($token)
+    {
         // Mendapatkan waktu kedaluwarsa token dalam menit dari konfigurasi JWT
         $ttl = config('jwt.ttl');
 
@@ -116,46 +146,45 @@ class AuthController extends Controller
             'token' => $token,
             'token_type' => 'bearer',
             'expired_in' => $expiry
-
         ]);
     }
 
     public function getUser()
-    {   
+    {
         return response()->json([
             'data' => Auth::user()
         ], 200);
     }
 
     public function getMenu()
-    {   
+    {
         return response()->json([
             'users' => auth()->user(),
             'permissions' => Auth::user()->getPermissionsViaRoles()->pluck('name')
         ], 200);
     }
 
-    public function refresh(){
+    public function refresh()
+    {
         try {
             if (!$token = auth()->getToken()) {
-                throw new NotFoundHttpException("Token Does Not Exist");
+                throw new NotFoundHttpException('Token Does Not Exist');
             }
 
             return $this->respondRefreshWithToken(auth()->refresh($token));
-        } catch(JWTException $e){
+        } catch (JWTException $e) {
             throw $e;
         }
-    
     }
 
-    public function logout(){
+    public function logout()
+    {
         try {
             auth()->logout();
-        } catch(JWTException $e){
+        } catch (JWTException $e) {
             throw $e;
         }
         return response()->json(['message' => 'Users Logged out success']);
-    
     }
 
     public function forgot(Request $request)
@@ -167,12 +196,12 @@ class AuthController extends Controller
             ]
         ];
 
-        $validate= Validator::make($request->all(), $rules);
+        $validate = Validator::make($request->all(), $rules);
 
         if ($validate->fails()) {
             $response = [
                 'data' => $validate->errors(),
-                'message' => 'Failed Input',
+                'message' => 'Input tidak valid',
             ];
             return response()->json($response, 400);
         }
@@ -187,33 +216,31 @@ class AuthController extends Controller
 
             $update = User::findOrFail($users->id);
             $update->update([
-                'password'  => $password,
+                'password' => $password,
                 'change_password' => 0,
             ]);
-            
+
             $data = [
                 'name' => $users->name,
                 'email' => $users->email,
                 'password' => $random
             ];
-            
-           
-        
+
             Mail::to($email)->send(new Forgot($data));
-                
-            $nowa=ltrim($users->wa, '0');
-            $key='5e8e66d600e40cb88ae4b5545eb65d9e618c3a47c81a2383'; //this is demo key please change with your own key
-            $url='http://116.203.191.58/api/send_message';
+
+            $nowa = ltrim($users->wa, '0');
+            $key = '5e8e66d600e40cb88ae4b5545eb65d9e618c3a47c81a2383';  // this is demo key please change with your own key
+            $url = 'http://116.203.191.58/api/send_message';
             $data = array(
-              "phone_no"  => '+62'.$nowa,
-              "key"       => $key,
-              "message"   =>  "Hallo ".$users->name." Kami Telah Menerima Request Reset Password Anda, Berikut adalah Password Baru Anda ". $random,
-              "deliveryFlag" => True, // This optional for get status in message use api `check_delivery_status`
+                'phone_no' => '+62' . $nowa,
+                'key' => $key,
+                'message' => 'Hallo ' . $users->name . ' Kami Telah Menerima Request Reset Password Anda, Berikut adalah Password Baru Anda ' . $random,
+                'deliveryFlag' => True,  // This optional for get status in message use api `check_delivery_status`
             );
             $data_string = json_encode($data);
-            
+
             $ch = curl_init($url);
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
             curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_VERBOSE, 0);
@@ -222,31 +249,23 @@ class AuthController extends Controller
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-              'Content-Type: application/json',
-              'Content-Length: ' . strlen($data_string))
-            );
-            echo $res=curl_exec($ch);
+                'Content-Type: application/json',
+                'Content-Length: ' . strlen($data_string)
+            ));
+            echo $res = curl_exec($ch);
             curl_close($ch);
-          
-            
-            
-            
-    
-    
+
             return response()->json(['success' => true]);
-        }else{
+        } else {
             $response = [
                 'data' => [
                     'email' => [
-                        'Harap Hubungi IT yaa'
+                        'Silakan hubungi admin'
                     ],
                 ],
-                'message' => 'Failed Input',
+                'message' => 'Input tidak valid',
             ];
             return response()->json($response, 400);
         }
-
     }
-
-    
 }

@@ -1,14 +1,14 @@
 <template>
-    <div class="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end gap-2 sm:gap-3">
+    <div class="fixed bottom-3 left-3 right-3 sm:bottom-2 sm:left-auto sm:right-2 z-50 flex flex-col items-stretch sm:items-end gap-2 sm:gap-3">
 
         <!-- Action Buttons (muncul saat open) -->
         <transition name="fade-slide">
-        <div v-if="open" class="flex flex-col gap-2 items-end">
-            <div class="flex flex-col gap-1 items-end">
+        <div v-if="open" class="flex flex-col gap-2 items-stretch sm:items-end">
+            <div class="flex flex-col gap-1 items-stretch sm:items-end">
                 <a
                     v-if="currentInfo.phone !== 'null'"
                     :href="`tel:${currentInfo.phone}`"
-                    class="flex items-center gap-2 px-4 py-2 rounded-full shadow-lg transition hover:scale-105 hover:shadow-xl"
+                    class="flex items-center justify-between gap-2 px-4 py-2 sm:px-3 sm:py-1.5 rounded-full shadow-lg transition hover:scale-105 hover:shadow-xl w-full sm:w-auto"
                     :style="{ backgroundColor: currentInfo.primaryColor, color: currentInfo.primaryTextColor }"
                 >
                     <span class="text-sm font-semibold">Hubungi Admin</span>
@@ -19,7 +19,7 @@
                 <a
                     v-if="currentInfo.phone1 !== 'null'"
                     :href="`tel:${currentInfo.phone1}`"
-                    class="flex items-center gap-2 px-4 py-2 rounded-full shadow-lg transition hover:scale-105 hover:shadow-xl"
+                    class="flex items-center justify-between gap-2 px-4 py-2 sm:px-3 sm:py-1.5 rounded-full shadow-lg transition hover:scale-105 hover:shadow-xl w-full sm:w-auto"
                     :style="{ backgroundColor: currentInfo.primaryColor, color: currentInfo.primaryTextColor }"
                 >
                     <span class="text-sm font-semibold">Hubungi Admin 2</span>
@@ -31,7 +31,7 @@
                     v-if="currentInfo.wa !== 'null'"
                     target="_blank"
                     rel="noopener"
-                    class="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-full shadow-lg transition hover:scale-105 hover:shadow-xl"
+                    class="cursor-pointer flex items-center justify-between gap-2 px-4 py-2 sm:px-3 sm:py-1.5 rounded-full shadow-lg transition hover:scale-105 hover:shadow-xl w-full sm:w-auto"
                     :style="{ backgroundColor: currentInfo.primaryColor, color: currentInfo.primaryTextColor }"
                     @click="kirimWA(currentInfo.wa)"
                 >
@@ -50,7 +50,7 @@
                     @click="kirimWA(currentInfo.wa1)"
                     target="_blank"
                     rel="noopener"
-                    class="flex items-center gap-2 px-4 py-2 rounded-full shadow-lg transition hover:scale-105 hover:shadow-xl"
+                    class="flex items-center justify-between gap-2 px-4 py-2 sm:px-3 sm:py-1.5 rounded-full shadow-lg transition hover:scale-105 hover:shadow-xl w-full sm:w-auto"
                     :style="{ backgroundColor: currentInfo.primaryColor, color: currentInfo.primaryTextColor }"
                 >
                     <span class="text-sm font-semibold">WhatsApp Admin 2</span>
@@ -61,7 +61,7 @@
             </div>
 
             <button
-                class="flex items-center gap-2 px-4 py-2 rounded-full shadow-lg transition hover:scale-105 hover:shadow-xl"
+                class="flex items-center justify-between gap-2 px-4 py-2 sm:px-3 sm:py-1.5 rounded-full shadow-lg transition hover:scale-105 hover:shadow-xl w-full sm:w-auto"
                 :style="{ backgroundColor: currentInfo.primaryColor, color: currentInfo.primaryTextColor }"
                 @click="showDrawer = true"
             >
@@ -75,22 +75,22 @@
 
         <!-- Main Card -->
         <div @click="toggle"
-            class="rounded-xl shadow-xl p-2 w-[180px] sm:rounded-2xl sm:p-4 sm:w-[280px] cursor-pointer hover:scale-[1.02] transition"
+            class="rounded-xl shadow-xl p-2 w-full sm:rounded-2xl sm:p-3 sm:w-[240px] cursor-pointer hover:scale-[1.02] transition"
             :style="{ backgroundColor: currentInfo.primaryColor, color: currentInfo.primaryTextColor }"
         >
             <div class="flex items-center gap-2 sm:gap-3">
                 <img
                 src="https://i.pravatar.cc/100?img=32"
                 alt="Sales"
-                class="w-10 h-10 sm:w-14 sm:h-14 rounded-full border-2 sm:border-4 border-white"
+                class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 sm:border-4 border-white"
                 />
                 <div class="flex-1">
-                <p class="text-xs sm:text-sm font-bold">Masih Bingung?</p>
-                <p class="text-[10px] sm:text-xs opacity-90">
+                <p class="text-xs sm:text-[13px] font-bold">Masih Bingung?</p>
+                <p class="text-[10px] sm:text-[11px] opacity-90">
                     Mau sewa, beli atau renovasi properti? Yuk ngobrol dulu sama tim kami.
                 </p>
                 <button
-                    class="mt-1 sm:mt-2 bg-white text-black text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 rounded-full"
+                    class="mt-1 sm:mt-2 bg-white text-black text-[10px] sm:text-[11px] font-bold px-2 sm:px-2.5 py-1 rounded-full"
                 >
                     Chat Admin
                 </button>

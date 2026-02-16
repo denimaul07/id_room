@@ -1,78 +1,79 @@
 import { Api } from '@/api/Api';
-import { ref  } from 'vue'
+import { ref } from 'vue'
 import waitingicon from '@/assets/images/logo/logo_idroom.png'
 import Swal from 'sweetalert2';
 import dayjs from 'dayjs'
 const token = localStorage.getItem('token_id_room')
-Api.defaults.headers.common['Authorization'] = "Bearer " +token
-const pesan=ref("")
-const processing=ref(false)
+Api.defaults.headers.common['Authorization'] = "Bearer " + token
+const pesan = ref("")
+const processing = ref(false)
 const loading = ref(true)
 const loadingButton = ref(false)
 const loadingSubmit = ref(false)
 
 const apiGetData = async (url = "", paramsData = {}) => {
-    loading.value=true
+    loading.value = true
     Api.defaults.headers.common["Authorization"] = "Bearer " + token;
     return await Api.get(url, { params: paramsData })
-    .then((response) => {
-        loading.value=false
-        return response.data;
-    })
-    .catch((error) => {  
-        // Cek jika ada response.data.data (biasanya untuk validasi field)
-        let ResObj;
-        if (error.response.data?.data) {
-            // Gabungkan semua pesan error dari setiap field
-            ResObj = Object.values(error.response.data.data)
-            .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
-            .join('<br>');
-        } else {
-            ResObj = error.response.data?.message || Object.values(error.response.data);
-        }
-        const errorId = error.response.data?.error_id || 'Unknown';
-        const title = error.response.data?.title || 'Oops... !';
+        .then((response) => {
+            loading.value = false
+            return response.data;
+        })
+        .catch((error) => {
+            // Cek jika ada response.data.data (biasanya untuk validasi field)
+            let ResObj;
+            if (error.response.data?.data) {
+                // Gabungkan semua pesan error dari setiap field
+                ResObj = Object.values(error.response.data.data)
+                    .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
+                    .join('<br>');
+            } else {
+                ResObj = error.response.data?.message || Object.values(error.response.data);
+            }
+            const errorId = error.response.data?.error_id || 'Unknown';
+            const title = error.response.data?.title || 'Oops... !';
 
-        sweetError(title, ResObj.toString(), errorId);
-        return false;
-    });
+            sweetError(title, ResObj.toString(), errorId);
+            return false;
+        });
 };
 
-const apiPostData = async (url = "", paramsData = "", notif=true) => {
+const apiPostData = async (url = "", paramsData = "", notif = true) => {
     Api.defaults.headers.common["Authorization"] = "Bearer " + token;
-    return await Api.post(url, paramsData )
-    .then((response) => {
-    
-        if (notif==true) {
-            sweetSuccess(null, response.data.message)
-            return true;
-        } else {
-            return true;
-        }
-        
-    })
-    .catch((error) => {
-        // Cek jika ada response.data.data (biasanya untuk validasi field)
-        let ResObj;
-        if (error.response.data?.data) {
-            // Gabungkan semua pesan error dari setiap field
-            ResObj = Object.values(error.response.data.data)
-            .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
-            .join('<br>');
-        } else {
-            ResObj = error.response.data?.message || Object.values(error.response.data);
-        }
-        const errorId = error.response.data?.error_id || 'Unknown';
-        const title = error.response.data?.title || 'Oops... !';
+    return await Api.post(url, paramsData)
+        .then((response) => {
 
-        sweetError(title, ResObj.toString(), errorId);
-        return false;
-    });
+            if (notif == true) {
+                sweetSuccess(null, response.data.message)
+                return true;
+            } else {
+                return true;
+            }
+
+        })
+        .catch((error) => {
+            // Cek jika ada response.data.data (biasanya untuk validasi field)
+            let ResObj;
+            if (error.response.data?.data) {
+                // Gabungkan semua pesan error dari setiap field
+                ResObj = Object.values(error.response.data.data)
+                    .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
+                    .join('<br>');
+            } else {
+                ResObj = error.response.data?.message || Object.values(error.response.data);
+            }
+            const errorId = error.response.data?.error_id || 'Unknown';
+            const title = error.response.data?.title || 'Oops... !';
+
+            sweetError(title, ResObj.toString(), errorId);
+            return false;
+        });
 };
+
 
 const apiPostDataWithReturn = async (url = "", paramsData = "", axiosConfig = {}, notif = true) => {
     Api.defaults.headers.common["Authorization"] = "Bearer " + token;
-    
+
     return await Api.post(url, paramsData, axiosConfig)
         .then((response) => {
             if (notif === true) {
@@ -94,8 +95,8 @@ const apiPostDataWithReturn = async (url = "", paramsData = "", axiosConfig = {}
             if (error.response.data?.data) {
                 // Gabungkan semua pesan error dari setiap field
                 ResObj = Object.values(error.response.data.data)
-                .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
-                .join('<br>');
+                    .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
+                    .join('<br>');
             } else {
                 ResObj = error.response.data?.message || Object.values(error.response.data);
             }
@@ -108,90 +109,91 @@ const apiPostDataWithReturn = async (url = "", paramsData = "", axiosConfig = {}
 };
 
 
-const apiPostDataNotif = async (url = "", paramsData = "", notif=true) => {
+const apiPostDataNotif = async (url = "", paramsData = "", notif = true) => {
     Api.defaults.headers.common["Authorization"] = "Bearer " + token;
-    return await Api.post(url, paramsData )
-    .then((response) => {
-    
-        if (notif==true) {
-            sweetSuccess(null, response.data.message)
-            return true;
-        } else {
-            return true;
-        }
-        
-    })
-    .catch((error) => {
-        const ResObj = error.response.data?.message || Object.values(error.response.data);
-        const errorId = error.response.data?.error_id || 'Unknown';
-        const title = error.response.data?.title || 'Oops... !';
+    return await Api.post(url, paramsData)
+        .then((response) => {
 
-        // sweetError(title, ResObj.toString(), errorId);
-        return false;
-    });
+            if (notif == true) {
+                sweetSuccess(null, response.data.message)
+                return true;
+            } else {
+                return true;
+            }
+
+        })
+        .catch((error) => {
+            const ResObj = error.response.data?.message || Object.values(error.response.data);
+            const errorId = error.response.data?.error_id || 'Unknown';
+            const title = error.response.data?.title || 'Oops... !';
+
+            // sweetError(title, ResObj.toString(), errorId);
+            return false;
+        });
 };
 
-const apiPutData = async (url = "", paramsData = "", notif=true) => {
+const apiPutData = async (url = "", paramsData = "", notif = true) => {
     console.log('Nilai notif:', notif);
     Api.defaults.headers.common["Authorization"] = "Bearer " + token;
-    return await Api.put(url, paramsData )
-    .then((response) => {
+    return await Api.put(url, paramsData)
+        .then((response) => {
 
-        
-        if (notif==true) {
-            sweetSuccess(null, response.data.message)
-            return true;
-        } else {
-            return true;
-        }
-    })
-    .catch((error) => {
-        // Cek jika ada response.data.data (biasanya untuk validasi field)
-        let ResObj;
-        if (error.response.data?.data) {
-            // Gabungkan semua pesan error dari setiap field
-            ResObj = Object.values(error.response.data.data)
-            .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
-            .join('<br>');
-        } else {
-            ResObj = error.response.data?.message || Object.values(error.response.data);
-        }
-        const errorId = error.response.data?.error_id || 'Unknown';
-        const title = error.response.data?.title || 'Oops... !';
 
-        sweetError(title, ResObj.toString(), errorId);
-        return false;
-    });
+            if (notif == true) {
+                sweetSuccess(null, response.data.message)
+                return true;
+            } else {
+                return true;
+            }
+        })
+        .catch((error) => {
+            // Cek jika ada response.data.data (biasanya untuk validasi field)
+            let ResObj;
+            if (error.response.data?.data) {
+                // Gabungkan semua pesan error dari setiap field
+                ResObj = Object.values(error.response.data.data)
+                    .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
+                    .join('<br>');
+            } else {
+                ResObj = error.response.data?.message || Object.values(error.response.data);
+            }
+            const errorId = error.response.data?.error_id || 'Unknown';
+            const title = error.response.data?.title || 'Oops... !';
+
+            sweetError(title, ResObj.toString(), errorId);
+            return false;
+        });
 };
 
+
 const apiDeleteData = async (url = "", paramsData = {}) => {
-    loading.value=true
+    loading.value = true
     Api.defaults.headers.common["Authorization"] = "Bearer " + token;
     return await Api.delete(url, { params: paramsData })
-    .then((response) => {
-        loading.value=false
-    
-        sweetSuccess(null, response.data.message)
-        return true;
-    
-    })
-    .catch((error) => {
-        // Cek jika ada response.data.data (biasanya untuk validasi field)
-        let ResObj;
-        if (error.response.data?.data) {
-            // Gabungkan semua pesan error dari setiap field
-            ResObj = Object.values(error.response.data.data)
-            .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
-            .join('<br>');
-        } else {
-            ResObj = error.response.data?.message || Object.values(error.response.data);
-        }
-        const errorId = error.response.data?.error_id || 'Unknown';
-        const title = error.response.data?.title || 'Oops... !';
+        .then((response) => {
+            loading.value = false
 
-        sweetError(title, ResObj.toString(), errorId);
-        return false;
-    });
+            sweetSuccess(null, response.data.message)
+            return true;
+
+        })
+        .catch((error) => {
+            // Cek jika ada response.data.data (biasanya untuk validasi field)
+            let ResObj;
+            if (error.response.data?.data) {
+                // Gabungkan semua pesan error dari setiap field
+                ResObj = Object.values(error.response.data.data)
+                    .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
+                    .join('<br>');
+            } else {
+                ResObj = error.response.data?.message || Object.values(error.response.data);
+            }
+            const errorId = error.response.data?.error_id || 'Unknown';
+            const title = error.response.data?.title || 'Oops... !';
+
+            sweetError(title, ResObj.toString(), errorId);
+            return false;
+        });
 };
 
 const apiExportExcel = async (url = "", paramsData = {}, title = 'Data') => {
@@ -213,8 +215,8 @@ const apiExportExcel = async (url = "", paramsData = {}, title = 'Data') => {
         if (error.response.data?.data) {
             // Gabungkan semua pesan error dari setiap field
             ResObj = Object.values(error.response.data.data)
-            .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
-            .join('<br>');
+                .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
+                .join('<br>');
         } else {
             ResObj = error.response.data?.message || Object.values(error.response.data);
         }
@@ -229,7 +231,7 @@ const apiExportExcel = async (url = "", paramsData = {}, title = 'Data') => {
 const apiCetakPDF = async (url = "", paramsData = {}) => {
     const pesan = ref('');
     Api.defaults.headers.common['Authorization'] = "Bearer " + token;
-    
+
     try {
         const response = await Api.get(url, {
             params: paramsData,
@@ -242,8 +244,8 @@ const apiCetakPDF = async (url = "", paramsData = {}) => {
         if (error.response && error.response.data && error.response.data.data) {
             // Gabungkan semua pesan error dari setiap field
             ResObj = Object.values(error.response.data.data)
-            .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
-            .join('<br>');
+                .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
+                .join('<br>');
         } else if (error.response && error.response.data) {
             ResObj = error.response.data?.message || Object.values(error.response.data);
         } else {
@@ -260,7 +262,7 @@ const apiCetakPDF = async (url = "", paramsData = {}) => {
 const apiDownloadFile = async (url = "", paramsData = {}) => {
     const pesan = ref('');
     Api.defaults.headers.common['Authorization'] = "Bearer " + token;
-    
+
     try {
         const response = await Api.get(url, {
             params: paramsData,
@@ -273,8 +275,8 @@ const apiDownloadFile = async (url = "", paramsData = {}) => {
         if (error.response && error.response.data && error.response.data.data) {
             // Gabungkan semua pesan error dari setiap field
             ResObj = Object.values(error.response.data.data)
-            .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
-            .join('<br>');
+                .map(arr => Array.isArray(arr) ? arr.join('<br>') : arr)
+                .join('<br>');
         } else if (error.response && error.response.data) {
             ResObj = error.response.data?.message || Object.values(error.response.data);
         } else {
@@ -312,15 +314,15 @@ const sweetSuccess = (title, pesan) => {
 
 
 
-export { 
-    apiGetData, 
-    apiPostData, 
-    apiPutData, 
+export {
+    apiGetData,
+    apiPostData,
+    apiPutData,
     apiPostDataWithReturn,
     processing,
-    apiDeleteData, 
-    loadingButton, 
-    loadingSubmit, 
+    apiDeleteData,
+    loadingButton,
+    loadingSubmit,
     Swal,
     loading,
     pesan,

@@ -1,0 +1,15 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class BookingGuest extends Model
+{
+    use HasFactory;
+    protected $table   = 'booking_guests';
+    protected $hidden  = ['id','booking_id'];
+    protected $guarded = [];  
+
+}

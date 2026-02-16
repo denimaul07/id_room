@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Carbon\Carbon;
 use App\Models\User;
+use Carbon\Carbon;
+use App\Models\PropertieInquire;
+use App\Models\Properties;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
+use Tymon\JWTAuth\Exceptions\JWTException;
+
 class UserController extends Controller
 {
     /**
@@ -34,6 +39,10 @@ class UserController extends Controller
                 'min:3',
                 'max:30'
             ],
+            'kode' => [
+                'required',
+                'string'
+            ],
             'email' => [
                 'required',
                 'email',
@@ -45,18 +54,20 @@ class UserController extends Controller
                 'string',
                 'min:6'
             ]
-        
-            
-            ];
-        $validate= Validator::make($request->all(), $rules);
+        ];
+        $validate = Validator::make($request->all(), $rules);
 
         if ($validate->fails()) {
             return response()->json([
-                'validation error' => $validate->errors()
-            ]);
+                'message' => 'Validasi gagal',
+                'data' => $validate->errors()
+            ], 400);
         }
 
         $user = User::create([
+            'odata' => (string) Str::uuid(),
+            'kode' => $request->kode,
+            'phone' => $request->phone,
             'name' => $request->name,
             'email' => $request->email,
             'password' => $request->password
@@ -71,16 +82,176 @@ class UserController extends Controller
 
         $token = auth()->login($user);
 
-        try{
+        try {
             $token = auth()->login($user);
-        }catch(JWTException $e){
+        } catch (JWTException $e) {
             throw $e;
         }
 
         return $this->respondWithToken($token);
     }
 
-    private function respondWithToken($token){
+    public function register(Request $request)
+    {
+        $rules = [
+            'name' => [
+                'required',
+                'string',
+                'min:3',
+                'max:30'
+            ],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                'unique:users,email'
+            ],
+            'password' => [
+                'required',
+                'string',
+                Password::min(6)
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols()
+            ],
+            'confirm_password' => [
+                'required',
+                'same:password'
+            ],
+            'country_code' => [
+                'nullable',
+                'string'
+            ],
+            'phone' => [
+                'nullable',
+                'string'
+            ],
+            'birth_date' => [
+                'nullable',
+                'date'
+            ],
+            'referral_code' => [
+                'nullable',
+                'string'
+            ]
+        ];
+
+        $messages = [
+            'name.required' => 'Nama wajib diisi.',
+            'name.string' => 'Nama harus berupa teks.',
+            'name.min' => 'Nama minimal 3 karakter.',
+            'name.max' => 'Nama maksimal 30 karakter.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.max' => 'Email maksimal 255 karakter.',
+            'email.unique' => 'Email Anda Sudah Terdaftar Silahlan Login.',
+            'password.required' => 'Password wajib diisi.',
+            'password.string' => 'Password harus berupa teks.',
+            'password.min' => 'Password minimal 6 karakter.',
+            'password.mixedCase' => 'Password harus mengandung huruf besar dan kecil.',
+            'password.numbers' => 'Password harus mengandung angka.',
+            'password.symbols' => 'Password harus mengandung simbol.',
+            'confirm_password.required' => 'Konfirmasi password wajib diisi.',
+            'confirm_password.same' => 'Konfirmasi password harus sama dengan password.',
+            'country_code.string' => 'Kode negara harus berupa teks.',
+            'phone.string' => 'Nomor telepon harus berupa teks.',
+            'birth_date.date' => 'Tanggal lahir harus berupa tanggal.',
+            'referral_code.string' => 'Kode referral harus berupa teks.'
+        ];
+        $validate = Validator::make($request->all(), $rules, $messages);
+
+        if ($validate->fails()) {
+            $errors = $validate->errors()->toArray();
+            $translatedErrors = [];
+            foreach ($errors as $field => $messages) {
+                $translatedErrors[$field] = array_map(function ($msg) {
+                    // Translate each error message to Indonesian
+                    return __($msg, [], 'id');
+                }, $messages);
+            }
+            return response()->json([
+                'message' => 'Validasi gagal',
+                'data' => $translatedErrors
+            ], 400);
+        }
+
+        try {
+            $referral_code = User::where('referral_code', $request->referral_code)->first();
+            if ($request->referral_code && !$referral_code) {
+                return response()->json([
+                    'message' => 'Kode referral tidak valid'
+                ], 400);
+            }
+
+            $birthDate = $request->birth_date ? Carbon::parse($request->birth_date)->format('Y-m-d') : null;
+
+            $user = User::create([
+                'odata' => (string) Str::uuid(),
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => $request->password,
+                'phone' => $request->country_code . $request->phone,
+                'birth_date' => $birthDate,
+                'referral_code' => $request->referral_code,
+                'referrer_id' => $referral_code ? $referral_code->id : null,
+                'status_users' => 2,
+                'change_password' => 1
+            ]);
+
+            // assign role
+            $user->assignRole('users');
+
+            try {
+                $user->sendEmailVerificationNotification();
+            } catch (\Exception $e) {
+                // Jika gagal kirim email, skip dan lanjutkan
+            }
+
+            $response = [
+                'message' => 'Registrasi berhasil. Silakan cek email untuk verifikasi.'
+            ];
+
+            return response()->json($response, 201);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function verifyEmail(Request $request, $id, $hash)
+    {
+        // 1️⃣ VALIDASI SIGNATURE URL
+        if (!$request->hasValidSignature()) {
+            return response()->json([
+                'message' => 'Link verifikasi tidak valid atau sudah kedaluwarsa'
+            ], 403);
+        }
+
+        // 2️⃣ CARI USER
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json(['message' => 'User tidak ditemukan'], 404);
+        }
+
+        // 3️⃣ VALIDASI HASH EMAIL
+        if (!hash_equals($hash, sha1($user->getEmailForVerification()))) {
+            return response()->json(['message' => 'Hash verifikasi tidak valid'], 403);
+        }
+
+        // 4️⃣ CEK SUDAH VERIFIKASI
+        if ($user->hasVerifiedEmail()) {
+            return response()->json(['message' => 'Email sudah terverifikasi'], 200);
+        }
+
+        // 5️⃣ VERIFIKASI EMAIL
+        $user->markEmailAsVerified();
+        $user->update(['status_users' => 0]);
+
+        // Redirect ke halaman login website dengan pesan sukses
+        return redirect()->away(env('FRONTEND_URL', 'http://localhost:5174') . '/verified');
+    }
+
+    private function respondWithToken($token)
+    {
         // Mendapatkan waktu kedaluwarsa token dalam menit dari konfigurasi JWT
         $ttl = config('jwt.ttl');
 
@@ -90,10 +261,8 @@ class UserController extends Controller
             'access_token' => $token,
             'token_type' => 'bearer',
             'expired_in' => $expiry
-
         ]);
     }
-    
 
     /**
      * Display the specified resource.
@@ -149,4 +318,50 @@ class UserController extends Controller
 
         return response()->json(['message' => 'User deleted']);
     }
+
+    public function contactAgent(Request $request)
+    {
+        $rules = [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:20',
+            'message' => 'required|string'
+        ];
+
+        $validate = Validator::make($request->all(), $rules);
+
+        if ($validate->fails()) {
+            return response()->json([
+                'message' => 'Validasi gagal',
+                'data' => $validate->errors()
+            ], 400);
+        }
+
+        try {
+            $property = Properties::where('odata', $request->property_odata)->first();
+            if (!$property) {
+                return response()->json(['message' => 'Properti tidak ditemukan'], 404);
+            }
+
+            PropertieInquire::create([
+                'odata' => (string) Str::uuid(),
+                'property_id' => $property->id,
+                'property_odata' => $property->odata,
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'message' => $request->message
+            ]);
+
+             // Log activity contact agent
+            activity()
+            ->causedBy(auth()->user())
+            ->withProperties(['attributes' => $request->all()])
+            ->log('Contact agent');
+
+            return response()->json(['message' => 'Pesan berhasil dikirim. Tunggu kontak dari agen kami.'], 200);
+        } catch (JWTException $th) {
+        throw $th;
+        }
+    }  
 }

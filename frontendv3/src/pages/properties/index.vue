@@ -14,8 +14,12 @@
                                     <span style="color: #222 !important;">Properties</span>
                                 </Tab>
                                 <Tab value="1">
-                                    <i class="fa fa-university" style="color: #222 !important;" />
-                                    <span style="color: #222 !important;">Room</span>
+                                    <i class="fa fa-concierge-bell" style="color: #222 !important;" />
+                                    <span style="color: #222 !important;">Facilities</span>
+                                </Tab>
+                                <Tab value="2">
+                                    <i class="fa fa-city" style="color: #222 !important;" />
+                                    <span style="color: #222 !important;">City</span>
                                 </Tab>
                             </TabList>
                             <TabPanels>
@@ -36,18 +40,18 @@
 
                                     <div class="mb-3 row">
                                         <div class="table-responsive">
-                                            <table class="table">
+                                            <table class="table table-sticky">
                                                 <thead>
                                                     <tr>
-                                                        <th class="text-center bg-dark">No</th>
-                                                        <th class="text-center bg-dark text-nowrap">Action</th>
+                                                        <th class="text-center bg-dark text-nowrap sticky-col sticky-left-1 col-no">No</th>
+                                                        <th class="text-center bg-dark text-nowrap sticky-col sticky-left-2 col-action">Action</th>
                                                         <th class="text-center bg-dark text-nowrap">Properties</th>
-                                                        <th class="text-center bg-dark">Type</th>
-                                                        <th class="text-center bg-dark">Listing Type</th>
-                                                        <th class="text-center bg-dark">Address</th>
+                                                        <th class="text-center bg-dark text-nowrap">Type</th>
+                                                        <th class="text-center bg-dark text-nowrap">Listing Type</th>
+                                                        <th class="text-center bg-dark text-nowrap">Address</th>
                                                         <th class="text-center bg-dark text-nowrap">Total Room</th>
                                                         <th class="text-center bg-dark text-nowrap">Harga PerMalam</th>
-                                                        <th class="text-center bg-dark text-nowrap">Status</th>
+                                                        <th class="text-center bg-dark text-nowrap sticky-col sticky-right-1 col-status">Status</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -61,9 +65,9 @@
                                                     </tr>
                                                 
                                                     <tr v-for="(data, index) in state.listData.data" :key="index" v-else>
-                                                        <td class="text-center">{{ index + state.listData.from }}</td>
-                                                        <td class="text-center">
-                                                            <a-tooltip title="Edit Membership Package">
+                                                        <td class="text-center sticky-col sticky-left-1 col-no">{{ index + state.listData.from }}</td>
+                                                        <td class="text-center text-nowrap sticky-col sticky-left-2 col-action">
+                                                            <a-tooltip title="Edit Properties" placement="top">
                                                                 <a-button type="primary" size="small" class="bg-dark me-2" @click="view(data)">
                                                                     <template #icon>
                                                                         <EditOutlined />
@@ -71,16 +75,16 @@
                                                                 </a-button>
                                                             </a-tooltip>
                                                         </td>
-                                                        <td class="text-center">{{ data.properties }}</td>
-                                                        <td class="text-center">{{ data.type }}</td>
-                                                        <td class="text-center">
+                                                        <td class="text-center text-nowrap">{{ data.properties }}</td>
+                                                        <td class="text-center text-nowrap">{{ data.type }}</td>
+                                                        <td class="text-center text-nowrap">
                                                             {{ data.listing_type }}
                                                         </td>
-                                                        <td class="text-center">{{ data.address }}</td>
-                                                        <td class="text-center">{{ data.total_rooms }}</td>
-                                                        <td class="text-center">{{ (data.price_per_night * 1).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                                        <td class="text-center text-nowrap">{{ data.address }}</td>
+                                                        <td class="text-center text-nowrap">{{ data.total_rooms }}</td>
+                                                        <td class="text-center text-nowrap">{{ (data.price_per_night * 1).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
                                                     
-                                                        <td class="text-center">
+                                                        <td class="text-center text-nowrap sticky-col sticky-right-1 col-status">
                                                             <span v-if="data.isActive == 0" class="badge bg-success">Active</span>
                                                             <span v-else class="badge bg-danger">Inactive</span>
                                                         </td>
@@ -98,6 +102,14 @@
                                             </div>
                                         </div>
                                     </div>
+                                </TabPanel>
+
+                                <TabPanel value="1">
+                                    <Facilities />
+                                </TabPanel>
+
+                                <TabPanel value="2">
+                                    <City />
                                 </TabPanel>
                             </TabPanels>
                         </Tabs>
@@ -219,9 +231,12 @@
                             <div class="mb-3 row">
                                 <label class="col-sm-4 col-form-label">Sale Price</label>
                                 <div class="col-sm-8">
-                                    <a-input v-model:value="state.form.sale_price" placeholder="Sale Price" />
+                                    <a-input-number v-model:value="state.form.sale_price"  :formatter="value => `Rp ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
+                                    :parser="value => value.replace(/\Rp\s?|(,*)/g, '')" style="width:100%" placeholder="Sale Price" />
                                 </div>
                             </div>
+
+                         
 
                             <div class="mb-3 row">
                                 <label class="col-sm-4 col-form-label">Status</label>
@@ -235,28 +250,31 @@
                         </div>
 
                         <div class="col-sm-12">
+
                             <div class="mb-3 row">
-                                <label class="col-sm-2 col-form-label">Maps</label>
-                                <div class="col-sm-10">
-                                    <iframe :src="mapsUrl" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                                <label class="col-sm-4 col-form-label">Description</label>
+                                <div class="col-sm-8">
+                                    <ckeditor :editor="editor" v-model="state.form.description" :config="editorConfig"></ckeditor>
+                                </div>
+                            </div>  
+
+                            <div class="mb-3 row">
+                                <label class="col-sm-4 col-form-label">Information</label>
+                                <div class="col-sm-8">
+                                    <ckeditor :editor="editor" v-model="state.form.information" :config="editorConfig"></ckeditor>
                                 </div>
                             </div>
                         </div>
+
+                      
                     </div>
                 </div>
 
                 <div class="col-sm-12 col-md-4 col-xl-4">
                     <div class="mb-3 row">
-                        <label class="col-sm-4 col-form-label">Description</label>
+                        <label class="col-sm-4 col-form-label">Video URL</label>
                         <div class="col-sm-8">
-                            <ckeditor :editor="editor" v-model="state.form.description" :config="editorConfig"></ckeditor>
-                        </div>
-                    </div>  
-
-                    <div class="mb-3 row">
-                        <label class="col-sm-4 col-form-label">Information</label>
-                        <div class="col-sm-8">
-                            <ckeditor :editor="editor" v-model="state.form.information" :config="editorConfig"></ckeditor>
+                            <a-input v-model:value="state.form.url_video" placeholder="Video URL" />
                         </div>
                     </div>
 
@@ -270,7 +288,33 @@
                                 />
                         </div>
                     </div>
+
+                    <div class="mb-3 row">
+                        <label class="col-sm-4 col-form-label">Banner</label>
+                        <div class="col-sm-8">
+                            <input type="file" accept="image/webp" @change="e => state.form.banner = e.target.files[0]" />
+
+                            <a-image :src="pathUrl + '/storage/' + state.form.banner" width="32" height="32" style="margin-top:10px" 
+                                fallback="data:image/png;base64,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"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label class="col-sm-2 col-form-label">Maps</label>
+                        <div class="col-sm-10">
+                            <iframe :src="mapsUrl" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                        </div>
+                    </div>
                 </div>
+
+                <div class="col-sm-12" v-if="action === 'edit'">
+                    <Room :key="editKey" :property_odata="selectedPropertyOdata" />
+                    <PropertyFacilities :key="editKey" :property_odata="selectedPropertyOdata" />
+                    <PropertyGallery :key="editKey" :property_odata="selectedPropertyOdata" />
+
+                </div>
+
 
                 
             </div>
@@ -294,7 +338,10 @@
     import { apiGetData, apiPutData, apiPostData,apiExportExcel, processing, loadingButton, loadingSubmit, dayjs , Swal, waitingicon, loading, pesan } from '@/store/action';
     import { useDebounceFn } from '@vueuse/core'
     import { ref, reactive, onUnmounted, onMounted, computed , watch} from 'vue'
-    // Computed property for Google Maps embed URL
+    import Room from './room.vue';
+    import PropertyFacilities from './propertyFacilities.vue';
+    import City from './city.vue';
+    import PropertyGallery from './propertyGallery.vue';
     const mapsUrl = computed(() => {
         const lat = state.form.latitude;
         const lng = state.form.longitude;
@@ -304,8 +351,8 @@
         return '';
     });
     import { useStore } from "vuex";
-    import { useRouter } from "vue-router";
-    import iconSpritePath from '@/assets/svg/icon-sprite.svg';
+    import { nextTick } from 'vue';
+    import  Facilities from './facilities.vue';
     import {
         EditOutlined,
         EyeOutlined,
@@ -353,14 +400,15 @@
     import Tab from 'primevue/tab';
     import TabPanels from 'primevue/tabpanels';
     import TabPanel from 'primevue/tabpanel';
+    
     const pathUrl = import.meta.env.VITE_PATH_FILE_BASE_URL;
     const store = useStore();
-    const router = useRouter();
-    const user = store.getters["auth/currentUser"];
     const pagging = ref(10);
     const search = ref('');
     const action = ref('');
     const modalAdd = ref(false);
+    const selectedPropertyOdata = ref('');
+    const editKey = ref(0);
 
     const state = reactive({
         listData: {},
@@ -386,6 +434,8 @@
             sale_price: 0,
             total_rooms: 0,
             images: "",
+            banner: "",
+            url_video: "",
             isActive: []
         }
     });
@@ -409,14 +459,15 @@
 
     const add = async () => {
         action.value = 'add';
-        state.form = {
+        selectedPropertyOdata.value = '';
+        Object.assign(state.form, {
             odata: "",
             properties: "",
             type: [],
             listing_type: [],
             address: "",
-            city: [],
-            province: [],
+            city: "",
+            province: "",
             maps: "",
             latitude: "",
             longitude: "",
@@ -428,15 +479,21 @@
             sale_price: 0,
             total_rooms: 0,
             images: "",
-            isActive: []
-        }
+            banner: "",
+            url_video: "",
+            isActive: 0
+        });
+
         modalAdd.value = true;
     };
 
     const view = async (data) => {
-        action.value = 'edit';
-        state.form = {
-            odata: data.odata,
+        action.value = '';
+        modalAdd.value = false;
+
+        selectedPropertyOdata.value = data.odata || '';
+        Object.assign(state.form, {
+            odata: data.odata || '',
             properties: data.properties,
             type: data.type,
             listing_type: data.listing_type,
@@ -454,10 +511,16 @@
             sale_price: data.sale_price,
             total_rooms: data.total_rooms,
             images: data.image,
-            isActive: data.isActive
-        }
+            banner: data.banner,
+            isActive: data.isActive,
+            url_video: data.url_video
+        });
+
+        editKey.value++;
+        action.value = 'edit';
         modalAdd.value = true;
     };
+
     const save = async () => {
         loadingSubmit.value = true;
         const payload = new FormData();
@@ -478,8 +541,13 @@
         payload.append('sale_price', state.form.sale_price);
         payload.append('total_rooms', state.form.total_rooms);
         payload.append('isActive', state.form.isActive);
+        payload.append('url_video', state.form.url_video);
         if(state.form.images instanceof File){
             payload.append('images', state.form.images);
+        }
+
+        if(state.form.banner instanceof File){
+            payload.append('banner', state.form.banner);
         }
 
         let response;
@@ -541,11 +609,10 @@
         await getProvinceAndCity();
     });
 
-    watch(search, async() => {
-        useDebounceFn(async() => {
-            await getData();
-        }, 500)();
-    });
+    watch(search, useDebounceFn(async () => {
+        await getData();
+    }, 500));
+
 </script>
 
 
@@ -553,6 +620,51 @@
 /* Ubah warna teks Properties menjadi hitam */
 .properties-title {
     color: #222 !important;
+}
+
+.table-sticky {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table-sticky .sticky-col {
+    position: sticky;
+    background-color: #fff;
+    z-index: 1;
+}
+
+.table-sticky thead .sticky-col {
+    background-color: #212529;
+    color: #fff;
+    z-index: 3;
+}
+
+.table-sticky .sticky-left-1 {
+    left: 0;
+}
+
+.table-sticky .sticky-left-2 {
+    left: 70px;
+}
+
+.table-sticky .sticky-right-1 {
+    right: 0;
+    z-index: 2;
+}
+
+.table-sticky .col-no {
+    min-width: 70px;
+    width: 70px;
+}
+
+.table-sticky .col-action {
+    min-width: 120px;
+    width: 120px;
+}
+
+.table-sticky .col-status {
+    min-width: 120px;
+    width: 120px;
 }
 
     ::v-deep(.ck-content) {

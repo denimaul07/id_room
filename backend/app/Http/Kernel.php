@@ -23,7 +23,6 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         \Fruitcake\Cors\HandleCors::class,
         \App\Http\Middleware\SecurityHeaders::class,
-        
     ];
 
     /**
@@ -31,8 +30,6 @@ class Kernel extends HttpKernel
      *
      * @var array<string, array<int, class-string|string>>
      */
-     
-     
     protected $middlewareGroups = [
         'web' => [
             \App\Http\Middleware\EncryptCookies::class,
@@ -44,11 +41,10 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\SessionTimeout::class,
         ],
-
         'api' => [
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             'throttle:api',
-            \App\Http\Middleware\JwtMiddleware::class,
+            // \App\Http\Middleware\JwtMiddleware::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \Fruitcake\Cors\HandleCors::class,
         ],

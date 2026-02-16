@@ -12,6 +12,7 @@ use App\Models\Portofolio;
 use App\Models\ProcessWork;
 use App\Models\Testimoni;
 use App\Models\Membership;
+use App\Models\Promo;
 
 class Setting extends Model
 {
@@ -73,6 +74,11 @@ class Setting extends Model
     public function membership()
     {
         return $this->hasMany(Membership::class, 'odata_setting', 'odata')->where('isActive', 0);
+    }
+
+    public function promo()
+    {
+        return $this->hasMany(Promo::class, 'odata_setting', 'odata')->where('isActive', 0);
     }
 
 }

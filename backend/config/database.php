@@ -173,20 +173,6 @@ return [
             'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
-        ],
-        
-         'imora' => [
-            'driver' => 'sqlsrv',
-            // 'url' => env('DATABASE_URL'),
-            'host' => env('DB_HOST_SERVER', env('DB_HOST_SERVER_SECONDARY')),
-            'database' => 'LIVE_IMORA',
-            'username' => 'report',
-            'password' => 'kD@sB8a!dYUB6qY',
-            'charset' => 'utf8',
-            'prefix' => '',
-            'prefix_indexes' => true,
-            'encrypt' => env('DB_ENCRYPT', 'false'),
-            'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ]
 
     ],

@@ -244,7 +244,7 @@ export default {
         window.addEventListener('resize', this.handleResize);
         this.handleResize();
         if (this.$store.state.menu.width < 991) {
-            this.layout.settings.layout = 'Dubai';
+            this.layout.settings.layout = 'Rome';
             this.margin = 0;
         }
         setTimeout(() => {

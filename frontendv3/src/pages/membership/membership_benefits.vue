@@ -245,9 +245,7 @@
         await getData();
     });
 
-    watch(search, async() => {
-        useDebounceFn(async() => {
-            await getData();
-        }, 500)();
-    });
+    watch(search, useDebounceFn(async () => {
+        await getData();
+    }, 500));
 </script>

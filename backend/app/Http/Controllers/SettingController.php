@@ -1,12 +1,13 @@
 <?php
 namespace App\Http\Controllers;
-use App\Http\Requests\Setting\SettingRequest;
+
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Setting\AboutMeRequest;
 use App\Http\Requests\Setting\RenovasiRequest;
+use App\Http\Requests\Setting\SettingRequest;
 use App\Services\Setting\SettingService;
-use App\Http\Controllers\Controller;
-use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Http\Request;
+use Tymon\JWTAuth\Exceptions\JWTException;
 
 class SettingController extends Controller
 {
@@ -21,7 +22,7 @@ class SettingController extends Controller
     {
         try {
             $settings = $this->settingService->list();
-            $response=[
+            $response = [
                 'data' => $settings
             ];
             return response()->json($response, 201);
@@ -33,7 +34,6 @@ class SettingController extends Controller
     public function update(SettingRequest $request)
     {
         try {
-            
             $this->settingService->update($request->odata, $request->only([
                 'siteName',
                 'primaryColor',
@@ -69,7 +69,6 @@ class SettingController extends Controller
     public function update_contact_me(Request $request)
     {
         try {
-            
             $this->settingService->update_contact_me($request->odata, $request->only([
                 'colorContactMe',
                 'alamat',
@@ -101,7 +100,6 @@ class SettingController extends Controller
     public function update_about_me(AboutMeRequest $request)
     {
         try {
-            
             $this->settingService->update_about_me($request->odata, $request->only([
                 'bannerAboutMe',
                 'colorAboutMe',
@@ -129,7 +127,6 @@ class SettingController extends Controller
     public function update_renovasi(RenovasiRequest $request)
     {
         try {
-            
             $this->settingService->update_renovasi($request->odata, $request->only([
                 'bannerRenov',
                 'colorRenov',
@@ -138,7 +135,6 @@ class SettingController extends Controller
                 'titleSectionRenov',
                 'descSectionRenov',
                 'urlRenov',
-
             ]));
 
             $response = [
@@ -149,5 +145,27 @@ class SettingController extends Controller
             throw $th;
         }
     }
-    
+
+    public function update_jual_sewa(Request $request)
+    {
+        try {
+            $this->settingService->update_jual_sewa($request->odata, $request->only([
+                'bannerSewa',
+                'colorSewa',
+                'bannerJual',
+                'colorJual',
+                'bannerSewaDetail',
+                'colorSewaDetail',
+                'bannerJualDetail',
+                'colorJualDetail',
+            ]));
+
+            $response = [
+                'message' => 'Jual & Sewa settings updated successfully',
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
 }
