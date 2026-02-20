@@ -16,7 +16,11 @@ const site_setting = () => import('@/pages/cms/settings/site_setting.vue');
 const membership = () => import('@/pages/membership/index.vue');
 const properties = () => import('@/pages/properties/index.vue');
 const promotions = () => import('@/pages/promotions/index.vue');
-
+const wallet = () => import('@/pages/transactions/wallet.vue');
+const bookingTransactions = () => import('@/pages/transactions/booking-transactions.vue');
+const membershipTransactions = () => import('@/pages/transactions/membership-transactions.vue');
+const topUpTransactions = () => import('@/pages/transactions/top-up-transactions.vue');
+const allTransactions = () => import('@/pages/transactions/all-transactions.vue');
 
 const routes = [
   {
@@ -145,6 +149,81 @@ const routes = [
         path: '/settings',
         name: 'settings',
         component: cms,
+        meta: {
+          requiresAuth: true
+        }
+      },
+    ]
+  },
+
+  {
+    path: '/wallet-ledger',
+    component: Body,
+    children: [
+      {
+        path: '/wallet-ledger',
+        name: 'wallet',
+        component: wallet,
+        meta: {
+          requiresAuth: true
+        }
+      },
+    ]
+  },
+
+  {
+    path: '/booking-transactions',
+    component: Body,
+    children: [
+      {
+        path: '/booking-transactions',
+        name: 'bookingTransactions',
+        component: bookingTransactions,
+        meta: {
+          requiresAuth: true
+        }
+      },
+    ]
+  },
+
+  {
+    path: '/top-up-transactions',
+    component: Body,
+    children: [
+      {
+        path: '/top-up-transactions',
+        name: 'topUpTransactions',
+        component: topUpTransactions,
+        meta: {
+          requiresAuth: true
+        }
+      },
+    ]  
+  },
+
+  {
+    path: '/all-transactions',
+    component: Body,
+    children: [
+      {
+        path: '/all-transactions',
+        name: 'allTransactions',
+        component: allTransactions,
+        meta: {
+          requiresAuth: true
+        }
+      },
+    ]
+  },
+
+  {
+    path: '/membership-transactions',
+    component: Body,
+    children: [
+      {
+        path: '/membership-transactions',
+        name: 'membershipTransactions',
+        component: membershipTransactions,
         meta: {
           requiresAuth: true
         }

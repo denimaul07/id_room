@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Membership;
 use App\Models\UserMembership;
+use App\Models\User;
 
 class MembershipTransactions extends Model
 {
@@ -30,5 +31,10 @@ class MembershipTransactions extends Model
     public function userMembership()    
     {
         return $this->belongsTo(UserMembership::class, 'user_membership_id');
+    }
+
+    public function user()    
+    {
+        return $this->belongsTo(User::class);
     }
 }

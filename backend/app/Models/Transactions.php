@@ -5,7 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
-use App\Models\MembershipTransaction;
+use App\Models\MembershipTransactions;
+use App\Models\BookingPayment;
+use App\Models\TopupTransactions;
 
 class Transactions extends Model
 {
@@ -20,21 +22,18 @@ class Transactions extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function membership()
+    public function membershipTransactions()
     {
-        return $this->belongsTo(MembershipTransaction::class, 'reference_id')
-            ->where('transactions.type', 'MEMBERSHIP');
+        return $this->belongsTo(MembershipTransactions::class, 'reference_id');
     }
 
-    // public function booking()
-    // {
-    //     return $this->belongsTo(BookingTransaction::class, 'reference_id')
-    //         ->where('transactions.type', 'BOOKING');
-    // }
+    public function bookingPayments()
+    {
+        return $this->belongsTo(BookingPayment::class, 'reference_id');
+    }
 
-    // public function topup()
-    // {
-    //     return $this->belongsTo(TopupTransaction::class, 'reference_id')
-    //         ->where('transactions.type', 'TOPUP');
-    // }
+    public function topup()
+    {
+        return $this->belongsTo(TopupTransactions::class, 'reference_id');
+    }
 }

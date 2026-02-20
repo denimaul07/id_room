@@ -63,11 +63,12 @@
             </div>
         </div>
     </section>
-
+    
     <section class="py-12 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4">
-            <div v-if="isLoading" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2 space-y-4">
+            
+            <div v-if="isLoading" class="grid grid-cols-1 gap-8">
+                <div class="space-y-4">
                     <div class="h-72 bg-gray-200 rounded-xl animate-pulse"></div>
                     <div class="h-6 bg-gray-200 rounded w-2/3 animate-pulse"></div>
                     <div class="h-4 bg-gray-200 rounded w-1/2 animate-pulse"></div>
@@ -76,185 +77,292 @@
                         <div class="h-20 bg-gray-200 rounded animate-pulse"></div>
                     </div>
                 </div>
-                <div class="h-80 bg-gray-200 rounded-xl animate-pulse"></div>
             </div>
 
             <div v-else-if="!property" class="text-center text-gray-500 py-16">
                 <p class="text-lg">Detail properti tidak ditemukan.</p>
             </div>
 
-            <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2">
-                    <div class="bg-white rounded-xl shadow overflow-hidden">
-                        <div class="p-4">
-                            <div class="relative w-full h-72 md:h-96 rounded-xl overflow-hidden bg-black/5">
-                                <transition :name="transitionName" mode="out-in">
-                                    <img :key="activeImage" :src="activeImage"
-                                        class="absolute inset-0 w-full h-full object-cover" alt="Property Image" />
-                                </transition>
+            <div v-else class="grid grid-cols-1 gap-8">
+                
+                <div>
+                    <SearchProperty />
+                
+                    <!-- PHOTO GALLERY -->
+                    <section class="max-w-7xl mx-auto mt-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 h-[420px]">
+                            <!-- LEFT BIG IMAGE, aspect ratio & shadow -->
+                            <div
+                                class="relative group cursor-pointer overflow-hidden shadow-lg aspect-[4/3] h-full min-h-[220px] bg-gray-100"
+                                @click="openGallery(0)"
+                            >
+                                <LazyImage
+                                    :src="images[0]"
+                                    class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                                />
+                                <div class="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition"></div>
                             </div>
-                            <div v-if="galleryImages.length > 1" class="mt-5 relative">
-                                <div class="overflow-hidden">
-                                    <div class="flex items-center gap-3">
-                                        <button v-for="(img, index) in galleryImages" :key="img"
-                                            class="rounded-lg overflow-hidden ring-2 shrink-0"
-                                            :class="index === activeIndex ? 'ring-gray-900' : 'ring-transparent'"
-                                            @click="setActiveImage(index)">
-                                            <img :src="img" class="h-16 w-24 object-cover" alt="Property Thumbnail" />
-                                        </button>
+
+                            <!-- RIGHT GRID, thumbnails, overlay on last -->
+                            <div class="grid grid-cols-2 gap-3 h-full">
+                                <div
+                                    v-for="(img, i) in images.slice(1,5)"
+                                    :key="i"
+                                    class="relative cursor-pointer overflow-hidden  group aspect-[4/3] bg-gray-100"
+                                    @click="openGallery(i+1)"
+                                >
+                                    <LazyImage
+                                        :src="img"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                                    />
+                                    <!-- LAST IMAGE OVERLAY, more visible -->
+                                    <div
+                                        v-if="i === 3 && images.length > 5"
+                                        class="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-xl transition group-hover:bg-black/70 z-10"
+                                    >
+                                        <span class="flex items-center gap-3 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-sm">
+                                            <i class="fas fa-th-large text-2xl"></i>
+                                            Lihat Semua Foto
+                                        </span>
+                                    </div>
+                                    <!-- Overlay for hover effect on all thumbnails -->
+                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    
+                    <div class="max-w-7xl mx-auto mt-6 z-20 relative">
+
+                        <!-- MAIN CONTAINER -->
+                        <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 md:p-8">
+
+                            <!-- TOP HEADER -->
+                            <div class="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6">
+
+                                <!-- LEFT -->
+                                <div>
+                                    <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
+                                        {{ propertyTitle }}
+                                    </h1>
+
+                                    <!-- TAGS -->
+                                    <div class="flex items-center gap-3 mt-3 flex-wrap">
+                                        <span class="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-700 font-semibold">
+                                        {{ propertyTypeLabel }}
+                                        </span>
+
+                                        <div class="flex text-yellow-400 text-sm">
+                                        <i class="fas fa-star" v-for="i in 5" :key="i"></i>
+                                        </div>
                                     </div>
                                 </div>
-                                <button
-                                    class="absolute -right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full shadow text-gray-700 flex items-center justify-center"
-                                    :disabled="galleryImages.length <= 1" @click="nextImage">
-                                    <i class="fas fa-chevron-right"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="mt-6 space-y-4">
-                        <div class="bg-white rounded-xl shadow overflow-hidden">
-                            <button type="button"
-                                class="w-full px-6 py-4 flex items-center justify-between text-left border-b border-gray-100"
-                                @click="toggleAccordion('description')">
-                                <span class="text-lg font-semibold text-gray-900">Description</span>
-                                <i class="fas"
-                                    :class="accordionOpen.includes('description') ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                            </button>
-                            <transition name="accordion">
-                                <div v-show="accordionOpen.includes('description')" class="px-6 pb-6 pt-2">
-                                    <p class="text-gray-600 whitespace-pre-line" v-html="propertyDescription"></p>
+                                <!-- RIGHT PRICE -->
+                                <div class="text-right">
+                                    <p class="text-sm text-gray-500">Harga/kamar/malam mulai dari</p>
+                                    <p class="text-3xl font-bold text-orange-500">
+                                        {{ formattedPrice }}
+                                    </p>
                                 </div>
-                            </transition>
-                        </div>
+                            </div>
 
-                        <div class="bg-white rounded-xl shadow overflow-hidden">
-                            <button type="button"
-                                class="w-full px-6 py-4 flex items-center justify-between text-left border-b border-gray-100"
-                                @click="toggleAccordion('features')">
-                                <span class="text-lg font-semibold text-gray-900">Property Features</span>
-                                <i class="fas"
-                                    :class="accordionOpen.includes('features') ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                            </button>
-                            <transition name="accordion">
-                                <div v-show="accordionOpen.includes('features')" class="px-6 pb-6 pt-2">
-                                    <div v-if="featureList.length" class="flex flex-wrap gap-2">
-                                        <div v-for="facility in facilities" :key="facility.odata || facility.name"
-                                            class="flex items-center gap-2">
+                            <!-- ALERT -->
+                            <div class="mt-6 bg-blue-50 border border-blue-100 rounded-2xl px-5 py-4 flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-thumbs-up"></i>
+                                </div>
+
+                                <p class="text-sm text-gray-700">
+                                    <span class="font-semibold text-blue-600">Jarang ada!</span>
+                                    Properti ini sering habis terpesan.
+                                </p>
+                            </div>
+
+                            <!-- GRID 3 -->
+                            <div class="grid md:grid-cols-3 gap-6 mt-8">
+
+                                <!-- REVIEW CARD -->
+                                <div class="border rounded-2xl p-5">
+                                    <div class="flex justify-between items-center">
+                                        <h3 class="font-semibold">Informasi</h3>
+                                    </div>
+
+                                    <div class="mt-4 space-y-3 text-sm text-gray-600">
+                                        <p class="text-gray-600 whitespace-pre-line  prose prose-sm" v-html="propertyAbout"></p>
+                                    </div>
+                                </div>
+
+                                <!-- AREA CARD -->
+                                <div class="border rounded-2xl p-5">
+                                    <div class="flex justify-between items-center">
+                                        <h3 class="font-semibold">Area Akomodasi</h3>
+                                    </div>
+
+                                    <div class="mt-4 space-y-3 text-sm text-gray-600">
+                                        <div class="text-gray-600 prose prose-sm max-w-none">
+                                            <div v-html="propertyDescription"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- FACILITIES -->
+                                <div class="border rounded-2xl p-5">
+                                    <div class="flex justify-between items-center">
+                                        <h3 class="font-semibold">Fasilitas Utama</h3>
+                                    </div>
+
+                                    <ul class="mt-4 space-y-4 text-sm text-gray-700">
+                                        <li
+                                            class="flex flex-row flex-wrap items-center gap-3"
+                                            v-for="facility in facilities"
+                                            :key="facility.odata || facility.name"
+                                            style="display: inline-flex; margin-right: 1.5rem; margin-bottom: 0.5rem;"
+                                        >
                                             <i class="fas" :class="facility.icon"></i>
-                                            <span>{{ facility.name }}</span>
+                                            {{ facility.name }}
+                                        </li>
+                                    </ul>
+                                </div>
+
+                            </div>
+
+                            <section class="bg-[#f5f7fa] pb-14 rounded-2xl mt-6" id="available-rooms">
+                                <div class="max-w-7xl mx-auto px-4">
+
+                                    <!-- TITLE -->
+                                    <h2 class="text-2xl font-bold text-gray-900 mb-4 pt-4">
+                                        Tipe Kamar yang Tersedia di {{ propertyTitle }}
+                                    </h2>
+
+                                    <!-- ROOM CARD -->
+                                    <div class="overflow-hidden">
+
+                                        <div
+                                            v-for="room in propertyRooms"
+                                            :key="room.odata"
+                                            class="grid md:grid-cols-[320px_1fr] border-b last:border-b-0"
+                                        >
+
+                                            <!-- ================= LEFT IMAGE PANEL ================= -->
+                                            <div class="p-5">
+                                                <div class="relative">
+                                                    <img
+                                                    :src="getRoomImage(room)"
+                                                    class="rounded-xl w-full h-[210px] object-cover"
+                                                    />
+
+                                                    <!-- Optional Badge -->
+                                                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-r text-sm px-4 py-2 rounded-b-xl" :style="{ backgroundColor: currentInfo.primaryColor, color: currentInfo.primaryTextColor }">
+                                                    Pilihan populer di akomodasi ini
+                                                    </div>
+                                                </div>
+
+                                                <div v-if="room.luas" class="flex items-center gap-2 text-gray-700 text-sm mt-3">
+                                                    <i class="fas fa-ruler text-base"></i>
+                                                    <span>{{ room.luas }} m²</span>
+                                                </div>
+
+                                                <!-- FACILITIES -->
+                                                <ul class="mt-4 space-y-2 text-sm text-gray-600">
+                                                    <li
+                                                        v-for="facility in getRoomFacilities(room)"
+                                                        :key="facility.name"
+                                                        class="inline-flex items-center gap-2 mr-4 mb-2"
+                                                    >
+                                                        <i class="fas" :class="facility.icon"></i>
+                                                        {{ facility.name }}
+                                                    </li>
+                                                </ul>
+                                            </div>
+
+                                            <!-- ================= RIGHT CONTENT ================= -->
+                                            <div class="mt-6">
+                                                <!-- TABLE HEADER -->
+                                                <div class="grid grid-cols-12 px-6 py-3 text-sm text-black font-semibold border-b bg-gray-100">
+                                                    <div class="col-span-4">Pilihan Kamar</div>
+                                                    <div class="col-span-2 text-center">Tamu</div>
+                                                    <div class="col-span-2 text-right">Harga/kamar/malam</div>
+                                                    <div class="col-span-2 text-right">Kamar</div>
+                                                    <div class="col-span-2 text-center">Aksi</div>
+                                                </div>
+
+                                                <!-- ================= RATE PLAN LOOP ================= -->
+                                                <div v-for="room in propertyRooms"
+                                                    :key="room.odata"
+                                                    class="grid grid-cols-12 px-6 py-5 border-b last:border-b-0 items-center bg-white">
+
+                                                    <!-- DESCRIPTION -->
+                                                    <div class="col-span-4">
+                                                        <div class="font-semibold text-gray-900">{{ room.room_name }}</div>
+                                                        <div class="text-xs text-gray-500 mt-1">{{ room.room_type }} Bed</div>
+                                                        <div class="text-xs">
+                                                            <span v-if="room.include_breakfast==='Y'" class="inline-block bg-green-600 text-white px-2 py-1 rounded-full mt-1">
+                                                                Termasuk Sarapan
+                                                            </span>
+                                                            <span v-else class="inline-block bg-gray-300 text-gray-600 px-2 py-1 rounded-full mt-1">
+                                                                Sarapan Tidak Termasuk
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- GUEST ICON -->
+                                                    <div class="col-span-2 text-center text-gray-400 text-lg">
+                                                        <span v-if="room.capacity">
+                                                            <i class="fas fa-user" v-for="n in room.capacity" :key="n"></i>
+                                                        </span>
+                                                    </div>
+
+                                                    <!-- PRICE -->
+                                                    <div class="col-span-2 text-right">
+                                                        <div class="text-xl font-bold text-orange-500">
+                                                            {{ room.price ? room.price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).replace(',00', '') : '-' }}
+                                                        </div>
+                                                        <div class="text-xs text-gray-400">Di luar pajak & biaya</div>
+                                                    </div>
+
+                                                    <div class="col-span-2 text-right text-gray-500 text-sm">
+                                                        <span class="inline-block text-xs text-white px-2 py-1 rounded-full mb-1" :style="{ backgroundColor: currentInfo.primaryColor }">
+                                                            1 x
+                                                        </span>
+                                                    </div>
+
+                                                    <!-- ACTION -->
+                                                    <div class="col-span-2 flex flex-col items-center gap-2">
+                                                        <button
+                                                            class="px-5 py-2 rounded-lg font-semibold w-24 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
+
+                                                            :style="{ backgroundColor: currentInfo.primaryColor , color: currentInfo.primaryTextColor }"
+                                                            @click="bookRoom(room)">Pilih
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <p v-else class="text-gray-500 text-sm">Belum ada fitur.</p>
-                                </div>
-                            </transition>
-                        </div>
 
-                        <div class="bg-white rounded-xl shadow overflow-hidden">
-                            <button type="button"
-                                class="w-full px-6 py-4 flex items-center justify-between text-left border-b border-gray-100"
-                                @click="toggleAccordion('about')">
-                                <span class="text-lg font-semibold text-gray-900">About Property</span>
-                                <i class="fas"
-                                    :class="accordionOpen.includes('about') ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                            </button>
-                            <transition name="accordion">
-                                <div v-show="accordionOpen.includes('about')" class="px-6 pb-6 pt-2">
-                                    <p class="text-gray-600 whitespace-pre-line" v-html="propertyAbout"></p>
                                 </div>
-                            </transition>
+                            </section>
                         </div>
                     </div>
 
-                    <div v-if="videoUrl" class="mt-6 bg-white rounded-xl shadow overflow-hidden">
-                        <div class="px-6 py-4 border-b border-gray-100">
-                            <h3 class="text-lg font-semibold text-gray-900">Video</h3>
-                        </div>
-                        <div class="p-4">
-                            <div class="relative w-full aspect-video rounded-lg overflow-hidden bg-black/5">
-                                <iframe v-if="videoEmbedUrl" :src="videoEmbedUrl" class="absolute inset-0 w-full h-full"
-                                    title="Property video" frameborder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowfullscreen></iframe>
-                                <video v-else controls class="absolute inset-0 w-full h-full">
-                                    <source :src="videoUrl" />
-                                </video>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div v-if="videoUrl" class="bg-white rounded-xl shadow overflow-hidden">
+                            <div class="px-6 py-4 border-b border-gray-100">
+                                <h3 class="text-lg font-semibold text-gray-900">Video</h3>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="lg:col-span-1">
-                    <div class="space-y-6 lg:sticky lg:top-6">
-                        <div class="bg-white rounded-xl shadow p-6">
-                            <h3 class="text-xl font-bold text-gray-900 mb-4">Available Rooms</h3>
-                            <div v-if="propertyRooms.length" class="space-y-4">
-                                <div v-for="room in propertyRooms" :key="room.odata"
-                                    class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden border">
-                                    <div class="relative">
-                                        <img :src="getRoomImage(room)" class="h-52 w-full object-cover"
-                                            loading="lazy" />
-                                        <div class="absolute top-3 left-3 flex gap-2">
-                                            <span v-for="tag in getRoomBadgeTags(room)" :key="tag.label"
-                                                class="px-2 py-1 text-xs rounded font-semibold text-white"
-                                                :class="tag.className">
-                                                {{ tag.label }}
-                                            </span>
-                                        </div>
-                                        <div class="absolute bottom-3 left-3 text-white font-bold text-xl">
-                                            {{ formatRoomPrice(getRoomPriceInfo(room).value) }}
-                                            <span class="text-sm font-normal">/ {{ getRoomPriceInfo(room).label
-                                                }}</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="p-4 pb-2">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <div class="flex items-center gap-1 text-yellow-400 text-sm">
-                                                ★★★★★ <span class="text-gray-500 ml-1">Excellent</span>
-                                            </div>
-                                            <span
-                                                class="inline-block bg-purple-600 text-white text-xs px-3 py-1 rounded font-semibold">
-                                                {{ room.room_type || '-' }}
-                                            </span>
-                                        </div>
-                                        <h3 class="font-bold text-lg mb-1">{{ room.room_name }}</h3>
-                                        <div class="flex items-center text-gray-500 text-sm mb-2">
-                                            <i class="fas fa-map-marker-alt mr-1"></i>
-                                            {{ propertyAddress }}
-                                        </div>
-                                        <div
-                                            class="bg-gray-50 rounded-lg flex flex-wrap items-center gap-3 px-4 py-2 mb-3 text-gray-700 text-sm font-medium">
-                                            <div class="flex items-center gap-1"
-                                                v-for="facility in getRoomFacilities(room)"
-                                                :key="facility.odata || facility.name">
-                                                <i class="fas" :class="facility.icon"></i> {{ facility.name }}
-                                            </div>
-                                        </div>
-                                        <div
-                                            class="bg-gray-50 rounded-lg flex flex-wrap items-center gap-3 px-4 py-2 mb-3 text-gray-700 text-sm font-medium">
-                                            <div class="flex items-center gap-1">
-                                                <i class="fas fa-user-friends"></i>
-                                                Kapasitas {{ room.capacity || '-' }}
-                                            </div>
-                                            <div class="flex items-center gap-1">
-                                                <i class="fas fa-door-open"></i>
-                                                Sisa Kamar {{ room.total_room ?? 0 }}
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center justify-between pt-2">
-                                            <div class="flex items-center gap-2"></div>
-                                            <button type="button"
-                                                class="bg-gray-900 text-white px-4 py-2 rounded-lg font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                                :disabled="!room.total_room" @click="bookRoom(room)">
-                                                {{ room.total_room ? 'Book Now' : 'Full Book' }}
-                                            </button>
-                                        </div>
-                                    </div>
+                            <div class="p-4">
+                                <div class="relative w-full aspect-video rounded-lg overflow-hidden bg-black/5">
+                                    <iframe v-if="videoEmbedUrl" :src="videoEmbedUrl" class="absolute inset-0 w-full h-full"
+                                        title="Property video" frameborder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowfullscreen></iframe>
+                                    <video v-else controls class="absolute inset-0 w-full h-full">
+                                        <source :src="videoUrl" />
+                                    </video>
                                 </div>
                             </div>
-                            <p v-else class="text-sm text-gray-500">Belum ada room yang tersedia.</p>
                         </div>
 
                         <div v-if="mapEmbedUrl" class="bg-white rounded-xl shadow overflow-hidden">
@@ -275,367 +383,587 @@
     </section>
 
     <LoginModal :open="loginOpen" @close="loginOpen = false" />
+    
+
+    <!-- LIGHTBOX -->
+    <div v-if="showGallery" class="fixed inset-0 bg-black/95 z-50 flex flex-col">
+
+        <!-- HEADER -->
+        <div class="flex justify-between items-center p-5 text-white relative">
+            <span class="text-lg font-semibold">
+            {{ currentIndex + 1 }} / {{ images.length }}
+            </span>
+            <button @click="showGallery = false" class="text-2xl cursor-pointer absolute right-5 top-5 z-50 bg-black/40 rounded-full px-3 py-1" style="pointer-events:auto;">
+                ×
+            </button>
+        </div>
+
+        <!-- IMAGE with pinch-to-zoom and drag -->
+        <div class="flex-1 flex items-center justify-center select-none">
+            <div ref="zoomWrap" class="relative" style="touch-action: none;">
+                <img :src="images[currentIndex]"
+                    class="max-h-[85vh] object-contain transition duration-300"
+                    :style="zoomStyle"
+                    @mousedown="startDrag"
+                    @mousemove="onDrag"
+                    @mouseup="endDrag"
+                    @mouseleave="endDrag"
+                    @touchstart="startPinch"
+                    @touchmove="onPinch"
+                    @touchend="endPinch"
+                />
+            </div>
+        </div>
+
+        <!-- NAVIGATION -->
+        <div class="absolute inset-y-0 left-0 flex items-center">
+            <button @click="prevImage"
+                    class="text-white text-3xl px-6 hover:scale-125 transition">
+            ‹
+            </button>
+        </div>
+
+        <div class="absolute inset-y-0 right-0 flex items-center">
+            <button @click="nextImage"
+                    class="text-white text-3xl px-6 hover:scale-125 transition">
+            ›
+            </button>
+        </div>
+
+    </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useRoute } from 'vue-router'
-import { useHead } from '@vueuse/head'
-import { apiGetData } from '@/store/action'
-import { useInfoStore } from '@/store/info'
-import { useAuthStore } from '@/store/auth'
-import LoginModal from '@/components/auth/LoginModal.vue'
+    import { computed, onMounted, ref, onBeforeUnmount, watch } from 'vue'
+    import { storeToRefs } from 'pinia'
+    import { useRoute } from 'vue-router'
+    import { useHead } from '@vueuse/head'
+    import { apiGetData } from '@/store/action'
+    import { useInfoStore } from '@/store/info'
+    import { useAuthStore } from '@/store/auth'
+    import LoginModal from '@/components/auth/LoginModal.vue'
+    import SearchProperty from '@/components/home/SearchProperty.vue'
 
-const authStore = useAuthStore()
-const { token } = storeToRefs(authStore)
-const loginOpen = ref(false)
+    const authStore = useAuthStore()
+    const { token } = storeToRefs(authStore)
+    const loginOpen = ref(false)
 
 
-const route = useRoute()
-const property = ref(null)
-const isLoading = ref(false)
-const activeImage = ref('')
-const activeIndex = ref(0)
-const transitionName = ref('slide-next')
-const accordionOpen = ref(['description', 'features', 'about'])
-const imageBaseUrl = import.meta.env.VITE_PATH_FILE_BASE_URL + '/storage/'
-const fallbackImage = 'https://images.unsplash.com/photo-1568605114967-8130f3a36994'
-const infoStore = useInfoStore()
-const { data: info, loaded } = storeToRefs(infoStore)
-const currentInfo = computed(() => info.value?.[0] ?? {})
+    const route = useRoute()
+    const property = ref(null)
+    const isLoading = ref(false)
+    const accordionOpen = ref(['description', 'features', 'about'])
+    const imageBaseUrl = import.meta.env.VITE_PATH_FILE_BASE_URL + '/storage/'
+    const fallbackImage = 'https://images.unsplash.com/photo-1568605114967-8130f3a36994'
+    const infoStore = useInfoStore()
+    const { data: info, loaded } = storeToRefs(infoStore)
+    const currentInfo = computed(() => info.value?.[0] ?? {})
 
-const odata = computed(() => route.query.odata)
+    const odata = computed(() => route.query.odata)
 
-const propertyTitle = computed(() => property.value?.properties || 'Detail Room')
-const propertyAddress = computed(() => property.value?.address || '-')
-const propertyTypeLabel = computed(() => property.value?.type || 'Property')
-const mapUrl = computed(() => {
-    const lat = Number(property.value?.latitude)
-    const lng = Number(property.value?.longitude)
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return ''
-    return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
-})
-const mapEmbedUrl = computed(() => {
-    const lat = Number(property.value?.latitude)
-    const lng = Number(property.value?.longitude)
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return ''
-    return `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`
-})
-const normalizeInfoValue = (value) => {
-    if (value === null || value === undefined) return ''
-    const stringValue = String(value).trim()
-    if (!stringValue || stringValue.toLowerCase() === 'null') return ''
-    return stringValue
-}
-
-const getYouTubeId = (value) => {
-    if (!value) return ''
-    try {
-        const parsed = new URL(value)
-        if (parsed.hostname.includes('youtu.be')) {
-            return parsed.pathname.replace('/', '')
-        }
-        const idFromQuery = parsed.searchParams.get('v')
-        if (idFromQuery) return idFromQuery
-        const match = parsed.pathname.match(/\/embed\/([^/?]+)/)
-        return match ? match[1] : ''
-    } catch (error) {
-        return ''
+    const propertyTitle = computed(() => property.value?.properties || 'Detail Room')
+    const propertyAddress = computed(() => property.value?.address || '-')
+    const propertyTypeLabel = computed(() => property.value?.type || 'Property')
+    const mapUrl = computed(() => {
+        const lat = Number(property.value?.latitude)
+        const lng = Number(property.value?.longitude)
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return ''
+        return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+    })
+    const mapEmbedUrl = computed(() => {
+        const lat = Number(property.value?.latitude)
+        const lng = Number(property.value?.longitude)
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return ''
+        return `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`
+    })
+    const normalizeInfoValue = (value) => {
+        if (value === null || value === undefined) return ''
+        const stringValue = String(value).trim()
+        if (!stringValue || stringValue.toLowerCase() === 'null') return ''
+        return stringValue
     }
-}
 
-const detailBanner = computed(() => normalizeInfoValue(currentInfo.value?.bannerSewaDetail))
-const detailColor = computed(() => normalizeInfoValue(currentInfo.value?.colorSewaDetail))
-
-const heroImage = computed(() => {
-    if (detailBanner.value) {
-        return imageBaseUrl + detailBanner.value
-    }
-    if (property.value?.image) {
-        return imageBaseUrl + property.value.image
-    }
-    return fallbackImage
-})
-
-const detailTextColor = computed(() => detailColor.value || '#ffffff')
-const detailMutedColor = computed(() => detailColor.value || 'rgba(255, 255, 255, 0.9)')
-const detailAccentColor = computed(() => detailColor.value || '#10b981')
-const detailButtonTextColor = computed(() => '#ffffff')
-
-const galleryImages = computed(() => {
-    const images = []
-    if (property.value?.image) {
-        images.push(imageBaseUrl + property.value.image)
-    }
-    if (Array.isArray(property.value?.gallery)) {
-        property.value.gallery.forEach((item) => {
-            if (item?.image) {
-                images.push(imageBaseUrl + item.image)
+    const getYouTubeId = (value) => {
+        if (!value) return ''
+        try {
+            const parsed = new URL(value)
+            if (parsed.hostname.includes('youtu.be')) {
+                return parsed.pathname.replace('/', '')
             }
+            const idFromQuery = parsed.searchParams.get('v')
+            if (idFromQuery) return idFromQuery
+            const match = parsed.pathname.match(/\/embed\/([^/?]+)/)
+            return match ? match[1] : ''
+        } catch (error) {
+            return ''
+        }
+    }
+
+    const detailBanner = computed(() => normalizeInfoValue(currentInfo.value?.bannerSewaDetail))
+    const detailColor = computed(() => normalizeInfoValue(currentInfo.value?.colorSewaDetail))
+
+    const heroImage = computed(() => {
+        if (detailBanner.value) {
+            return imageBaseUrl + detailBanner.value
+        }
+        if (property.value?.image) {
+            return imageBaseUrl + property.value.image
+        }
+        return fallbackImage
+    })
+
+    const detailTextColor = computed(() => detailColor.value || '#ffffff')
+    const detailMutedColor = computed(() => detailColor.value || 'rgba(255, 255, 255, 0.9)')
+    const detailAccentColor = computed(() => detailColor.value || '#10b981')
+    const detailButtonTextColor = computed(() => '#ffffff')
+
+    const galleryImages = computed(() => {
+        const images = []
+        if (property.value?.image) {
+            images.push(imageBaseUrl + property.value.image)
+        }
+        if (Array.isArray(property.value?.gallery)) {
+            property.value.gallery.forEach((item) => {
+                if (item?.image) {
+                    images.push(imageBaseUrl + item.image)
+                }
+            })
+        }
+        return Array.from(new Set(images))
+    })
+
+
+
+    const showGallery = ref(false)
+    const currentIndex = ref(0)
+
+
+    const images = computed(() => {     
+        return galleryImages.value.length ? galleryImages.value : [fallbackImage]
+    })
+
+    function openGallery(index){
+        currentIndex.value = index
+        showGallery.value = true
+    }
+
+    function nextImage(){
+        currentIndex.value = (currentIndex.value + 1) % images.value.length
+    }
+
+    function prevImage(){
+        currentIndex.value = (currentIndex.value - 1 + images.value.length) % images.value.length
+    }
+
+    
+    // Pinch-to-zoom and drag state
+    const zoom = ref(1)
+    const offset = ref({ x: 0, y: 0 })
+    const dragging = ref(false)
+    const dragStart = ref({ x: 0, y: 0 })
+    const offsetStart = ref({ x: 0, y: 0 })
+    const pinchDist = ref(0)
+    const zoomWrap = ref(null)
+
+    const zoomStyle = computed(() => {
+        return `transform: scale(${zoom.value}) translate(${offset.value.x / zoom.value}px, ${offset.value.y / zoom.value}px); transition: ${dragging.value ? 'none' : 'transform 0.3s'}; cursor: ${zoom.value > 1 ? 'grab' : 'auto'};`
+    })
+
+    function startDrag(e) {
+        if (zoom.value === 1) return
+        dragging.value = true
+        dragStart.value = { x: e.clientX, y: e.clientY }
+        offsetStart.value = { ...offset.value }
+        window.addEventListener('mousemove', onDrag)
+        window.addEventListener('mouseup', endDrag)
+    }
+    function onDrag(e) {
+        if (!dragging.value) return
+        offset.value = {
+            x: offsetStart.value.x + (e.clientX - dragStart.value.x),
+            y: offsetStart.value.y + (e.clientY - dragStart.value.y)
+        }
+    }
+    function endDrag() {
+        dragging.value = false
+        window.removeEventListener('mousemove', onDrag)
+        window.removeEventListener('mouseup', endDrag)
+    }
+
+    function startPinch(e) {
+        if (e.touches && e.touches.length === 2) {
+            pinchDist.value = getPinchDist(e)
+            offsetStart.value = { ...offset.value }
+            dragging.value = false
+        } else if (e.touches && e.touches.length === 1 && zoom.value > 1) {
+            dragging.value = true
+            dragStart.value = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+            offsetStart.value = { ...offset.value }
+        }
+    }
+    function onPinch(e) {
+        if (e.touches && e.touches.length === 2) {
+            const dist = getPinchDist(e)
+            let scale = dist / pinchDist.value * zoom.value
+            scale = Math.max(1, Math.min(4, scale))
+            zoom.value = scale
+        } else if (e.touches && e.touches.length === 1 && dragging.value) {
+            offset.value = {
+                x: offsetStart.value.x + (e.touches[0].clientX - dragStart.value.x),
+                y: offsetStart.value.y + (e.touches[0].clientY - dragStart.value.y)
+            }
+        }
+    }
+    function endPinch(e) {
+        dragging.value = false
+    }
+    function getPinchDist(e) {
+        const [a, b] = e.touches
+        return Math.sqrt(Math.pow(a.clientX - b.clientX, 2) + Math.pow(a.clientY - b.clientY, 2))
+    }
+
+    function onWheel(e) {
+        if (!showGallery.value) return
+        if (e.ctrlKey || e.metaKey) {
+            e.preventDefault()
+            let next = zoom.value + (e.deltaY < 0 ? 0.1 : -0.1)
+            zoom.value = Math.max(1, Math.min(4, next))
+        }
+    }
+
+    onMounted(() => {
+        if (zoomWrap.value) {
+            zoomWrap.value.addEventListener('wheel', onWheel, { passive: false })
+        }
+    })
+    onBeforeUnmount(() => {
+        if (zoomWrap.value) {
+            zoomWrap.value.removeEventListener('wheel', onWheel)
+        }
+    })
+
+    watch(showGallery, (val) => {
+        if (!val) {
+            zoom.value = 1
+            offset.value = { x: 0, y: 0 }
+        }
+    })
+
+    // --- LazyImage local component ---
+    import { defineComponent, h, ref as vref, onMounted as vonMounted, watch as vwatch } from 'vue'
+    const LazyImage = defineComponent({
+        name: 'LazyImage',
+        props: {
+            src: { type: String, required: true },
+            alt: { type: String, default: '' },
+            class: { type: String, default: '' }
+        },
+        setup(props) {
+            const observer = vref(null)
+            const el = vref(null)
+            const loaded = vref(false)
+            const imageSrc = vref('')
+            const aspect = vref('')
+            function setAspect(e) {
+                const img = e.target
+                if (!img.naturalWidth || !img.naturalHeight) return
+                aspect.value = `${img.naturalWidth} / ${img.naturalHeight}`
+            }
+            vonMounted(() => {
+                observer.value = new window.IntersectionObserver(([entry]) => {
+                    if (entry.isIntersecting) {
+                        imageSrc.value = props.src
+                        loaded.value = true
+                        observer.value && observer.value.disconnect()
+                    }
+                }, { threshold: 0.1 })
+                if (el.value) observer.value.observe(el.value)
+            })
+            watch(() => props.src, (val) => { if (loaded.value) imageSrc.value = val })
+            return () => h('div', {
+                style: {
+                    position: 'relative',
+                    width: '100%',
+                    height: '100%',
+                    aspectRatio: aspect.value || undefined
+                }
+            }, [
+                !loaded.value && h('div', { class: 'absolute inset-0 bg-gray-200 animate-pulse shimmer rounded-xl' }),
+                h('img', {
+                    ref: el,
+                    src: imageSrc.value,
+                    alt: props.alt,
+                    class: props.class,
+                    style: !loaded.value ? 'opacity:0;' : '',
+                    onLoad: setAspect
+                })
+            ])
+        }
+})
+
+    const priceInfo = computed(() => {
+        const candidates = [
+            { value: property.value?.price_per_night, label: 'Night' },
+            { value: property.value?.price_per_monthly, label: 'Month' },
+            { value: property.value?.price_per_year, label: 'Year' }
+        ].filter((entry) => typeof entry.value === 'number' && entry.value > 0)
+
+        if (!candidates.length) {
+            return { value: 0, label: 'Rent' }
+        }
+
+        return candidates.reduce((min, current) => {
+            return current.value < min.value ? current : min
+        })
+    })
+
+    const formattedPrice = computed(() => {
+        return Number(priceInfo.value.value || 0)
+            .toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
+            .slice(0, -3)
+    })
+
+    const priceLabel = computed(() => priceInfo.value.label)
+
+
+    const facilities = computed(() => {
+        if (!Array.isArray(property.value?.facilities)) return []
+        return property.value.facilities
+            .map((entry) => entry?.facility)
+            .filter(Boolean)
+    })
+
+    const propertyDescription = computed(() => property.value?.information || 'Belum ada deskripsi.')
+    const propertyAbout = computed(() => property.value?.description || 'Belum ada deskripsi.')
+    const propertyRooms = computed(() => {
+        if (!Array.isArray(property.value?.rooms)) return []
+        return property.value.rooms.filter((room) => room?.status === 0)
+    })
+
+    const formatRoomPrice = (value) => {
+        if (value === null || value === undefined || value === '') return '-'
+        return Number(value)
+            .toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
+            .slice(0, -3)
+    }
+
+    const getRoomPriceInfo = (room) => {
+        const candidates = [
+            { value: room?.price, label: 'Night' },
+            { value: room?.price_month, label: 'Month' },
+            { value: room?.price_year, label: 'Year' }
+        ].filter((entry) => typeof entry.value === 'number' && entry.value > 0)
+
+        if (!candidates.length) {
+            return { value: 0, label: 'Rent' }
+        }
+
+        return candidates.reduce((min, current) => {
+            return current.value < min.value ? current : min
         })
     }
-    return Array.from(new Set(images))
-})
-
-const setActiveImage = (index, direction = null) => {
-    if (!galleryImages.value.length) return
-    const safeIndex = Math.min(Math.max(index, 0), galleryImages.value.length - 1)
-    if (direction) {
-        transitionName.value = direction
-    } else {
-        transitionName.value = safeIndex >= activeIndex.value ? 'slide-next' : 'slide-prev'
-    }
-    activeIndex.value = safeIndex
-    activeImage.value = galleryImages.value[safeIndex]
-}
-
-const nextImage = () => {
-    if (!galleryImages.value.length) return
-    const nextIndex = (activeIndex.value + 1) % galleryImages.value.length
-    setActiveImage(nextIndex, 'slide-next')
-}
-
-const prevImage = () => {
-    if (!galleryImages.value.length) return
-    const prevIndex = (activeIndex.value - 1 + galleryImages.value.length) % galleryImages.value.length
-    setActiveImage(prevIndex, 'slide-prev')
-}
-
-const priceInfo = computed(() => {
-    const candidates = [
-        { value: property.value?.price_per_night, label: 'Night' },
-        { value: property.value?.price_per_monthly, label: 'Month' },
-        { value: property.value?.price_per_year, label: 'Year' }
-    ].filter((entry) => typeof entry.value === 'number' && entry.value > 0)
-
-    if (!candidates.length) {
-        return { value: 0, label: 'Rent' }
-    }
-
-    return candidates.reduce((min, current) => {
-        return current.value < min.value ? current : min
-    })
-})
-
-const formattedPrice = computed(() => {
-    return Number(priceInfo.value.value || 0)
-        .toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
-        .slice(0, -3)
-})
-
-const priceLabel = computed(() => priceInfo.value.label)
-
-const rentTags = computed(() => {
-    const tags = []
-    if (property.value?.price_per_night) {
-        tags.push({ label: 'Harian', className: 'bg-emerald-600' })
-    }
-    if (property.value?.price_per_monthly) {
-        tags.push({ label: 'Bulanan', className: 'bg-purple-600' })
-    }
-    if (property.value?.price_per_year) {
-        tags.push({ label: 'Tahunan', className: 'bg-sky-600' })
-    }
-    if (!tags.length) {
-        tags.push({ label: 'Di Sewakan', className: 'bg-gray-700' })
-    }
-    return tags
-})
-
-const facilities = computed(() => {
-    if (!Array.isArray(property.value?.facilities)) return []
-    return property.value.facilities
-        .map((entry) => entry?.facility)
-        .filter(Boolean)
-})
-
-const propertyDescription = computed(() => property.value?.information || 'Belum ada deskripsi.')
-const propertyAbout = computed(() => property.value?.description || 'Belum ada deskripsi.')
-const propertyRooms = computed(() => {
-    if (!Array.isArray(property.value?.rooms)) return []
-    return property.value.rooms.filter((room) => room?.status === 0)
-})
-
-const formatRoomPrice = (value) => {
-    if (value === null || value === undefined || value === '') return '-'
-    return Number(value)
-        .toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
-        .slice(0, -3)
-}
-
-const getRoomPriceInfo = (room) => {
-    const candidates = [
-        { value: room?.price, label: 'Night' },
-        { value: room?.price_month, label: 'Month' },
-        { value: room?.price_year, label: 'Year' }
-    ].filter((entry) => typeof entry.value === 'number' && entry.value > 0)
-
-    if (!candidates.length) {
-        return { value: 0, label: 'Rent' }
-    }
-
-    return candidates.reduce((min, current) => {
-        return current.value < min.value ? current : min
-    })
-}
-
-const getRoomBadgeTags = (room) => {
-    const rentTags = []
-    if (room?.price) {
-        rentTags.push({ label: 'Harian', className: 'bg-emerald-600' })
-    }
-    if (room?.price_month) {
-        rentTags.push({ label: 'Bulanan', className: 'bg-purple-600' })
-    }
-    if (room?.price_year) {
-        rentTags.push({ label: 'Tahunan', className: 'bg-sky-600' })
-    }
-    if (!rentTags.length) {
-        rentTags.push({ label: 'Di Sewakan', className: 'bg-gray-700' })
-    }
-    return rentTags
-}
-
-const getRoomImage = (room) => {
-    if (room?.image) {
-        return imageBaseUrl + room.image
-    }
-    return fallbackImage
-}
-
-const getRoomFacilities = (room) => {
-    if (!Array.isArray(room?.facilities)) return []
-    return room.facilities
-        .map((entry) => entry?.facility)
-        .filter(Boolean)
-}
-
-const videoUrl = computed(() => normalizeInfoValue(property.value?.url_video))
-const videoEmbedUrl = computed(() => {
-    const id = getYouTubeId(videoUrl.value)
-    return id ? `https://www.youtube.com/embed/${id}` : ''
-})
-
-const featureList = computed(() => facilities.value
-    .map((facility) => facility?.name)
-    .filter(Boolean))
 
 
-
-const createdAt = computed(() => {
-    if (!property.value?.created_at) return '-'
-    return new Date(property.value.created_at).toLocaleDateString('id-ID')
-})
-
-const fetchProperty = async () => {
-    if (!odata.value) return
-    isLoading.value = true
-    try {
-        const response = await apiGetData('public/property-detail', { odata: odata.value })
-        property.value = response?.data || null
-        if (galleryImages.value.length) {
-            setActiveImage(0)
+    const getRoomImage = (room) => {
+        if (room?.image) {
+            return imageBaseUrl + room.image
         }
-    } finally {
-        isLoading.value = false
+        return fallbackImage
     }
-}
 
-const shareProperty = async () => {
-    const shareUrl = window.location.href
-    const shareTitle = propertyTitle.value
-    try {
-        if (navigator.share) {
-            await navigator.share({ title: shareTitle, url: shareUrl })
+    const getRoomFacilities = (room) => {
+        if (!Array.isArray(room?.facilities)) return []
+        return room.facilities
+            .map((entry) => entry?.facility)
+            .filter(Boolean)
+    }
+
+    const videoUrl = computed(() => normalizeInfoValue(property.value?.url_video))
+    const videoEmbedUrl = computed(() => {
+        const id = getYouTubeId(videoUrl.value)
+        return id ? `https://www.youtube.com/embed/${id}` : ''
+    })
+
+
+    const createdAt = computed(() => {
+        if (!property.value?.created_at) return '-'
+        return new Date(property.value.created_at).toLocaleDateString('id-ID')
+    })
+
+    const fetchProperty = async () => {
+        if (!odata.value) return
+        isLoading.value = true
+        try {
+            const response = await apiGetData('public/property-detail', { odata: odata.value })
+            property.value = response?.data || null
+        } finally {
+            isLoading.value = false
+        }
+    }
+
+    const shareProperty = async () => {
+        const shareUrl = window.location.href
+        const shareTitle = propertyTitle.value
+        try {
+            if (navigator.share) {
+                await navigator.share({ title: shareTitle, url: shareUrl })
+                return
+            }
+            if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(shareUrl)
+                alert('Link copied')
+                return
+            }
+        } catch (error) {
+            // Ignore and fallback to prompt.
+        }
+        window.prompt('Copy this link', shareUrl)
+    }
+
+    const toggleAccordion = (id) => {
+        if (accordionOpen.value.includes(id)) {
+            accordionOpen.value = accordionOpen.value.filter((entry) => entry !== id)
             return
         }
-        if (navigator.clipboard?.writeText) {
-            await navigator.clipboard.writeText(shareUrl)
-            alert('Link copied')
+        accordionOpen.value = [...accordionOpen.value, id]
+    }
+
+    const bookRoom = (room) => {
+        if (!token.value) {
+            loginOpen.value = true
             return
         }
-    } catch (error) {
-        // Ignore and fallback to prompt.
-    }
-    window.prompt('Copy this link', shareUrl)
-}
-
-const toggleAccordion = (id) => {
-    if (accordionOpen.value.includes(id)) {
-        accordionOpen.value = accordionOpen.value.filter((entry) => entry !== id)
-        return
-    }
-    accordionOpen.value = [...accordionOpen.value, id]
-}
-
-const bookRoom = (room) => {
-    if (!token.value) {
-        loginOpen.value = true
-        return
-    }
-    // Implement booking logic here, e.g. navigate to booking page or open booking modal.
-    alert(`Booking room: ${room.room_name}`)
-}
-
-onMounted(async () => {
-    await infoStore.fetch()
-    fetchProperty()
-})
-
-useHead({
-    title: `${propertyTitle.value} - ID Room`,
-    meta: [
-        {
-            name: 'description',
-            content: propertyAddress.value
+        // Ambil data property dan room
+        const propertyData = {
+            propertyID: room?.odata,
+            capacity: room.capacity || 2,
+            image: getRoomImage(room),
+            checkIn: new Date().toISOString().slice(0,10),
+            checkOut: (() => {
+                const d = new Date();
+                d.setDate(d.getDate() + 1);
+                return d.toISOString().slice(0,10);
+            })(),
+            nights: 1
         }
-    ]
-})
+        // Kirim data via query string (atau localStorage/sessionStorage jika data besar)
+        const params = new URLSearchParams(propertyData).toString();
+        window.open(`/booking?${params}`, '_blank');
+    }
+
+    onMounted(async () => {
+        await infoStore.fetch()
+        fetchProperty()
+    })
+
+    useHead({
+        title: `${propertyTitle.value} - ID Room`,
+        meta: [
+            {
+                name: 'description',
+                content: propertyAddress.value
+            }
+        ]
+    })
+
+    window.addEventListener('keydown', (e)=>{
+        if(!showGallery.value) return
+
+        if(e.key === 'ArrowRight') nextImage()
+        if(e.key === 'ArrowLeft') prevImage()
+        if(e.key === 'Escape') showGallery.value = false
+    })
+
 </script>
 
+
+
+
 <style scoped>
-.slide-next-enter-active,
-.slide-next-leave-active,
-.slide-prev-enter-active,
-.slide-prev-leave-active {
-    transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
-}
+    .slide-next-enter-active,
+    .slide-next-leave-active,
+    .slide-prev-enter-active,
+    .slide-prev-leave-active {
+        transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
 
-.slide-next-enter-from {
-    opacity: 0;
-    transform: translateX(48px);
-}
+    .slide-next-enter-from {
+        opacity: 0;
+        transform: translateX(48px);
+    }
 
-.slide-next-leave-to {
-    opacity: 0;
-    transform: translateX(-48px);
-}
+    .slide-next-leave-to {
+        opacity: 0;
+        transform: translateX(-48px);
+    }
 
-.slide-prev-enter-from {
-    opacity: 0;
-    transform: translateX(-48px);
-}
+    .slide-prev-enter-from {
+        opacity: 0;
+        transform: translateX(-48px);
+    }
 
-.slide-prev-leave-to {
-    opacity: 0;
-    transform: translateX(48px);
-}
+    .slide-prev-leave-to {
+        opacity: 0;
+        transform: translateX(48px);
+    }
 
-.accordion-enter-active,
-.accordion-leave-active {
-    transition: max-height 0.4s ease, opacity 0.4s ease;
-}
+    .accordion-enter-active,
+    .accordion-leave-active {
+        transition: max-height 0.4s ease, opacity 0.4s ease;
+    }
 
-.accordion-enter-from,
-.accordion-leave-to {
-    max-height: 0;
-    opacity: 0;
-}
+    .accordion-enter-from,
+    .accordion-leave-to {
+        max-height: 0;
+        opacity: 0;
+    }
 
-.accordion-enter-to,
-.accordion-leave-from {
-    max-height: 420px;
-    opacity: 1;
+    .accordion-enter-to,
+    .accordion-leave-from {
+        max-height: 420px;
+        opacity: 1;
+    }
+
+    .chip{
+        background-color: #f3f4f6; /* bg-gray-100 */
+        color: #374151;            /* text-gray-700 */
+        padding-left: 0.75rem;     /* px-3 */
+        padding-right: 0.75rem;
+        padding-top: 0.5rem;       /* py-2 */
+        padding-bottom: 0.5rem;
+        border-radius: 9999px;     /* rounded-full */
+        font-size: 0.875rem;       /* text-sm */
+        font-weight: 500;          /* font-medium */
+        cursor: pointer;           /* cursor-pointer */
+    }
+    .chip:hover{
+        background-color: #eff6ff; /* bg-blue-50 */
+        color: #2563eb;            /* text-blue-600 */
+    }
+
+/* Tambahkan styling agar tag HTML seperti <ul>, <li>, <b> tetap terbaca rapi */
+.prose ul {
+    list-style-type: disc;
+    margin-left: 1.5em;
+    margin-bottom: 0.5em;
+}
+.prose ol {
+    list-style-type: decimal;
+    margin-left: 1.5em;
+    margin-bottom: 0.5em;
+}
+.prose li {
+    margin-bottom: 0.25em;
+}
+.prose b, .prose strong {
+    font-weight: bold;
+    color: #222;
+}
+.prose p {
+    margin-bottom: 0.5em;
+}
+.prose br {
+    display: block;
+    margin-bottom: 0.5em;
 }
 </style>

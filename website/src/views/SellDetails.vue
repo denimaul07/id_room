@@ -1,7 +1,7 @@
 <template>
     <section class="relative flex items-center bg-center bg-cover h-[220px] md:h-[280px] lg:h-[260px]"
         :style="{ backgroundImage: `url(${heroImage})` }">
-        <div class="absolute inset-0 bg-gradient-to-r"></div>
+        <div class="absolute inset-0 bg-gradient-to-r "></div>
         <div class="relative z-10 max-w-7xl mx-auto px-4 w-full">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                 <div class="text-left">
@@ -66,8 +66,8 @@
 
     <section class="py-12 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4">
-            <div v-if="isLoading" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2 space-y-4">
+            <div v-if="isLoading" class="grid grid-cols-1 gap-8">
+                <div class="space-y-4">
                     <div class="h-72 bg-gray-200 rounded-xl animate-pulse"></div>
                     <div class="h-6 bg-gray-200 rounded w-2/3 animate-pulse"></div>
                     <div class="h-4 bg-gray-200 rounded w-1/2 animate-pulse"></div>
@@ -76,185 +76,285 @@
                         <div class="h-20 bg-gray-200 rounded animate-pulse"></div>
                     </div>
                 </div>
-                <div class="h-80 bg-gray-200 rounded-xl animate-pulse"></div>
             </div>
 
             <div v-else-if="!property" class="text-center text-gray-500 py-16">
                 <p class="text-lg">Detail properti tidak ditemukan.</p>
             </div>
 
-            <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2">
-                    <div class="bg-white rounded-xl shadow overflow-hidden">
-                        <div class="p-4">
-                            <div class="relative w-full h-72 md:h-96 rounded-xl overflow-hidden bg-black/5">
-                                <transition :name="transitionName" mode="out-in">
-                                    <img :key="activeImage" :src="activeImage"
-                                        class="absolute inset-0 w-full h-full object-cover" alt="Property Image" />
-                                </transition>
+            <div v-else class="grid grid-cols-1 gap-8">
+                <div>
+                    <!-- PHOTO GALLERY -->
+                    <section class="max-w-7xl mx-auto mt-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 h-[420px]">
+                            <!-- LEFT BIG IMAGE, aspect ratio & shadow -->
+                            <div
+                                class="relative group cursor-pointer overflow-hidden shadow-lg aspect-[4/3] h-full min-h-[220px] bg-gray-100"
+                                @click="setActiveImage(0)"
+                            >
+                                <img
+                                    :src="galleryImages[0]"
+                                    class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                                />
+                                <div class="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition"></div>
                             </div>
-                            <div v-if="galleryImages.length > 1" class="mt-5 relative">
-                                <div class="overflow-hidden">
-                                    <div class="flex items-center gap-3">
-                                        <button v-for="(img, index) in galleryImages" :key="img"
-                                            class="rounded-lg overflow-hidden ring-2 shrink-0"
-                                            :class="index === activeIndex ? 'ring-gray-900' : 'ring-transparent'"
-                                            @click="setActiveImage(index)">
-                                            <img :src="img" class="h-16 w-24 object-cover" alt="Property Thumbnail" />
-                                        </button>
+
+                            <!-- RIGHT GRID, thumbnails, overlay on last -->
+                            <div class="grid grid-cols-2 gap-3 h-full">
+                                <div
+                                    v-for="(img, i) in galleryImages.slice(1,5)"
+                                    :key="i"
+                                    class="relative cursor-pointer overflow-hidden  group aspect-[4/3] bg-gray-100"
+                                    @click="setActiveImage(i+1)"
+                                >
+                                    <img
+                                        :src="img"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                                    />
+                                    <!-- LAST IMAGE OVERLAY, more visible -->
+                                    <div
+                                        v-if="i === 3 && galleryImages.length > 5"
+                                        class="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-xl transition group-hover:bg-black/70 z-10"
+                                    >
+                                        <span class="flex items-center gap-3 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-sm">
+                                            <i class="fas fa-th-large text-2xl"></i>
+                                            Lihat Semua Foto
+                                        </span>
+                                    </div>
+                                    <!-- Overlay for hover effect on all thumbnails -->
+                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="max-w-7xl mx-auto mt-6 z-20 relative">
+
+                        <!-- MAIN CONTAINER -->
+                        <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 md:p-8">
+
+                            <!-- TOP HEADER -->
+                            <div class="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6">
+
+                                <!-- LEFT -->
+                                <div>
+                                    <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
+                                        {{ propertyTitle }}
+                                    </h1>
+
+                                    <!-- TAGS -->
+                                    <div class="flex items-center gap-3 mt-3 flex-wrap">
+                                        <span class="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-700 font-semibold">
+                                        {{ propertyTypeLabel }}
+                                        </span>
+
+                                        <div class="flex text-yellow-400 text-sm">
+                                        <i class="fas fa-star" v-for="i in 5" :key="i"></i>
+                                        </div>
                                     </div>
                                 </div>
-                                <button
-                                    class="absolute -right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full shadow text-gray-700 flex items-center justify-center"
-                                    :disabled="galleryImages.length <= 1" @click="nextImage">
-                                    <i class="fas fa-chevron-right"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="mt-6 space-y-4">
-                        <div class="bg-white rounded-xl shadow overflow-hidden">
-                            <button type="button"
-                                class="w-full px-6 py-4 flex items-center justify-between text-left border-b border-gray-100"
-                                @click="toggleAccordion('description')">
-                                <span class="text-lg font-semibold text-gray-900">Description</span>
-                                <i class="fas"
-                                    :class="accordionOpen.includes('description') ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                            </button>
-                            <transition name="accordion">
-                                <div v-show="accordionOpen.includes('description')" class="px-6 pb-6 pt-2">
-                                    <p class="text-gray-600 whitespace-pre-line" v-html="propertyDescription"></p>
+                                <!-- RIGHT PRICE -->
+                                <div class="text-right">
+                                    <p class="text-sm text-gray-500">Harga mulai dari</p>
+                                    <p class="text-3xl font-bold text-orange-500">
+                                        {{ formattedPrice }}
+                                    </p>
                                 </div>
-                            </transition>
-                        </div>
+                            </div>
 
-                        <div class="bg-white rounded-xl shadow overflow-hidden">
-                            <button type="button"
-                                class="w-full px-6 py-4 flex items-center justify-between text-left border-b border-gray-100"
-                                @click="toggleAccordion('features')">
-                                <span class="text-lg font-semibold text-gray-900">Property Features</span>
-                                <i class="fas"
-                                    :class="accordionOpen.includes('features') ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                            </button>
-                            <transition name="accordion">
-                                <div v-show="accordionOpen.includes('features')" class="px-6 pb-6 pt-2">
-                                    <div v-if="featureList.length" class="flex flex-wrap gap-2">
-                                        <div v-for="facility in facilities" :key="facility.odata || facility.name"
-                                            class="flex items-center gap-2">
+                            <!-- ALERT -->
+                            <div class="mt-6 bg-blue-50 border border-blue-100 rounded-2xl px-5 py-4 flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-thumbs-up"></i>
+                                </div>
+
+                                <p class="text-sm text-gray-700">
+                                    <span class="font-semibold text-blue-600">Jarang ada!</span>
+                                    Properti ini sering habis terpesan.
+                                </p>
+                            </div>
+
+                            <!-- GRID 3 -->
+                            <div class="grid md:grid-cols-3 gap-6 mt-8">
+
+                                <!-- REVIEW CARD -->
+                                <div class="border rounded-2xl p-5">
+                                    <div class="flex justify-between items-center">
+                                        <h3 class="font-semibold">Informasi</h3>
+                                    </div>
+
+                                    <div class="mt-4 space-y-3 text-sm text-gray-600">
+                                        <p class="text-gray-600 whitespace-pre-line prose prose-sm" v-html="propertyAbout"></p>
+                                    </div>
+                                </div>
+
+                                <!-- AREA CARD -->
+                                <div class="border rounded-2xl p-5">
+                                    <div class="flex justify-between items-center">
+                                        <h3 class="font-semibold">Area Akomodasi</h3>
+                                    </div>
+
+                                    <div class="mt-4 space-y-3 text-sm text-gray-600">
+                                        <div class="text-gray-600 prose prose-sm max-w-none">
+                                            <div v-html="propertyDescription"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- FACILITIES -->
+                                <div class="border rounded-2xl p-5">
+                                    <div class="flex justify-between items-center">
+                                        <h3 class="font-semibold">Fasilitas Utama</h3>
+                                    </div>
+
+                                    <ul class="mt-4 space-y-4 text-sm text-gray-700">
+                                        <li
+                                            class="flex flex-row flex-wrap items-center gap-3"
+                                            v-for="facility in facilities"
+                                            :key="facility.odata || facility.name"
+                                            style="display: inline-flex; margin-right: 1.5rem; margin-bottom: 0.5rem;"
+                                        >
                                             <i class="fas" :class="facility.icon"></i>
-                                            <span>{{ facility.name }}</span>
+                                            {{ facility.name }}
+                                        </li>
+                                    </ul>
+                                </div>
+
+                            </div>
+
+                            <section class="bg-[#f5f7fa] pb-14 rounded-2xl mt-6" id="available-rooms">
+                                <div class="max-w-7xl mx-auto px-4">
+
+                                    <!-- TITLE -->
+                                    <h2 class="text-2xl font-bold text-gray-900 mb-4 pt-4">
+                                        Tipe Unit yang Tersedia di {{ propertyTitle }}
+                                    </h2>
+
+                                    <!-- ROOM CARD -->
+                                    <div class="overflow-hidden">
+
+                                        <div
+                                            v-for="room in propertyRooms"
+                                            :key="room.odata"
+                                            class="grid md:grid-cols-[320px_1fr] border-b last:border-b-0"
+                                        >
+
+                                            <!-- ================= LEFT IMAGE PANEL ================= -->
+                                            <div class="p-5">
+                                                <div class="relative">
+                                                    <img
+                                                    :src="getRoomImage(room)"
+                                                    class="rounded-xl w-full h-[210px] object-cover"
+                                                    />
+
+                                                    <!-- Optional Badge -->
+                                                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-r text-sm px-4 py-2 rounded-b-xl" :style="{ backgroundColor: currentInfo.primaryColor, color: currentInfo.primaryTextColor }">
+                                                    Pilihan populer di akomodasi ini
+                                                    </div>
+                                                </div>
+
+                                                <div v-if="room.luas" class="flex items-center gap-2 text-gray-700 text-sm mt-3">
+                                                    <i class="fas fa-ruler text-base"></i>
+                                                    <span>{{ room.luas }} m²</span>
+                                                </div>
+
+                                                <!-- FACILITIES -->
+                                                <ul class="mt-4 space-y-2 text-sm text-gray-600">
+                                                    <li
+                                                        v-for="facility in getRoomFacilities(room)"
+                                                        :key="facility.name"
+                                                        class="inline-flex items-center gap-2 mr-4 mb-2"
+                                                    >
+                                                        <i class="fas" :class="facility.icon"></i>
+                                                        {{ facility.name }}
+                                                    </li>
+                                                </ul>
+                                            </div>
+
+                                            <!-- ================= RIGHT CONTENT ================= -->
+                                            <div class="mt-6">
+                                                <!-- TABLE HEADER -->
+                                                <div class="grid grid-cols-12 px-6 py-3 text-sm text-black font-semibold border-b bg-gray-100">
+                                                    <div class="col-span-4">Pilihan Unit</div>
+                                                    <div class="col-span-2 text-center">Tamu</div>
+                                                    <div class="col-span-2 text-right">Harga Jual</div>
+                                                    <div class="col-span-2 text-right">Unit</div>
+                                                    <div class="col-span-2 text-center">Aksi</div>
+                                                </div>
+
+                                                <!-- ================= RATE PLAN LOOP ================= -->
+                                                <div class="grid grid-cols-12 px-6 py-5 border-b last:border-b-0 items-center bg-white">
+
+                                                    <!-- DESCRIPTION -->
+                                                    <div class="col-span-4">
+                                                        <div class="font-semibold text-gray-900">{{ room.room_name }}</div>
+                                                        <div class="text-xs text-gray-500 mt-1">{{ room.room_type }} Unit</div>
+                                                        <div class="text-xs">
+                                                            <span v-if="room.include_breakfast==='Y'" class="inline-block bg-green-600 text-white px-2 py-1 rounded-full mt-1">
+                                                                Sertifikat Lengkap
+                                                            </span>
+                                                            <span v-else class="inline-block bg-gray-300 text-gray-600 px-2 py-1 rounded-full mt-1">
+                                                                Sertifikat Tidak Lengkap
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- GUEST ICON -->
+                                                    <div class="col-span-2 text-center text-gray-400 text-lg">
+                                                        <span v-if="room.capacity">
+                                                            <i class="fas fa-user" v-for="n in room.capacity" :key="n"></i>
+                                                        </span>
+                                                    </div>
+
+                                                    <!-- PRICE -->
+                                                    <div class="col-span-2 text-right">
+                                                        <div class="text-xl font-bold text-orange-500">
+                                                            {{ room.price ? room.price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).replace(',00', '') : '-' }}
+                                                        </div>
+                                                        <div class="text-xs text-gray-400">Harga Jual</div>
+                                                    </div>
+
+                                                    <div class="col-span-2 text-right text-gray-500 text-sm">
+                                                        <span class="inline-block text-xs text-white px-2 py-1 rounded-full mb-1" :style="{ backgroundColor: currentInfo.primaryColor }">
+                                                            1 x
+                                                        </span>
+                                                    </div>
+
+                                                    <!-- ACTION -->
+                                                    <div class="col-span-2 flex flex-col items-center gap-2">
+                                                        <button
+                                                            class="px-5 py-2 rounded-lg font-semibold w-24 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
+                                                            :style="{ backgroundColor: currentInfo.primaryColor , color: currentInfo.primaryTextColor }"
+                                                            @click="openContactDrawer">Tanya Unit
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <p v-else class="text-gray-500 text-sm">Belum ada fitur.</p>
-                                </div>
-                            </transition>
-                        </div>
 
-                        <div class="bg-white rounded-xl shadow overflow-hidden">
-                            <button type="button"
-                                class="w-full px-6 py-4 flex items-center justify-between text-left border-b border-gray-100"
-                                @click="toggleAccordion('about')">
-                                <span class="text-lg font-semibold text-gray-900">About Property</span>
-                                <i class="fas"
-                                    :class="accordionOpen.includes('about') ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                            </button>
-                            <transition name="accordion">
-                                <div v-show="accordionOpen.includes('about')" class="px-6 pb-6 pt-2">
-                                    <p class="text-gray-600 whitespace-pre-line" v-html="propertyAbout"></p>
                                 </div>
-                            </transition>
+                            </section>
                         </div>
                     </div>
 
-                    <div v-if="videoUrl" class="mt-6 bg-white rounded-xl shadow overflow-hidden">
-                        <div class="px-6 py-4 border-b border-gray-100">
-                            <h3 class="text-lg font-semibold text-gray-900">Video</h3>
-                        </div>
-                        <div class="p-4">
-                            <div class="relative w-full aspect-video rounded-lg overflow-hidden bg-black/5">
-                                <iframe v-if="videoEmbedUrl" :src="videoEmbedUrl" class="absolute inset-0 w-full h-full"
-                                    title="Property video" frameborder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowfullscreen></iframe>
-                                <video v-else controls class="absolute inset-0 w-full h-full">
-                                    <source :src="videoUrl" />
-                                </video>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div v-if="videoUrl" class="bg-white rounded-xl shadow overflow-hidden">
+                            <div class="px-6 py-4 border-b border-gray-100">
+                                <h3 class="text-lg font-semibold text-gray-900">Video</h3>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="lg:col-span-1">
-                    <div class="space-y-6 lg:sticky lg:top-6">
-                        <div class="bg-white rounded-xl shadow p-6">
-                            <h3 class="text-xl font-bold text-gray-900 mb-4">Available Rooms</h3>
-                            <div v-if="propertyRooms.length" class="space-y-4">
-                                <div v-for="room in propertyRooms" :key="room.odata"
-                                    class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden border">
-                                    <div class="relative">
-                                        <img :src="getRoomImage(room)" class="h-52 w-full object-cover"
-                                            loading="lazy" />
-                                        <div class="absolute top-3 left-3 flex gap-2">
-                                            <span v-for="tag in getRoomBadgeTags(room)" :key="tag.label"
-                                                class="px-2 py-1 text-xs rounded font-semibold text-white"
-                                                :class="tag.className">
-                                                {{ tag.label }}
-                                            </span>
-                                        </div>
-                                        <div class="absolute bottom-3 left-3 text-white font-bold text-xl">
-                                            {{ formatRoomPrice(getRoomPriceInfo(room).value) }}
-                                            <span class="text-sm font-normal">/ {{ getRoomPriceInfo(room).label
-                                                }}</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="p-4 pb-2">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <div class="flex items-center gap-1 text-yellow-400 text-sm">
-                                                ★★★★★ <span class="text-gray-500 ml-1">Excellent</span>
-                                            </div>
-                                            <span
-                                                class="inline-block bg-purple-600 text-white text-xs px-3 py-1 rounded font-semibold">
-                                                {{ room.room_type || '-' }}
-                                            </span>
-                                        </div>
-                                        <h3 class="font-bold text-lg mb-1">{{ room.room_name }}</h3>
-                                        <div class="flex items-center text-gray-500 text-sm mb-2">
-                                            <i class="fas fa-map-marker-alt mr-1"></i>
-                                            {{ propertyAddress }}
-                                        </div>
-                                        <div
-                                            class="bg-gray-50 rounded-lg flex flex-wrap items-center gap-3 px-4 py-2 mb-3 text-gray-700 text-sm font-medium">
-                                            <div class="flex items-center gap-1"
-                                                v-for="facility in getRoomFacilities(room)"
-                                                :key="facility.odata || facility.name">
-                                                <i class="fas" :class="facility.icon"></i> {{ facility.name }}
-                                            </div>
-                                        </div>
-                                        <div
-                                            class="bg-gray-50 rounded-lg flex flex-wrap items-center gap-3 px-4 py-2 mb-3 text-gray-700 text-sm font-medium">
-                                            <div class="flex items-center gap-1">
-                                                <i class="fas fa-user-friends"></i>
-                                                Kapasitas {{ room.capacity || '-' }}
-                                            </div>
-                                            <div class="flex items-center gap-1">
-                                                <i class="fas fa-door-open"></i>
-                                                Sisa Kamar {{ room.total_room ?? 0 }}
-                                            </div>
-                                        </div>
-                                        <div class="flex items-center justify-between pt-2">
-                                            <div class="flex items-center gap-2"></div>
-                                            <button type="button" @click="openContactDrawer"
-                                                class="bg-gray-900 text-white px-4 py-2 rounded-lg font-semibold text-sm">
-                                                Contact Agent
-                                            </button>
-                                      
-                                        </div>
-                                    </div>
+                            <div class="p-4">
+                                <div class="relative w-full aspect-video rounded-lg overflow-hidden bg-black/5">
+                                    <iframe v-if="videoEmbedUrl" :src="videoEmbedUrl" class="absolute inset-0 w-full h-full"
+                                        title="Property video" frameborder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowfullscreen></iframe>
+                                    <video v-else controls class="absolute inset-0 w-full h-full">
+                                        <source :src="videoUrl" />
+                                    </video>
                                 </div>
                             </div>
-                            <p v-else class="text-sm text-gray-500">Belum ada room yang tersedia.</p>
                         </div>
 
                         <div v-if="mapEmbedUrl" class="bg-white rounded-xl shadow overflow-hidden">

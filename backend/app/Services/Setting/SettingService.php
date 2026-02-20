@@ -8,6 +8,7 @@ use App\Models\PopularCity;
 use App\Models\Properties;
 use App\Models\Province;
 use App\Models\Setting;
+use App\Models\Rooms;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -349,6 +350,8 @@ class SettingService
             'colorSewaDetail',
             'bannerJualDetail',
             'colorJualDetail',
+            'ppn',
+            'fee'
         ]);
     }
 
@@ -557,7 +560,7 @@ class SettingService
             'gallery',
             'rooms',
             'rooms.facilities.facility',
-        ])->where('odata', $odata)->first();
+        ])->where('slug', $odata)->first();
 
         if (!$property) {
             throw new HttpResponseException(response()->json(['error' => 'Property not found'], 404));
@@ -570,5 +573,13 @@ class SettingService
     {
         $kodeNegara = KodeNegara::all();
         return $kodeNegara;
+    }
+
+    public function properties_booking($property_id)
+    {
+        $room = Rooms::with(['property', 'facilities.facility'])
+            ->where('odata', $property_id)
+            ->get();
+        return $room;
     }
 }

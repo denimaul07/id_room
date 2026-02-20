@@ -56,7 +56,7 @@ const props = defineProps({
 })
 
 const detailLink = computed(() => {
-  const odata = props.item?.odata || props.item?.id
+  const odata = props.item?.slug
   return {
     path: '/sell-details',
     query: { odata }

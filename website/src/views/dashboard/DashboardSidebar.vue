@@ -98,11 +98,48 @@
                     </div>
                     <div class="tier-point">Rp. 0</div>
                     <button
-                        class="mt-3 px-4 py-2 rounded-lg font-semibold w-full transition" :style="{ background: currentInfo.primaryColor, color: currentInfo.primaryTextColor }"
-                        @click="$emit('menu', 'membership')"
+                            class="mt-3 px-4 py-2 rounded-lg font-semibold w-full transition" :style="{ background: currentInfo.primaryColor, color: currentInfo.primaryTextColor }"
+                            @click="topUpSaldo()"
                     >
-                        Top Up Saldo
+                            Top Up Saldo
                     </button>
+                    <!-- Top Up Modal -->
+                    <transition name="fade">
+                        <div v-if="showTopUp" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                            <div class="bg-white rounded-2xl shadow-lg w-full max-w-md p-6 relative">
+                                <button class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl" @click="showTopUp = false"><i class="fa fa-times"></i></button>
+                                <h2 class="text-xl font-bold mb-2">Top Up Saldo</h2>
+                                <div class="mb-4">
+                                    <div class="text-sm text-gray-500 mb-1">Saldo Anda</div>
+                                    <div class="text-2xl font-bold mb-2">Rp {{ saldo.toLocaleString('id-ID') }}</div>
+                                </div>
+                                <div class="mb-4">
+                                    <div class="font-semibold mb-2">Pilih Nominal</div>
+                                    <div class="flex gap-2 mb-2 flex-wrap">
+                                        <button v-for="nom in presetNominals" :key="nom" type="button"
+                                            class="px-4 py-2 rounded-lg border font-semibold"
+                                            :style="topUpNominal == nom ? { background: currentInfo.primaryColor, color: currentInfo.primaryTextColor } : {}"
+                                            :class="topUpNominal == nom ? '' : 'bg-gray-50 text-gray-700 border-gray-200'"
+                                            @click="selectNominal(nom)">
+                                            Rp {{ nom.toLocaleString('id-ID') }}
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span>Atau isi manual</span>
+                                        <input type="text" inputmode="numeric" pattern="[0-9]*" class="border rounded px-3 py-2 " :value="manualNominal" @input="handleManualInput" placeholder="Nominal" />
+                                    </div>
+                                </div>
+                                <div class="mb-4 flex justify-between font-bold text-lg">
+                                    <span>Total Bayar :</span>
+                                    <span>Rp {{ topUpNominal ? topUpNominal.toLocaleString('id-ID') : '0' }}</span>
+                                </div>
+                                <button class="w-full py-3 rounded-lg font-semibold transition-colors" :style="topUpNominal ? { background: currentInfo.primaryColor, color: currentInfo.primaryTextColor } : {}" :disabled="!topUpNominal || topUpNominal < 10000" @click="continueTopUp">
+                                    Continue
+                                </button>
+                            </div>
+                        </div>
+                    </transition>
+                
                 </div>
                 <!-- MENU -->
                 <nav class="menu mt-6">
@@ -138,7 +175,7 @@
 
 <script setup>
     import { computed, onMounted, ref } from 'vue'
-        const showSidebar = ref(false)
+    const showSidebar = ref(false)
     import { storeToRefs } from 'pinia'
     import { useAuthStore } from '@/store/auth'
     import { useMembershipStore } from '@/store/membership'
@@ -197,6 +234,41 @@
             el.classList.remove('show')
             setTimeout(() => el.remove(), 300)
         }, 1800)
+    }
+
+     // Top Up Saldo Modal State
+    const showTopUp = ref(false)
+    const saldo = ref(0)
+    const topUpNominal = ref(0)
+    const manualNominal = ref('')
+    const paymentMethod = ref('Transfer Bank')
+    const presetNominals = [100000, 250000, 500000, 1000000]
+
+    function topUpSaldo() {
+        showTopUp.value = true
+        topUpNominal.value = 0
+        manualNominal.value = ''
+    }
+
+    function selectNominal(nom) {
+        topUpNominal.value = nom
+        manualNominal.value = ''
+    }
+
+    function handleManualInput(e) {
+        let val = e.target.value.replace(/[^\d]/g, '')
+        manualNominal.value = val
+        topUpNominal.value = val ? parseInt(val) : 0
+    }
+
+    function continueTopUp() {
+        if (topUpNominal.value < 10000) {
+            showToast('Minimal top up Rp 10.000')
+            return
+        }
+        showToast('Proses top up Rp ' + topUpNominal.value.toLocaleString('id-ID'))
+        showTopUp.value = false
+        // TODO: Kirim ke backend
     }
 
     onMounted(async () => {

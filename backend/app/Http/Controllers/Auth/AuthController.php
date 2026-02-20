@@ -121,6 +121,7 @@ class AuthController extends Controller
                 'refresh_token' => $refreshToken,
                 'token_type' => 'bearer',
                 'expired_in' => $expiry,
+                'refresh_exp'   => $refreshExpiry->timestamp,
             ])
             ->cookie(
                 'refresh_token',

@@ -13,7 +13,7 @@ class RefreshTokenController extends Controller
     public function refresh(Request $request)
     {
         // Ambil refresh token dari HttpOnly cookie
-        $rt = $request->cookie('refresh_token');
+        $rt = $request->cookie('refresh_token') ?? $request->refresh_token;
         if (!$rt)
             return response()->json(['message' => 'refresh token missing'], 401);
 
@@ -49,9 +49,11 @@ class RefreshTokenController extends Controller
         // Set refresh token baru ke HttpOnly cookie
         $cookie = cookie('refresh_token', $newRefresh, 60 * 24, null, null, true, true, false, 'Strict');
 
+   
         return response()->json([
             'token' => $newAccess,
             'expired_in' => $accessExpiry,
+            'refresh_token' => $newRefresh, // <-- tambahkan ini!
             'refresh_expired_in' => $newExpiry->timestamp,
             'refresh_exp' => $newExpiry->timestamp,
             'oldtoken' => $hashed,

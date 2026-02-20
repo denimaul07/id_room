@@ -5,6 +5,7 @@ import NotFound from '@/views/NotFound.vue'
 import Sewa from '@/views/Sewa.vue'
 import Jual from '@/views/Jual.vue'
 import RentDetails from '@/views/RentDetails.vue'
+import BookingRoom from '@/views/BookingRoom.vue'
 import SellDetails from '@/views/SellDetails.vue'
 import InteriorRenovation from '@/views/InteriorRenovation.vue'
 import TentangKami from '@/views/Tentang-Kami.vue'
@@ -36,6 +37,12 @@ const routes = [
         path: '/rent-details',
         name: 'rent-details',
         component: RentDetails
+    },
+    {
+        path: '/booking',
+        name: 'booking',
+        component: BookingRoom,
+        meta: { requiresAuth: true }
     },
     {
         path: '/sell-details',

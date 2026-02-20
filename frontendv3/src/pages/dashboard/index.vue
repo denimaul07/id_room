@@ -18,7 +18,7 @@
                                     <h4 class="f-w-600 mb-0">{{greeting}}</h4>
                                     <p>Welcome {{ user.name }} hope you have a nice day today</p>
                                     <div class="whatsnew-btn z-3">
-                                    ASKARA AKTIV SYSTEM
+                                    ID ROOM SYSTEM
                                     </div>
                                 </div>
                                 </div>
@@ -78,10 +78,31 @@
                             </a>
                         </div>
 
-                        <div class="col-md-12" v-for="data in state.profit" :key="data.title" v-else>
-                            <div class="card widget-1" v-if="isSuperAdmin">
+                        <div class="col-12" v-for="data in 3" v-if="loading">
+
+                            <div class="card widget-1">
                                 <div class="card-body">
                                     <div class="widget-content">
+                                        <div class="widget-round" :class="data.class">
+                                            <div class="bg-round">
+                                                <a-skeleton-avatar :active="true" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h4><a-skeleton-input :active="true" /></h4>
+                                            <span class="f-light">
+                                                <a-skeleton-input :active="true" size="small"/>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12" v-for="data in state.data" :key="data.title" v-else>
+                            <router-link :to="data.url"  class="card widget-1">
+                                <div class="card-body">
+                                    <div class="widget-content" >
                                         <div class="widget-round" :class="data.class">
                                             <div class="bg-round">
                                                 <svg class="svg-fill">
@@ -93,322 +114,77 @@
                                             </div>
                                         </div>
                                         <div>
-                                            <h4>{{ data.number }}</h4>
+                                            <h5>{{ data.number }}</h5>
                                             <span class="f-light">
                                                 {{ data.title }}
                                             </span>
                                         </div>
                                     </div>
                                 </div>
-                            </div >
+                            </router-link >
                         </div>
 
-                        <div class="col-12 mt-4">
+                        <div class="col-12">
                             <div class="card">
                                 <div class="card-header d-flex justify-content-between align-items-center p-3">
-                                    <h5 class="mb-0">Sales Store By Invoice {{ getMonthName(selectedMonth) }} {{ selectedYear }}</h5>
+                                    <h5 class="mb-0">Revenue Composition</h5>
                                 </div>
-                                <div class="card-body p-3">
-                                    <div class="table-responsive pt-2  d-md-block d-none">
-                                        <table class="table">
-                                            <thead>
-                                                
-                                                <tr class="border-bottom-primary">
-                                                    <th class="bg-primary text-nowrap text-center sticky-column">No</th>
-                                                    <th class="bg-primary text-nowrap text-center sticky-column1">Store Name</th>
-                                                    <th class="bg-primary text-nowrap text-center">Total Sales</th>
-                                                    <th class="bg-primary text-nowrap text-center">Action</th>
-                                                    
-                                                </tr>
-                                            </thead>
-
-                                            <tbody>
-
-                                                <tr v-if="loading"> 
-                                                    <td class="text-center" colspan="13"><a-skeleton active /></td>
-                                                </tr>
-
-                                                <tr v-else-if="state.topProducts.length==0">
-                                                    <td class="text-center" colspan="13"><a-empty/></td>
-                                                </tr>
-                                                <tr v-for="(item, index) in state.store" :key="item.odata" v-else>
-                                                    <td class="text-center sticky-column">{{ 1 + index }}</td>
-                                                    <td class=" sticky-column1">
-                                                        {{ item.nama_toko }}
-                                                    </td>
-                                                    <td class="text-nowrap">{{ item.total }}</td>
-                                                    <td class="text-nowrap text-center">
-                                                        <a-tooltip title="Print Invoice Store">
-                                                            <a-button type="primary" size="small" @click="printInvoice(item)" class="bg-biru me-3">
-                                                                <template #icon>
-                                                                    <PrinterOutlined />
-                                                                </template>
-                                                            </a-button>
-                                                        </a-tooltip>
-
-                                                        <a-tooltip title="Export Invoice Store">
-                                                            <a-button type="primary" size="small" @click="exportInvoice(item)" class="bg-success">
-                                                                <template #icon>
-                                                                    <FileExcelOutlined />
-                                                                </template>
-                                                            </a-button>
-                                                        </a-tooltip>
-                                                    </td>
-                                                
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    <div class="p-2 d-md-none d-block">
-                                        <div v-if="loading" v-for="index in 3">
-                                            <div class="card-header">
-                                                <div class="d-flex justify-content-between">
-                                                    <a-skeleton-input :active="true" />
-                                                    <a-skeleton-input :active="true" size="small" class="align-self-center" />
-                                                </div>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between">
-                                                    <a-skeleton-input size="small" :active="true" />
-                                                    <a-skeleton-input size="small" :active="true" />
-                                                </div>
-                                                <a-skeleton-input class="mt-2" :active="true" />
-                                            </div>
-                                            <div
-                                                class="py-2 card-footer d-flex justify-content-between text-primary text-opacity-75 small">
-                                                <a-skeleton-button :active="true" size="small" block="block" />
-                                            </div>
-                                            <div class="py-2 card-footer">
-                                                <a-skeleton-button :active="true" size="small" block="block" />
-                                            </div>
-                                            <div class="py-1 card-footer">
-                                                <a-skeleton-button :active="true" size="small" block="block" />
-                                            </div>
-                                        </div>
-
-                                        <div v-else-if="state.topProducts.length==0">
-                                            <div class="card-body">
-                                                <a-empty/>
-                                            </div>
-                                        </div>
-
-                                        <div v-else v-for="(item, index) in state.store" :key="item.id" class="pb-2 card">
-                                            <div class="card-header">
-                                                <div class="d-flex justify-content-between">
-                                                    <b>Store Name</b>
-                                                    <small class="align-self-center">
-                                                        <span class="badge badge-sm badge-primary text-white fw-semibold">{{ item.nama_toko }}</span>
-                                                    
-                                                    </small>
-                                                </div>
-                                            </div>
-                                            <div class="card-body">
-
-                                                <div class="d-flex justify-content-between">
-                                                    Total
-                                                    <small class="text-muted align-self-center">
-                                                        {{ item.total }}
-                                                    </small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div class="card-body">
+                                    <apexchart type="donut" height="350" :options="pieOptions" :series="pieSeries"></apexchart>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="col-12 mt-4">
-                            <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center  p-3">
-                                    <h5 class="mb-0">Top Reference Sales {{ getMonthName(selectedMonth) }} {{ selectedYear }}</h5>
-                                </div>
-                                <div class="card-body  p-3">
-                                    <div class="table-responsive pt-2  d-md-block d-none">
-                                        <table class="table">
-                                            <thead>
-                                                
-                                                <tr class="border-bottom-primary">
-                                                    <th class="bg-primary text-nowrap text-center sticky-column">No</th>
-                                                    <th class="bg-primary text-nowrap text-center sticky-column1">Reference</th>
-                                                    <th class="bg-primary text-nowrap text-center">Total Sales</th>
-                                                    
-                                                </tr>
-                                            </thead>
-
-                                            <tbody>
-
-                                                <tr v-if="loading"> 
-                                                    <td class="text-center" colspan="13"><a-skeleton active /></td>
-                                                </tr>
-
-                                                <tr v-else-if="state.topReference.total==0">
-                                                    <td class="text-center" colspan="13"><a-empty/></td>
-                                                </tr>
-                                                <tr v-for="(item, index) in state.topReference.data" :key="item.odata" v-else>
-                                                    <td class="text-center sticky-column">{{ state.topReference.from + index }}</td>
-                                                    <td class=" sticky-column1">
-                                                        {{ item.reference }}
-                                                    </td>
-                                                    <td class="text-nowrap text-center">{{ item.total }}</td>
-                                                
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-                                    <div class="p-2 d-md-none d-block">
-                                        <div v-if="loading" v-for="index in 3">
-                                            <div class="card-header">
-                                                <div class="d-flex justify-content-between">
-                                                    <a-skeleton-input :active="true" />
-                                                    <a-skeleton-input :active="true" size="small" class="align-self-center" />
-                                                </div>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between">
-                                                    <a-skeleton-input size="small" :active="true" />
-                                                    <a-skeleton-input size="small" :active="true" />
-                                                </div>
-                                                <a-skeleton-input class="mt-2" :active="true" />
-                                            </div>
-                                            <div
-                                                class="py-2 card-footer d-flex justify-content-between text-primary text-opacity-75 small">
-                                                <a-skeleton-button :active="true" size="small" block="block" />
-                                            </div>
-                                            <div class="py-2 card-footer">
-                                                <a-skeleton-button :active="true" size="small" block="block" />
-                                            </div>
-                                            <div class="py-1 card-footer">
-                                                <a-skeleton-button :active="true" size="small" block="block" />
-                                            </div>
-                                        </div>
-
-                                        <div v-else-if="state.topProducts.total==0">
-                                            <div class="card-body">
-                                                <a-empty/>
-                                            </div>
-                                        </div>
-
-                                        <div v-else v-for="(item, index) in state.topReference.data" :key="item.id" class="pb-2 card">
-                                            <div class="card-header">
-                                                <div class="d-flex justify-content-between">
-                                                    <b>Reference</b>
-                                                    <small class="align-self-center">
-                                                        <span class="badge badge-sm badge-primary text-white fw-semibold">{{ item.reference }}</span>
-                                                    
-                                                    </small>
-                                                </div>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between">
-                                                    Total
-                                                    <small class="text-muted align-self-center">
-                                                        {{ item.total }}
-                                                    </small>
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-                                    </div>
-
-                                    <div class="row py-2">
-                                        <div class="col-sm-12 col-lg-4 col-xl-4 text-left">
-                                            Showing {{ state.topReference.from }} to {{ state.topReference.to }} of {{ state.topReference.total }} entries
-                                        </div>
-                                        <div class="col-sm-12 col-lg-8 col-xl-8 text-end">
-                                            <a-pagination :current="state.topReference.current_page" :total="state.topReference.total" v-model:pageSize="pagging" @change="handlePageChangeReference" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
                 <div class="col-xxl-8 col-xl-8 col-sm-12 box-col-12">
                     <div class="row">
-                        <h2 class="text-center text-white">Summary Data Sales Askara Aktiv </h2>
-                        
+                        <h2 class="text-center text-white">Summary Dashboard Overview</h2>
+                        <h6 class="text-center text-white mb-4">   {{ filterLabel }}</h6>
                         <!-- Filter Section -->
+
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body p-2">
                                     <div class="row align-items-center">
                                         <div class="col-auto">
                                             <label class="form-label mb-0 fw-bold">
-                                                <i class="fa fa-filter"></i>Filter :
+                                                <i class="fa fa-filter"></i> Filter :
                                             </label>
                                         </div>
                                         <div class="col-auto">
-                                            <select 
-                                                v-model="selectedMonth" 
-                                                class="form-select form-select-sm"
-                                                @change="handleFilterChange"
-                                            >
-                                                <option value="all">All Months</option>
-                                                <option v-for="(month, index) in months" :key="index" :value="index + 1">
-                                                    {{ month }}
-                                                </option>
+                                            <select v-model="selectedFilter" class="form-select form-select-sm" @change="filter">
+                                                <option value="today">Hari ini</option>
+                                                <option value="month">Bulan ini</option>
+                                                <option value="year">Tahun ini</option>
+                                                <option value="custom">Custom Filter</option>
                                             </select>
                                         </div>
-                                        <div class="col-auto">
-                                            <select 
-                                                v-model="selectedYear" 
-                                                class="form-select form-select-sm"
-                                                @change="handleFilterChange"
-                                            >
-                                                <option v-for="year in years" :key="year" :value="year">
-                                                    {{ year }}
-                                                </option>
-                                            </select>
+                                        <div v-if="selectedFilter === 'custom'" class="col-auto">
+                                            <input type="date" v-model="customStart" class="form-control form-control-sm" @change="filter" />
+                                        </div>
+                                        <div v-if="selectedFilter === 'custom'" class="col-auto">
+                                            <input type="date" v-model="customEnd" class="form-control form-control-sm" @change="filter" />
                                         </div>
                                         <div class="col-auto">
-                                            <button 
-                                                class="btn btn-primary btn-sm"
-                                                @click="clear"
-                                                :disabled="loading"
-                                            >
-                                                <ReloadOutlined  />
+                                            <button class="btn btn-primary btn-sm" @click="clear" :disabled="loading">
+                                                <ReloadOutlined />
                                                 {{ loading ? 'Loading...' : 'Reset' }}
                                             </button>
                                         </div>
-
                                         <div class="col-auto">
-                                            <button 
-                                                class="btn btn-success btn-sm"
-                                                @click="exportReport"
-                                                :disabled="loading"
-                                            >
-                                                <FileExcelOutlined  />
+                                            <button class="btn btn-success btn-sm" @click="exportReport" :disabled="loading">
+                                                <FileExcelOutlined />
                                                 {{ loading ? 'Loading...' : 'Export Data' }}
                                             </button>
-                                        </div>
-
-                                        <div class="col-auto">
-                                            <button 
-                                                class="btn btn-info btn-sm"
-                                                @click="printReport"
-                                                :disabled="loading"
-                                            >
-                                                <PrinterOutlined  />
-                                                {{ loading ? 'Loading...' : 'Print Report' }}
-                                            </button>
-                                        </div>
-
-                                        <div class="col-auto ms-auto">
-                                            <span class="badge bg-info text-white p-2">
-                                                <i class="fa fa-calendar-alt me-1"></i>
-                                                {{ getMonthName(selectedMonth) }} {{ selectedYear }}
-                                            </span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="col-md-4" v-for="data in 3" v-if="loading">
+                        <!-- <div class="col-md-12" v-for="data in 2" v-if="loading">
 
                             <a href="#" class="card widget-1">
                                 <div class="card-body">
@@ -429,157 +205,254 @@
                             </a>
                         </div>
 
-                        <div :class="isSuperAdmin ? 'col-4' : 'col-6'" v-for="data in state.data" :key="data.title" v-else>
-                            <div class="card widget-1">
-                                <div class="card-body">
-                                    <div class="widget-content">
-                                        <div class="widget-round" :class="data.class">
-                                            <div class="bg-round">
-                                                <svg class="svg-fill">
-                                                    <use :xlink:href="iconSpritePath + `#${data.icon}`"></use>
-                                                </svg>
-                                                <svg class="half-circle svg-fill">
-                                                    <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
-                                                </svg>
-                                            </div>
+                        <div class="col-12 pb-2" v-else>
+                            <div class="card mb-4 border-0 shadow-sm">
+                                <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
+                                    <h5 class="mb-0 text-dark fw-bold">
+                                        <i class="fa fa-exclamation-triangle text-warning me-2"></i>
+                                        Operational Alerts
+                                    </h5>
+                                </div>
+                                <div class="card-body py-4">
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <router-link
+                                                to="/admin/topup?status=pending"
+                                                class="alert alert-warning d-flex flex-column justify-content-between h-100 p-4 border-0 rounded-3 shadow-sm text-decoration-none transition"
+                                                style="min-height: 140px;"
+                                            >
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <span class="fw-semibold text-warning-emphasis">
+                                                        Pending Topup Verification
+                                                    </span>
+                                                    <span class="badge bg-warning text-dark fs-5 rounded-circle p-3 shadow-sm">
+                                                        ⏳
+                                                    </span>
+                                                </div>
+                                                <div class="mt-3 mb-1 fs-2 fw-bold text-white text-center">
+                                                    {{ need_attention.pending_topup || 0 }}
+                                                </div>
+                                                <div class="small text-warning-emphasis text-center">
+                                                    Waiting for admin confirmation
+                                                </div>
+                                                <div class="mt-2 text-center">
+                                                    <span class="fw-semibold text-warning-emphasis text-decoration-underline">
+                                                        View Transactions →
+                                                    </span>
+                                                </div>
+                                            </router-link>
                                         </div>
-                                        <div>
-                                            <h5>{{ data.number }}</h5>
-                                            <span class="f-light">
-                                                {{ data.title }}
-                                            </span>
+                                        <div class="col-md-4">
+                                            <router-link
+                                                to="/admin/booking?status=expired"
+                                                class="alert alert-info d-flex flex-column justify-content-between h-100 p-4 border-0 rounded-3 shadow-sm text-decoration-none transition"
+                                                style="min-height: 140px;"
+                                            >
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <span class="fw-semibold text-info-emphasis">
+                                                        Booking Unpaid &gt; 1 Hour
+                                                    </span>
+                                                    <span class="badge bg-info text-dark fs-5 rounded-circle p-3 shadow-sm">
+                                                        🕒
+                                                    </span>
+                                                </div>
+                                                <div class="mt-3 mb-1 fs-2 fw-bold text-white o text-center">
+                                                    {{ need_attention.unpaid_booking || 0 }}
+                                                </div>
+                                                <div class="small text-info-emphasis text-center">
+                                                    Will release inventory soon
+                                                </div>
+                                                <div class="mt-2 text-center">
+                                                    <span class="fw-semibold text-info-emphasis text-decoration-underline">
+                                                        Review Booking →
+                                                    </span>
+                                                </div>
+                                            </router-link>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <router-link
+                                                to="/admin/transaction?status=failed"
+                                                class="alert alert-danger d-flex flex-column justify-content-between h-100 p-4 border-0 rounded-3 shadow-sm text-decoration-none transition"
+                                                style="min-height: 140px;"
+                                            >
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <span class="fw-semibold text-danger-emphasis">
+                                                        Failed Payment
+                                                    </span>
+                                                    <span class="badge bg-danger text-white fs-5 rounded-circle p-3 shadow-sm">
+                                                        ❌
+                                                    </span>
+                                                </div>
+                                                <div class="mt-3 mb-1 fs-2 fw-bold text-white text-center">
+                                                    {{ need_attention.failed_payment || 0 }}
+                                                </div>
+                                                <div class="small text-danger-emphasis text-center">
+                                                    Payment needs investigation
+                                                </div>
+                                                <div class="mt-2 text-center">
+                                                    <span class="fw-semibold text-danger-emphasis text-decoration-underline">
+                                                        View Logs →
+                                                    </span>
+                                                </div>
+                                            </router-link>
                                         </div>
                                     </div>
                                 </div>
-                            </div >
-                        </div>
+                            </div>
+                        </div> -->
 
-                        <div class="col-12 mt-4">
+                        <div class="col-12">
                             <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center p-3">
+                                    <h5 class="mb-0">Revenue Trend</h5>
+                                </div>
                                 <div class="card-body">
-                                    <apexchart type="line" height="350" :options="chartOptions" :series="series"></apexchart>
+                                    <div v-if="loading">
+                                        <a-skeleton active :paragraph="{ rows: 8 }" />
+                                    </div>
+                                    <div v-else>
+                                        <Tabs value="0" class="p-tab-active">
+                                            <TabList class="p-tab-active" style="color: black;">
+                                                <Tab value="0">
+                                                    <span style="color: #222 !important;"> To days Revenue</span>
+                                                </Tab>
+                                                <Tab value="1">
+                                                    <span style="color: #222 !important;"> The Last 7 Days Revenue</span>
+                                                </Tab>
+                                                <Tab value="2">
+                                                    <span style="color: #222 !important;"> This Month Revenue</span>
+                                                </Tab>
+                                                <Tab value="3">
+                                                    <span style="color: #222 !important;"> This Year Revenue</span>
+                                                </Tab>
+                                            </TabList>
+                                            <TabPanel value="0">
+                                                <apexchart type="bar" height="350" :options="chartOptions" :series="series"></apexchart>
+                                            </TabPanel>
+                                            <TabPanel value="1">
+                                                <apexchart type="bar" height="350" :options="weeklyOptions" :series="weeklySeries"></apexchart>
+                                            </TabPanel>
+                                            <TabPanel value="2">
+                                                <apexchart type="bar" height="350" :options="monthlyOptions" :series="monthlySeries"></apexchart>
+                                            </TabPanel>
+                                            <TabPanel value="3">
+                                                <apexchart type="bar" height="350" :options="yearsOptions" :series="yearsSeries"></apexchart>
+                                            </TabPanel>
+                                        </Tabs>
+                                    </div>
                                 </div>
                             </div>
-                            
                         </div>
 
-                        <div class="col-12 mt-4">
+                        <div class="col-12">
                             <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center  p-3">
-                                    <h5 class="mb-0">Top Product Varian Sales {{ getMonthName(selectedMonth) }} {{ selectedYear }}</h5>
+                                <div class="card-header d-flex justify-content-between align-items-center p-3">
+                                    <h5 class="mb-0">Live Transaction Feed</h5>
                                 </div>
                                 <div class="card-body p-3">
                                     <div class="table-responsive pt-2  d-md-block d-none">
                                         <table class="table">
                                             <thead>
-                                                
                                                 <tr class="border-bottom-primary">
                                                     <th class="bg-primary text-nowrap text-center sticky-column">No</th>
-                                                    <th class="bg-primary text-nowrap text-center sticky-column1">Product Code</th>
-                                                    <th class="bg-primary text-nowrap text-center">Product Name</th>
-                                                    <th class="bg-primary text-nowrap text-center">Product SKU</th>
-                                                    <th class="bg-primary text-nowrap text-center">Total Sales</th>
-                                                    
+                                                    <th class="bg-primary text-nowrap text-center">User</th>
+                                                    <th class="bg-primary text-nowrap text-center">Activity</th>
+                                                    <th class="bg-primary text-nowrap text-center">Amount</th>
+                                                    <th class="bg-primary text-nowrap text-center">Status</th>
+                                                    <th class="bg-primary text-nowrap text-center">Time</th>
                                                 </tr>
                                             </thead>
-
                                             <tbody>
-
                                                 <tr v-if="loading"> 
-                                                    <td class="text-center" colspan="13"><a-skeleton active /></td>
+                                                    <td class="text-center" colspan="7"><a-skeleton active /></td>
                                                 </tr>
-
-                                                <tr v-else-if="state.topProducts.total==0">
-                                                    <td class="text-center" colspan="13"><a-empty/></td>
+                                                <tr v-else-if="state.listTransaction.length==0">
+                                                    <td class="text-center" colspan="7"><a-empty/></td>
                                                 </tr>
-                                                <tr v-for="(item, index) in state.topProducts.data" :key="item.odata" v-else>
-                                                    <td class="text-center sticky-column">{{ state.topProducts.from + index }}</td>
-                                                    <td class=" sticky-column1">
-                                                        {{ item.product_code }}
+                                                <tr v-for="(item, index) in state.listTransaction" :key="item.id" v-else>
+                                                    <td class="text-center sticky-column">{{ index + 1 }}</td>
+                                                    <td class="text-nowrap text-center">{{ item.user }}</td>
+                                                    <td class="text-nowrap">{{ item.activity }}</td>
+                                                    <td class="text-nowrap text-left">{{ item.amount.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)}}</td>
+                                                    <td class="text-nowrap text-center">
+                                                        <span
+                                                            :class="[
+                                                                'badge',
+                                                                'text-white',
+                                                                'fw-semibold',
+                                                                item.status === 'PAID'
+                                                                    ? 'bg-success'
+                                                                    : item.status === 'PENDING'
+                                                                    ? 'bg-warning'
+                                                                    : item.status === 'FAILED'
+                                                                    ? 'bg-danger'
+                                                                    : item.status === 'REFUNDED'
+                                                                    ? 'bg-info'
+                                                                    : item.status === 'CANCELLED'
+                                                                    ? 'bg-secondary'
+                                                                    : 'bg-light text-dark'
+                                                            ]"
+                                                        >
+                                                            {{ item.status }}
+                                                        </span>
                                                     </td>
-                                                    <td class="text-nowrap">{{ item.product_name }}</td>
-                                                    <td class="text-nowrap">{{ item.product_sku }}</td>
-                                                    <td class="text-nowrap text-center">{{ item.total }}</td>
-                                                
+                                                    <td class="text-nowrap text-center">{{ dayjs(item.created_at).format('DD MMM YYYY HH:mm:ss') }}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
-                                    </div>
+                                    </div>  
+                                </div>
+                            </div>
 
-                                    <div class="p-2 d-md-none d-block">
-                                        <div v-if="loading" v-for="index in 3">
-                                            <div class="card-header">
-                                                <div class="d-flex justify-content-between">
-                                                    <a-skeleton-input :active="true" />
-                                                    <a-skeleton-input :active="true" size="small" class="align-self-center" />
-                                                </div>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between">
-                                                    <a-skeleton-input size="small" :active="true" />
-                                                    <a-skeleton-input size="small" :active="true" />
-                                                </div>
-                                                <a-skeleton-input class="mt-2" :active="true" />
-                                            </div>
-                                            <div
-                                                class="py-2 card-footer d-flex justify-content-between text-primary text-opacity-75 small">
-                                                <a-skeleton-button :active="true" size="small" block="block" />
-                                            </div>
-                                            <div class="py-2 card-footer">
-                                                <a-skeleton-button :active="true" size="small" block="block" />
-                                            </div>
-                                            <div class="py-1 card-footer">
-                                                <a-skeleton-button :active="true" size="small" block="block" />
-                                            </div>
-                                        </div>
+                        </div>
 
-                                        <div v-else-if="state.topProducts.total==0">
-                                            <div class="card-body">
-                                                <a-empty/>
-                                            </div>
-                                        </div>
-
-                                        <div v-else v-for="(item, index) in state.topProducts.data" :key="item.id" class="pb-2 card">
-                                            <div class="card-header">
-                                                <div class="d-flex justify-content-between">
-                                                    <b>Product Code</b>
-                                                    <small class="align-self-center">
-                                                        <span class="badge badge-sm badge-primary text-white fw-semibold">{{ item.product_code }}</span>
-                                                    
-                                                    </small>
-                                                </div>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between">
-                                                    Product Name
-                                                    <small class="text-muted align-self-center">
-                                                        {{ item.product_name }}
-                                                    </small>
-                                                </div>
-
-                                                <div class="d-flex justify-content-between">
-                                                    Total
-                                                    <small class="text-muted align-self-center">
-                                                        {{ item.total }}
-                                                    </small>
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-                                    </div>
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center p-3">
+                                    <h5 class="mb-0">Property Performance {{ filterLabel }}</h5>
+                                </div>
+                                <div class="card-body p-3">
+                                    <div class="table-responsive pt-2  d-md-block d-none">
+                                        <table class="table">
+                                            <thead>
+                                                <tr class="border-bottom-primary">
+                                                    <th class="bg-primary text-nowrap text-center sticky-column">No</th>
+                                                    <th class="bg-primary text-nowrap text-center">Property Name</th>
+                                                    <th class="bg-primary text-nowrap text-center">Total Bookings</th>
+                                                    <th class="bg-primary text-nowrap text-center">Revenue</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-if="loading"> 
+                                                    <td class="text-center" colspan="7"><a-skeleton active /></td>
+                                                </tr>
+                                                <tr v-else-if="state.listProperty.total==0">
+                                                    <td class="text-center" colspan="7"><a-empty/></td>
+                                                </tr>
+                                                <tr v-for="(item, index) in state.listProperty.data" :key="item.id" v-else>
+                                                    <td class="text-center sticky-column">{{ index + state.listProperty.from }}</td>
+                                                    <td class="text-nowrap text-left">{{ item.property }}</td>
+                                                    <td class="text-nowrap text-center">{{ item.booking_today }}</td>
+                                                    <td class="text-nowrap text-left">{{ item.revenue.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)}}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>  
 
                                     <div class="row py-2">
                                         <div class="col-sm-12 col-lg-4 col-xl-4 text-left">
-                                            Showing {{ state.topProducts.from }} to {{ state.topProducts.to }} of {{ state.topProducts.total }} entries
+                                            Showing {{ state.listProperty.from }} to {{ state.listProperty.to }} of {{ state.listProperty.total }} entries
                                         </div>
                                         <div class="col-sm-12 col-lg-8 col-xl-8 text-end">
-                                            <a-pagination :current="state.topProducts.current_page" :total="state.topProducts.total" v-model:pageSize="pagging" @change="handlePageChange" />
+                                            <a-pagination :current="state.listProperty.current_page" :total="state.listProperty.total" v-model:pageSize="pagging"
+                                                @change="handlePageChange" />
                                         </div>
                                     </div>
                                 </div>
                             </div>
+
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -617,41 +490,35 @@
         FileExcelOutlined
     } from '@ant-design/icons-vue';
     import checkRole from '@/store/modules/role.js';
-    const isSuperAdmin = checkRole(['superAdmin']);
-    const isAdmin = checkRole(['admin']);
+    import Tabs from 'primevue/tabs';
+    import TabList from 'primevue/tablist';
+    import Tab from 'primevue/tab';
+    import TabPanels from 'primevue/tabpanels';
+    import TabPanel from 'primevue/tabpanel';
+    const isSuperAdmin = checkRole(['superAdmin','admin']);
     const isStaff = checkRole(['staff']);
     const store = useStore();
     const router = useRouter();
     const user = store.getters["auth/currentUser"];
-    const series = ref(null)
-    const chartOptions = ref("")
+    const chartOptions = ref({});
+    const series = ref([]);
+    const weeklyOptions = ref({});
+    const weeklySeries = ref([]);
+    const monthlyOptions = ref({});
+    const monthlySeries = ref([]);
+    const yearsOptions = ref({});
+    const yearsSeries = ref([]);
+    const pieSeries = ref([]);
+    const pieOptions = ref({});
     const interval = ref(null);
     const pagging = ref(5);
     const modalPDF = ref(false);
     const pdfUrl = ref("");
+    const need_attention = ref([]);
 
     // Filter states
-    const selectedMonth = ref(parseInt(dayjs().format('MM')));
     const selectedYear = ref(parseInt(dayjs().format('YYYY')));
     
-    const months = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December',
-    ];
-    
-    const years = computed(() => {
-        const currentYear = parseInt(dayjs().format('YYYY'));
-        const yearsList = [];
-        for (let i = currentYear - 5; i <= currentYear + 1; i++) {
-            yearsList.push(i);
-        }
-        return yearsList.reverse();
-    });
-
-    const getMonthName = (monthNumber) => {
-        if (monthNumber === 'all') return 'All Months';
-        return months[monthNumber - 1];
-    };
 
     const timerSettings = () => {
         const HOURHAND = document.querySelector("#hour");
@@ -718,140 +585,372 @@
 
     const state = reactive({
         data:{},
-        profit:{},
-        topProducts:{},
-        store:{},
-        topReference:{}
+        listTransaction:{},
+        listProperty:{}
     });
 
-    const handleFilterChange = async () => {
-        await getData();
-    };
 
     const clear = async () => {
-        selectedMonth.value = 'all';
-        selectedYear.value = parseInt(dayjs().format('YYYY'));
+        selectedFilter.value = 'today';
+        customStart.value = dayjs().startOf('day').format('YYYY-MM-DD');
+        customEnd.value = dayjs().endOf('day').format('YYYY-MM-DD');
         await getData();
     };
 
-    const getData = async (page = state.topProducts.current_page || 1) => {
+    const getData = async (page = state.listProperty.current_page || 1) => {
         loading.value = true;
-        const params = {page: page, year: selectedYear.value, per_page: pagging.value };
-        
-        if (selectedMonth.value !== 'all') {
-            params.month = String(selectedMonth.value).padStart(2, '0');
-        }
+        const params = {page: page, selectedFilter: selectedFilter.value, customStart: customStart.value, customEnd: customEnd.value, pagging: pagging.value };
         
         const response = await apiGetData("/dashboard/summary", params);
         state.data = response.data;
-        state.profit = response.profit;
-        state.topProducts = response.topProducts;
-        state.store = response.store;
-        state.topReference = response.topReference;
+        state.listTransaction = response.live_transaction_feed;
+        need_attention.value = response.need_attention || [];
+        state.listProperty = response.property_performance || [];
 
-        // Map data dari response.chart
-        const chartData = response.chart || [];
-        const salesData = chartData.map(item => item.total);
-        const monthLabels = chartData.map(item => {
-            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            return monthNames[parseInt(item.bulan_angka) - 1];
-        });
-
-        series.value = [{
-            name: "Total Sales",
-            data: salesData
-        }];
+        // Daily
+        const daily = response.transaction_chart?.daily || {};
+        series.value = [
+            { name: 'Topup', data: daily.topup || [] },
+            { name: 'Booking', data: daily.booking || [] },
+            { name: 'Membership', data: daily.membership || [] },
+        ];
         chartOptions.value = {
             chart: {
-            height: 350,
-            type: 'line',
-            zoom: { enabled: false }
+                height: 350,
+                type: 'bar',
+                stacked: false,
+                toolbar: { show: true }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    borderRadius: 4,
+                }
             },
             dataLabels: {
-            enabled: true,
-            formatter: (val) => val,
-            offsetY: -10
+                enabled: false
             },
-            markers: {
-            size: 4,
-            hover: { size: 6 }
-            },
-            stroke: {
-            curve: 'straight'
-            },
-            title: {
-            text: 'Sales Chart by Month',
-            align: 'left'
-            },
-            grid: {
-            row: {
-                colors: ['#f3f3f3', 'transparent'],
-                opacity: 0.5
-            }
+            legend: {
+                position: 'bottom',
+                markers: {
+                    width: 16,
+                    height: 16,
+                    radius: 4
+                }
             },
             xaxis: {
-            categories: monthLabels
+                categories: daily.dates || [],
+                labels: {
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            yaxis: {
+                min: 0,
+                title: {
+                    text: '$ (thousands)',
+                    style: {
+                        color: '#222',
+                        fontSize: '14px'
+                    }
+                },
+                labels: {
+                    formatter: val => 'Rp ' + val.toLocaleString(),
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: val => 'Rp ' + val.toLocaleString()
+                }
+            },
+            fill: {
+                opacity: 1
+            },
+            grid: {
+                borderColor: '#e0e0e0'
+            }
+        };
+
+        // Weekly
+        const weekly = response.transaction_chart?.weekly || {};
+        weeklySeries.value = [
+            { name: 'Topup', data: weekly.topup || [] },
+            { name: 'Booking', data: weekly.booking || [] },
+            { name: 'Membership', data: weekly.membership || [] },
+        ];
+        weeklyOptions.value = {
+            chart: {
+                height: 350,
+                type: 'bar',
+                stacked: false,
+                toolbar: { show: true }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    borderRadius: 4,
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            legend: {
+                position: 'bottom',
+                markers: {
+                    width: 16,
+                    height: 16,
+                    radius: 4
+                }
+            },
+            xaxis: {
+                categories: weekly.dates || [],
+                labels: {
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            yaxis: {
+                min: 0,
+                title: {
+                    text: '$ (thousands)',
+                    style: {
+                        color: '#222',
+                        fontSize: '14px'
+                    }
+                },
+                labels: {
+                    formatter: val => 'Rp ' + val.toLocaleString(),
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: val => val
+                }
+            },
+            fill: {
+                opacity: 1
+            },
+            grid: {
+                borderColor: '#e0e0e0'
+            }
+        };
+
+        // Monthly
+        const monthly = response.transaction_chart?.monthly || {};
+        monthlySeries.value = [
+            { name: 'Topup', data: monthly.topup || [] },
+            { name: 'Booking', data: monthly.booking || [] },
+            { name: 'Membership', data: monthly.membership || [] },
+        ];
+        monthlyOptions.value = {
+            chart: {
+                height: 350,
+                type: 'bar',
+                stacked: false,
+                toolbar: { show: true }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    borderRadius: 4,
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            legend: {
+                position: 'bottom',
+                markers: {
+                    width: 16,
+                    height: 16,
+                    radius: 4
+                }
+            },
+            xaxis: {
+                categories: monthly.dates || [],
+                labels: {
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            yaxis: {
+                min: 0,
+                title: {
+                    text: 'Rp (dalam ribuan)',
+                    style: {
+                        color: '#222',
+                        fontSize: '14px'
+                    },
+                },
+                labels: {
+                    formatter: val => 'Rp ' + val.toLocaleString(),
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: val => 'Rp ' + val.toLocaleString()
+                }
+            },
+            fill: {
+                opacity: 1
+            },
+            grid: {
+                borderColor: '#e0e0e0'
+                        }
+        };
+
+        // Yearly
+        const yearly = response.transaction_chart?.yearly || {};
+        yearsSeries.value = [
+            { name: 'Topup', data: yearly.topup || [] },
+            { name: 'Booking', data: yearly.booking || [] },
+            { name: 'Membership', data: yearly.membership || [] },
+        ];
+
+        yearsOptions.value = {
+            chart: {
+                type: 'bar',
+                height: 350
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    borderRadius: 5,
+                    borderRadiusApplication: 'end',
+                    dataLabels: {
+                        position: 'top'
+                    }
+                },
+            },
+            dataLabels: {
+                enabled: true,
+                formatter: val => 'Rp ' + val.toLocaleString(),
+                offsetY: -10,
+                style: {
+                    fontSize: '12px',
+                    colors: ['#222']
+                }
+            },
+                stroke: {
+                show: true,
+                width: 2,
+                colors: ['transparent']
+            },
+            xaxis: {
+                categories: ['Jan','Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct','Nov','Dec'],
+            },
+            yaxis: {
+                title: {
+                    text: 'Rp (dalam ribuan)'
+                },
+                labels: {
+                    formatter: val => 'Rp ' + val.toLocaleString()
+                }
+            },
+            fill: {
+                opacity: 1
+            },
+            tooltip: {
+                y: {
+                    formatter: val => 'Rp ' + val.toLocaleString()
+                }
+            }
+        };
+
+        // Pie chart
+        const composition = response.transaction_composition || {};
+        pieSeries.value = [composition.booking || 0, composition.topup || 0, composition.membership || 0];
+        pieOptions.value = {
+            chart: {
+                type: 'donut',
+                height: 350
+            },
+            labels: ['Booking', 'Topup', 'Membership'],
+            colors: ['#4CAF50', '#2196F3', '#FF9800'],
+            legend: {
+                position: 'bottom'
+            },
+            dataLabels: {
+                formatter: val => val + '%',
+                style: {
+                    fontSize: '14px',
+                    colors: ['#ffffff']
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: val => val + '%'
+                }
             }
         };
         loading.value = false;
     };
 
-    const handlePageChange = async (page) => {
-        const params = {page: page, year: selectedYear.value, per_page: pagging.value };
-        
-        if (selectedMonth.value !== 'all') {
-            params.month = String(selectedMonth.value).padStart(2, '0');
+    const handlePageChange = (page) => {
+        getData(page)
+    }
+
+
+     // Filter states
+    const selectedFilter = ref('today');
+    const customStart = ref('');
+    const customEnd = ref('');
+
+    // Label filter
+    const filterLabel = computed(() => {
+        if (selectedFilter.value === 'today') return 'Hari ini';
+        if (selectedFilter.value === 'month') return 'Bulan ini';
+        if (selectedFilter.value === 'year') return 'Tahun ini';
+        if (selectedFilter.value === 'custom') {
+            if (customStart.value && customEnd.value) {
+                return `${customStart.value} s/d ${customEnd.value}`;
+            }
+            return 'Custom Filter';
         }
-        const response = await apiGetData("/dashboard/summary", params);
-        state.topProducts = response.topProducts;
+        return '';
+    });
+
+    // Update handleFilterChange
+    const filter = async () => {
+        let params = {};
+        if (selectedFilter.value === 'today') {
+            params.filter = 'today';
+        } else if (selectedFilter.value === 'month') {
+            params.filter = 'month';
+        } else if (selectedFilter.value === 'year') {
+            params.filter = 'year';
+        } else if (selectedFilter.value === 'custom') {
+            params.filter = 'custom';
+            params.start = customStart.value;
+            params.end = customEnd.value;
+        }
+        // Panggil API dashboard dengan params filter
+        await getData(params);
     };
 
-    const handlePageChangeReference = async (page) => {
-        const params = {page: page, year: selectedYear.value, per_page: pagging.value };
-        
-        if (selectedMonth.value !== 'all') {
-            params.month = String(selectedMonth.value).padStart(2, '0');
-        }
-        const response = await apiGetData("/dashboard/summary", params);
-        state.topReference = response.topReference;
-    };
 
-    const printInvoice = async (item) => {
-        processing.value = true
-        pesan.value="Sabar Dikit ya, Lagi Proses Generate  Data"
-
-        const response = await apiCetakPDF(`/dashboard/printInvoice`, {
-            toko: item.toko,
-            month : selectedMonth.value,
-            year: selectedYear.value
-        })
-
-        if (response) {
-            processing.value = false;
-            modalPDF.value = true;
-            pdfUrl.value = URL.createObjectURL(new Blob([response], { type: 'application/pdf' }));
-            await getData()
-        } else {
-            processing.value = false;
-        }
-    };
-
-    const exportInvoice = async (item) => {
-        processing.value = true
-        pesan.value="Harap Sabar, Lagi Proses Export"
-
-        const response= await apiExportExcel("/dashboard/exportexcelInvoice", {
-            toko: item.toko,
-            month : selectedMonth.value,
-            year: selectedYear.value
-        }, 'Data Invoice Sales')
-
-        if(response){
-            processing.value = false
-        }else{
-            processing.value = false
-        }
-    };
 
     const exportReport = async () => {
         processing.value = true
@@ -868,23 +967,7 @@
         }
     };
 
-    const printReport = async () => {
-        processing.value = true
-        pesan.value="Sabar Dikit ya, Lagi Proses Generate  Data"
-
-        const response = await apiCetakPDF(`/dashboard/printPDFReport`, {
-            year: selectedYear.value
-        })
-
-        if (response) {
-            processing.value = false;
-            modalPDF.value = true;
-            pdfUrl.value = URL.createObjectURL(new Blob([response], { type: 'application/pdf' }));
-            await getData()
-        } else {
-            processing.value = false;
-        }
-    };
+    
 
     onMounted(async() => {
         if (isStaff) {
@@ -901,3 +984,10 @@
     })
 
 </script>
+
+<style scoped>
+    .properties-title {
+        color: #222 !important;
+    }
+
+</style>

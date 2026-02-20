@@ -35,10 +35,11 @@ class RoomsUpdateRequest extends FormRequest
             'room_name' => 'required|string|max:100',
             'room_type' => 'required|string|max:100',
             'capacity' => 'required|integer',
+            'luas' => 'required|numeric',
+            'include_breakfast' => 'required|in:Y,N',
             'price' => 'required|numeric',
             'price_month' => 'nullable|numeric',
             'price_year' => 'nullable|numeric',
-            'total_room' => 'required|integer|min:1',
             'status' => 'required|integer|in:0,1'
         ];
     }
@@ -55,7 +56,10 @@ class RoomsUpdateRequest extends FormRequest
             'capacity.required' => 'The Capacity field is required.',
             'price.required' => 'The Price field is required.',
             'status.required' => 'The Status field is required.',
-            'total_room.required' => 'The Total Room field is required.',
+            'luas.required' => 'The Luas field is required.',
+            'include_breakfast.required' => 'The Include Breakfast field is required.',
+            'price.required' => 'The Price field is required.',
+            'status.required' => 'The Status field is required.',
             'status.in' => 'The Status must be 0 or 1.'
         ];
     }

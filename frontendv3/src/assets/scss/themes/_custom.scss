@@ -50,6 +50,16 @@
   .widget-1 .widget-round.hijau {
     border-color: #30d691;
   }
+
+  .abu .svg-fill {
+    fill: #838383;
+  }
+  .abuabu .svg-fill:not(.half-circle) {
+    stroke: #838383;
+  }
+  .widget-1 .widget-round.abu {
+    border-color: #838383;
+  }
   
   .widget-1 .widget-round .bg-round .half-circle {
     background: transparent;

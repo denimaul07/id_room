@@ -265,12 +265,16 @@
                                 </div>
                             </div>
                         </div>
-
-                      
                     </div>
                 </div>
 
                 <div class="col-sm-12 col-md-4 col-xl-4">
+                    <div class="mb-3 row">
+                        <label class="col-sm-4 col-form-label">Slug</label>
+                        <div class="col-sm-8">
+                            <a-input v-model:value="state.form.slug" placeholder="Slug" />
+                        </div>
+                    </div>
                     <div class="mb-3 row">
                         <label class="col-sm-4 col-form-label">Video URL</label>
                         <div class="col-sm-8">
@@ -424,6 +428,7 @@
             total_rooms: 0,
             city: "",
             province: "",
+            slug: "",
             maps: "",
             notelp: "",
             description: "",
@@ -439,6 +444,27 @@
             isActive: []
         }
     });
+
+    // Watch properties and auto-generate slug
+    watch(() => state.form.properties, (newVal) => {
+        if (newVal) {
+            state.form.slug = slugify(newVal);
+        } else {
+            state.form.slug = '';
+        }
+    });
+
+    // Slugify function
+    function slugify(text) {
+        return text
+            .toString()
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, '-') // Replace spaces with -
+            .replace(/[^a-z0-9\-]/g, '') // Remove all non-alphanumeric except -
+            .replace(/-+/g, '-') // Replace multiple - with single -
+            .replace(/^-+|-+$/g, ''); // Trim - from start/end
+    }
 
 
     const getData = async (page = state.listData.current_page) => {
@@ -469,6 +495,7 @@
             city: "",
             province: "",
             maps: "",
+            slug: "",
             latitude: "",
             longitude: "",
             description: "",
@@ -500,6 +527,7 @@
             address: data.address,
             city: data.city,
             province: data.province,
+            slug: data.slug,
             maps: data.maps,
             latitude: data.latitude,
             longitude: data.longitude,
@@ -534,6 +562,7 @@
         payload.append('latitude', state.form.latitude);
         payload.append('longitude', state.form.longitude);
         payload.append('description', state.form.description);
+        payload.append('slug', state.form.slug);
         payload.append('information', state.form.information);
         payload.append('price_per_night', state.form.price_per_night);
         payload.append('price_per_monthly', state.form.price_per_monthly);

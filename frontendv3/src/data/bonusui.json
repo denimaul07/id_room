@@ -21,6 +21,52 @@
     },
 
     {
+      "title": "Transactions",
+      "icon": "credit-card",
+      "iconf": "fill-credit-card",
+      "type": "sub",
+      "roles": ["superAdmin", "admin"],
+      "active": false,
+      "children": [
+        {
+          "path": "/wallet-ledger",
+          "title": "Wallet Ledger",
+          "type": "link",
+          "roles": ["superAdmin", "admin"],
+          "active": false
+        },
+        {
+          "path": "/booking-transactions",
+          "title": "Booking Transactions",
+          "type": "link",
+          "roles": ["superAdmin", "admin"],
+          "active": false
+        },
+        {
+          "path": "/membership-transactions",
+          "title": "Membership Transactions",
+          "type": "link",
+          "roles": ["superAdmin", "admin"],
+          "active": false
+        },
+        {
+          "path": "/top-up-transactions",
+          "title": "Top Up Transactions",
+          "type": "link",
+          "roles": ["superAdmin", "admin"],
+          "active": false
+        },
+        {
+          "path": "/all-transactions",
+          "title": "All Transactions",
+          "type": "link",
+          "roles": ["superAdmin", "admin"],
+          "active": false
+        }
+      ]
+    },
+
+    {
       "title": "Membership",
       "path": "/membership",
       "icon": "person-badge",

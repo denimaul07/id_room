@@ -7,7 +7,6 @@ use App\Models\Rooms;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use Spatie\Activitylog\Traits\LogsActivity;
 
 class RoomsService
 {
@@ -41,10 +40,11 @@ class RoomsService
             'room_name' => $data['room_name'],
             'room_type' => $data['room_type'],
             'capacity' => $data['capacity'],
+            'luas' => $data['luas'],
+            'include_breakfast' => $data['include_breakfast'],
             'price' => $data['price'],
             'price_month' => $data['price_month'] ?? null,
             'price_year' => $data['price_year'] ?? null,
-            'total_room' => $data['total_room'],
             'image' => $data['image'] ?? null,
             'status' => $data['status']
         ]);
@@ -81,10 +81,11 @@ class RoomsService
         $room->room_name = $data['room_name'];
         $room->room_type = $data['room_type'];
         $room->capacity = $data['capacity'];
+        $room->luas = $data['luas'];
+        $room->include_breakfast = $data['include_breakfast'];
         $room->price = $data['price'];
         $room->price_month = $data['price_month'] ?? null;
         $room->price_year = $data['price_year'] ?? null;
-        $room->total_room = $data['total_room'];
         $room->image = $data['image'] ?? null;
         $room->status = $data['status'];
 

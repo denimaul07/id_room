@@ -56,6 +56,8 @@ $api->version('v1', function ($api) {
         $api->get('/property-detail', 'App\Http\Controllers\PublicController@propertyDetail');
         $api->get('/popular-city', 'App\Http\Controllers\PublicController@popularCity');
         $api->get('/kode-negara', 'App\Http\Controllers\PublicController@kodeNegara');
+        $api->get('/properties_booking', 'App\Http\Controllers\PublicController@properties_booking');
+        $api->post('/proses_booking', 'App\Http\Controllers\PublicController@prosesBooking');
     });
 
     $api->group(['prefix' => 'master', 'middleware' => ['jwt.auth']], function ($api) {
@@ -211,4 +213,21 @@ $api->version('v1', function ($api) {
             $api->put('/store', 'App\Http\Controllers\Admin\DepartmentController@update');
         });
     });
+
+    $api->group(['prefix' => 'dashboard', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+        $api->get('/summary', 'App\Http\Controllers\DashboardController@overview');
+    });
+
+    $api->group(['prefix' => 'transactions', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+        $api->get('/wallet', 'App\Http\Controllers\TransactionController@index_wallet');
+        $api->get('/booking_transactions', 'App\Http\Controllers\TransactionController@index_booking_transactions');
+        $api->get('/top_up_transactions', 'App\Http\Controllers\TransactionController@index_top_up_transactions');
+        $api->get('/membership_transactions', 'App\Http\Controllers\TransactionController@index_membership_transactions');
+        $api->get('/all_transactions', 'App\Http\Controllers\TransactionController@index_all_transactions');
+        $api->get('/detail_transaction', 'App\Http\Controllers\TransactionController@detail_transaction');
+        $api->get('/detail', 'App\Http\Controllers\TransactionController@detail');
+        $api->put('/cancel_booking_transactions', 'App\Http\Controllers\TransactionController@cancel_booking_transactions');
+        $api->get('/get_booking', 'App\Http\Controllers\TransactionController@get_booking');
+    });
+
 });

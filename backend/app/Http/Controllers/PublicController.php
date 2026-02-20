@@ -236,4 +236,38 @@ class PublicController extends Controller
             throw $th;
         }
     }
+
+    public function properties_booking(Request $request)
+    {
+        try {
+            $properties = $this->settingService->properties_booking($request->property_id);
+            $response = [
+                'data' => $properties
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
+
+    public function prosesBooking(Request $request)
+    {
+        try {
+            $booking = $this->settingService->prosesBooking($request->only([
+                'property_id',
+                'room_id',
+                'user_id',
+                'check_in',
+                'check_out',
+                'total_price',
+                'payment_method',
+            ]));
+            $response = [
+                'message' => 'Booking berhasil diproses.',
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
 }

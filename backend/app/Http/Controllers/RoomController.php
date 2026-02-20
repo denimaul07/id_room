@@ -42,10 +42,11 @@ class RoomController extends Controller
                 'room_name',
                 'room_type',
                 'capacity',
+                'luas',
+                'include_breakfast',
                 'price',
                 'price_month',
                 'price_year',
-                'total_room',
                 'image',
                 'status'
             ]));
@@ -69,10 +70,11 @@ class RoomController extends Controller
                 'room_name',
                 'room_type',
                 'capacity',
+                'luas',
+                'include_breakfast',    
                 'price',
                 'price_month',
                 'price_year',
-                'total_room',
                 'image',
                 'status'
             ]));

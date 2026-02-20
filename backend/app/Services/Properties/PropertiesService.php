@@ -37,6 +37,7 @@ class PropertiesService
             'latitude' => $data['latitude'],
             'longitude' => $data['longitude'],
             'description' => $data['description'],
+            'slug' => $data['slug'],
             'information' => $data['information'],
             'price_per_night' => $data['price_per_night'],
             'price_per_monthly' => $data['price_per_monthly'],
@@ -86,6 +87,7 @@ class PropertiesService
         $property->latitude = $data['latitude'];
         $property->longitude = $data['longitude'];
         $property->description = $data['description'];
+        $property->slug = $data['slug'];
         $property->information = $data['information'];
         $property->price_per_night = $data['price_per_night'];
         $property->price_per_monthly = $data['price_per_monthly'];

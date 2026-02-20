@@ -5,7 +5,6 @@ namespace App\Http\Requests\Properties;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Validation\Rule;
 
 class PropertiesUpdateRequest extends FormRequest
 {
@@ -43,6 +42,7 @@ class PropertiesUpdateRequest extends FormRequest
             'longitude' => 'nullable|string|max:50',
             'description' => 'nullable|string',
             'information' => 'nullable|string',
+            'slug' => 'required|string|max:255',
             'price_per_night' => 'required|numeric',
             'price_per_monthly' => 'nullable|numeric',
             'price_per_year' => 'nullable|numeric',
@@ -69,6 +69,8 @@ class PropertiesUpdateRequest extends FormRequest
             'longitude.required' => 'The Longitude field is required.',
             'description.required' => 'The Description field is required.',
             'information.required' => 'The Information field is required.',
+            'slug.required' => 'The Slug field is required.',
+            'slug.max' => 'The Slug may not be greater than 255 characters.',   
             'price_per_night.required' => 'The Price Per Night field is required.',
             'total_rooms.required' => 'The Total Rooms field is required.',
             'isActive.required' => 'The Active Status field is required.',

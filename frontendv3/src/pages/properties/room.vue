@@ -21,7 +21,6 @@
                             <th class="text-center bg-dark text-nowrap">Room Name</th>
                             <th class="text-center bg-dark text-nowrap">Room Type</th>
                             <th class="text-center bg-dark text-nowrap">Capacity</th>
-                            <th class="text-center bg-dark text-nowrap">Total Room</th>
                             <th class="text-center bg-dark text-nowrap">Image</th>
                             <th class="text-center bg-dark text-nowrap">Price</th>
                             <th class="text-center bg-dark text-nowrap">Price / Month</th>
@@ -55,9 +54,6 @@
                             <td class="text-center text-nowrap">{{ data.room_type }}</td>
                             <td class="text-center text-nowrap">
                                 {{ data.capacity }}
-                            </td>
-                            <td class="text-center text-nowrap">
-                                {{ data.total_room }}
                             </td>
                             <td class="text-center text-nowrap">
                                 <a-image :src="pathUrl + data.image" height="40px" width="40px"
@@ -127,12 +123,20 @@
                     </div>
 
                     <div class="mb-3 row">
-                        <label class="col-sm-3 col-form-label">Total Room</label>
+                        <label class="col-sm-3 col-form-label">Luas</label>
                         <div class="col-sm-9">
-                            <a-input-number v-model:value="state.form.total_room" style="width: 100%"
-                                placeholder="Masukan Total Room" />
+                            <a-input-number v-model:value="state.form.luas" style="width: 100%"
+                                placeholder="Masukan Luas" />
                         </div>
                     </div>
+
+                    <div class="mb-3 row">
+                        <label class="col-sm-3 col-form-label">Include Breakfast</label>
+                        <div class="col-sm-9">
+                            <a-switch v-model:checked="state.form.include_breakfast" />
+                        </div>
+                    </div>
+
                 </div>
 
                 <div class="col-sm-12 col-md-6">
@@ -241,10 +245,11 @@ const state = reactive({
         room_name: '',
         room_type: [],
         capacity: 0,
+        luas: 0,
+        include_breakfast: 0,
         price: 0,
         price_month: 0,
         price_year: 0,
-        total_room: 0,
         image: null,
         status: []
     }
@@ -273,10 +278,11 @@ const add = () => {
         room_name: '',
         room_type: [],
         capacity: 0,
+        luas: 0,
+        include_breakfast: 0,
         price: 0,
         price_month: 0,
         price_year: 0,
-        total_room: 0,
         image: null,
         status: []
     };
@@ -292,10 +298,11 @@ const view = (item) => {
         room_name: item.room_name,
         room_type: item.room_type,
         capacity: item.capacity,
+        luas: item.luas,
+        include_breakfast: item.include_breakfast,
         price: item.price,
         price_month: item.price_month,
         price_year: item.price_year,
-        total_room: item.total_room,
         image: null,
         status: item.status
     };
@@ -306,16 +313,22 @@ const view = (item) => {
 
 const save = async () => {
     loadingSubmit.value = true;
+    if(state.form.include_breakfast===true){
+        state.form.include_breakfast = 'Y';
+    }else{
+        state.form.include_breakfast = 'N';
+    }
     const formData = new FormData();
     formData.append('odata', state.form.odata);
     formData.append('property_odata', state.form.property_odata);
     formData.append('room_name', state.form.room_name);
     formData.append('room_type', state.form.room_type);
     formData.append('capacity', state.form.capacity);
+    formData.append('luas', state.form.luas);
+    formData.append('include_breakfast', state.form.include_breakfast);
     formData.append('price', state.form.price);
     formData.append('price_month', state.form.price_month);
     formData.append('price_year', state.form.price_year);
-    formData.append('total_room', state.form.total_room);
     formData.append('status', state.form.status);
     if (state.form.image) {
         formData.append('image', state.form.image);
@@ -342,32 +355,7 @@ const save = async () => {
     }
 };
 
-const deleteItem = async (item) => {
-    Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!'
-    }).then(async (result) => {
-        if (result.isConfirmed) {
-            processing.value = true;
-            pesan.value = 'Mohon tunggu sedang proses...';
-            const response = await apiDeleteData('/rooms/index', {
-                odata: item.odata
-            });
 
-            if (response) {
-                processing.value = false;
-                getData();
-            } else {
-                processing.value = false;
-            }
-        }
-    });
-};
 
 onMounted(async () => {
     await getData();
