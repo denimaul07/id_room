@@ -19,6 +19,17 @@
                                             Filter :
                                             <!-- Filter Range Tanggal -->
                                             <a-range-picker v-model:value="filterDate" style="width: 260px" format="YYYY-MM-DD" />
+
+                                            <!-- Filter Status Payment -->
+                                            <a-select v-model:value="filterStatus" placeholder="Pilih Status" style="width: 150px">
+                                                <a-select-option value="">Semua Status</a-select-option>
+                                                <a-select-option value="PAID">PAID</a-select-option>
+                                                <a-select-option value="PENDING">PENDING</a-select-option>
+                                                <a-select-option value="CANCELLED">CANCELLED</a-select-option>
+                                                <a-select-option value="EXPIRED">EXPIRED</a-select-option>
+                                                <a-select-option value="COMPLETED">COMPLETED</a-select-option>
+                                            </a-select>
+
                                         </div>
                                         <div class="ms-auto">
                                             <a-input-search
@@ -114,6 +125,16 @@
                                             Filter :
                                             <!-- Filter Range Tanggal -->
                                             <a-range-picker v-model:value="filterDateBooking" style="width: 260px" format="YYYY-MM-DD" />
+
+                                            <!-- Filter Status Payment -->
+                                            <a-select v-model:value="filterStatusRoom" placeholder="Pilih Status" style="width: 150px">
+                                                <a-select-option value="">Semua Status</a-select-option>
+                                                <a-select-option value="PAID">PAID</a-select-option>
+                                                <a-select-option value="PENDING">PENDING</a-select-option>
+                                                <a-select-option value="CANCELLED">CANCELLED</a-select-option>
+                                                <a-select-option value="EXPIRED">EXPIRED</a-select-option>
+                                                <a-select-option value="COMPLETED">COMPLETED</a-select-option>
+                                            </a-select>
                                         </div>
                                         <div class="ms-auto">
                                             <a-input-search
@@ -211,7 +232,7 @@
             </div>
         </div>
 
-        <a-modal v-model:open="modalAdd" width="1200px" title="Booking Transaction Detail" :footer="null">
+        <a-modal v-model:open="modalAdd" width="1200px" style="top:20px" title="Booking Transaction Detail" :footer="null">
             <div class="row">
                 <div class="col-12 col-lg-6 mb-3">
                     <table class="table table-bordered">
@@ -508,10 +529,25 @@
     const filterType = ref('');
     const filterSource = ref('');
     const filterDate = ref([]);
+    if(route.query.date == 'today') {
+        filterDate.value = [dayjs().startOf('day'), dayjs().endOf('day')];
+    }else if(route.query.date == 'month') {
+        filterDate.value = [dayjs().startOf('month'), dayjs().endOf('month')];
+    }else if(route.query.date == 'year') {
+        filterDate.value = [dayjs().startOf('year'), dayjs().endOf('year')];
+    }else if(route.query.date == 'custom') {
+        filterDate.value = [
+            dayjs(route.query.customStart),
+            dayjs(route.query.customEnd)
+        ];
+    }else {
+        filterDate.value = [];
+    }
     const filterDateBooking = ref([]);
     const activeTab = ref(route.query.tab || '0');
 
     const filterStatus = ref(route.query.status || '');
+    const filterStatusRoom = ref(route.query.status || '');
 
     const state = reactive({
         listData: {},
@@ -526,6 +562,7 @@
             page: page,
             pagging: pagging.value,
             search: search.value,
+            status: filterStatus.value,
             start_date: filterDate.value?.[0] ? dayjs(filterDate.value[0]).format('YYYY-MM-DD') : '',
             end_date: filterDate.value?.[1] ? dayjs(filterDate.value[1]).format('YYYY-MM-DD') : '',
         };
@@ -576,6 +613,7 @@
             search: searchBooking.value,
             start_date: filterDateBooking.value?.[0] ? dayjs(filterDateBooking.value[0]).format('YYYY-MM-DD') : '',
             end_date: filterDateBooking.value?.[1] ? dayjs(filterDateBooking.value[1]).format('YYYY-MM-DD') : '',
+            status: filterStatusRoom.value,
         };
         const response = await apiGetData('/transactions/get_booking', params);
         state.listDataBooking = response.data;
@@ -601,7 +639,7 @@
         await getData();
     }, 500));
 
-    watch([filterType, filterSource, filterDate], async () => {
+    watch([filterType, filterSource, filterDate, filterStatus], async () => {
         await getData();
     });
 
@@ -609,7 +647,7 @@
         await getDataBooking();
     }, 500));
 
-    watch([filterDateBooking], async () => {
+    watch([filterDateBooking, filterStatusRoom], async () => {
         await getDataBooking();
     });
 

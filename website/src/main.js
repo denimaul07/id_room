@@ -8,6 +8,8 @@ import '@fortawesome/fontawesome-free/css/all.min.css'
 import { createHead } from '@vueuse/head'
 import { startSilentRefresh } from '@/store/authRefresh'
 import { useAuthStore } from '@/store/auth'
+import '@/plugins/axios'
+
 
 const app = createApp(App)
 const pinia = createPinia()

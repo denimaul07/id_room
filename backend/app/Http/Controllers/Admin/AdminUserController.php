@@ -30,9 +30,13 @@ class AdminUserController extends Controller
         //return $users;
         try {
         
-            $data = User::selectRaw('*, users.id as id,  users.kode, name, deptname, email, status_users')
+            $data = User::selectRaw('*, users.id as id, users.kode, name, deptname, properties, email, status_users')
             ->with('roles')
             ->leftJoin('departments','departments.kode','=','users.kode')
+            ->leftJoin('properties','properties.odata','=','users.kode')
+            ->whereHas('roles', function ($query) {
+                $query->whereIn('name', ['admin', 'superAdmin','properties']);
+            })
             ->where(function ($query) use ($request) {
                 $query->where('email', "like", "%" . $request->search . "%");
                 $query->orWhere('name', "like", "%" . $request->search . "%");
@@ -46,7 +50,6 @@ class AdminUserController extends Controller
                 if($request->dept){
                     $query->where('users.kode', $request->dept);
                 }
-                
             })
             ->orderBy('users.id','desc')->paginate(10);
 
@@ -108,7 +111,7 @@ class AdminUserController extends Controller
         }
 
         $user = User::create([
-            // 'odata' => (string) Str::uuid(),
+            'odata' => (string) Str::uuid(),
             'name'      => $request->input('name'),
             'email'     => $request->input('email'),
             'password'  => $request->input('password'),
@@ -127,15 +130,12 @@ class AdminUserController extends Controller
         //assign role
         $user->assignRole($request->input('roles'));
 
-        $token = auth()->login($user);
+        $response = [
+            'data' => 'User Created',
+            'message' => 'Success',
+        ];
 
-        try{
-            $token = auth()->login($user);
-        }catch(JWTException $e){
-            throw $e;
-        }
-
-        return $this->respondWithToken($token);
+        return response()->json($response, 201);
     }
 
     /**

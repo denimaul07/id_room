@@ -31,9 +31,11 @@ $api->version('v1', function ($api) {
         $api->post('/contactAgent', 'App\Http\Controllers\UserController@contactAgent');
         $api->group(['middleware' => 'login.attempt.limiter'], function ($api) {
             $api->post('/login', 'App\Http\Controllers\Auth\AuthController@login');
+            $api->post('/login_apps', 'App\Http\Controllers\Auth\AuthController@loginApps');
         });
 
         $api->post('/token/refresh', 'App\Http\Controllers\Auth\RefreshTokenController@refresh');
+        $api->post('/token/refresh_apps', 'App\Http\Controllers\Auth\RefreshTokenController@refreshApps');
         $api->post('/logout', 'App\Http\Controllers\Auth\RefreshTokenController@logout');
         $api->post('/forgot-password', 'App\Http\Controllers\Auth\ForgotPasswordController@sendResetLinkEmail');
         $api->post('/reset_password', 'App\Http\Controllers\Auth\ResetPasswordController@reset');
@@ -115,6 +117,7 @@ $api->version('v1', function ($api) {
         $api->delete('/index', 'App\Http\Controllers\PropertiesController@destroy');
         $api->get('/city', 'App\Http\Controllers\PropertiesController@getCity');
         $api->post('/updatePopularCity', 'App\Http\Controllers\PropertiesController@updatePopularCity');
+        $api->get('/get_properties', 'App\Http\Controllers\PropertiesController@getProperties');
     });
 
     $api->group(['prefix' => 'rooms', 'middleware' => ['jwt.auth']], function ($api) {
@@ -214,8 +217,23 @@ $api->version('v1', function ($api) {
         });
     });
 
-    $api->group(['prefix' => 'dashboard', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
-        $api->get('/summary', 'App\Http\Controllers\DashboardController@overview');
+    $api->group(['prefix' => 'dashboard', 'middleware' => ['jwt.auth']], function ($api) {
+        $api->get('/booking-detail', 'App\Http\Controllers\DashboardController@bookingDetail');
+        
+        $api->group(['middleware' => ['jwt.auth', 'role:properties']], function ($api) {
+            $api->get('/summary_properties', 'App\Http\Controllers\DashboardController@overviewProperties');
+            $api->post('/checkin_booking', 'App\Http\Controllers\DashboardController@checkinBooking');
+            $api->post('/checkout_booking', 'App\Http\Controllers\DashboardController@checkoutBooking');
+            $api->post('/block_room', 'App\Http\Controllers\DashboardController@blockRoom');
+            $api->post('/open_room', 'App\Http\Controllers\DashboardController@openRoom');
+        });
+
+                // Akses Admin
+        $api->group(['middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+            $api->get('/summary', 'App\Http\Controllers\DashboardController@overview');
+            $api->get('/booking-availability', 'App\Http\Controllers\DashboardController@bookingAvailability');
+            
+        });
     });
 
     $api->group(['prefix' => 'transactions', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
@@ -228,6 +246,10 @@ $api->version('v1', function ($api) {
         $api->get('/detail', 'App\Http\Controllers\TransactionController@detail');
         $api->put('/cancel_booking_transactions', 'App\Http\Controllers\TransactionController@cancel_booking_transactions');
         $api->get('/get_booking', 'App\Http\Controllers\TransactionController@get_booking');
+        $api->get('/membership_list', 'App\Http\Controllers\TransactionController@membership_list');
     });
 
+    $api->group(['prefix' => 'member', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+        $api->get('/index', 'App\Http\Controllers\MemberController@index');
+    });
 });

@@ -43,8 +43,9 @@ class TransactionController extends Controller
     {
         $search = $request->search;
         $pagging = $request->pagging ?? 10;
+        $status = $request->status;
         $filterDate = $request->start_date && $request->end_date ? [$request->start_date, $request->end_date] : null;
-        $data = $this->transactionService->list_booking_transactions($search, $pagging, $filterDate);
+        $data = $this->transactionService->list_booking_transactions($search, $pagging, $filterDate, $status);
         $response=[
             'data' => $data
         ];
@@ -82,7 +83,8 @@ class TransactionController extends Controller
         $filterType = $request->type;
         $filterStatus = $request->status;
         $filterDate = $request->start_date && $request->end_date ? [$request->start_date, $request->end_date] : null;
-        $data = $this->transactionService->list_all_transactions($search, $pagging, $filterType, $filterStatus, $filterDate);
+        $filterUnpaid = $request->unpaid === 'true' ? 'Y' : '';
+        $data = $this->transactionService->list_all_transactions($search, $pagging, $filterType, $filterStatus, $filterDate, $filterUnpaid);
         $response=[
             'data' => $data
         ];
@@ -114,8 +116,22 @@ class TransactionController extends Controller
     {
         $pagging = $request->pagging ?? 10;
         $search = $request->search;
+        $status = $request->status;
         $date = $request->start_date && $request->end_date ? [$request->start_date, $request->end_date] : null;
-        $data = $this->transactionService->get_booking($search, $pagging, $date);
+        $data = $this->transactionService->get_booking($search, $pagging, $date, $status);
+        $response=[
+            'data' => $data
+        ];
+        return response()->json($response, 201);
+    }
+
+    public function membership_list(Request $request)
+    {
+        $pagging = $request->pagging ?? 10;
+        $search = $request->search;
+        $status = $request->status;
+        $date = $request->start_date && $request->end_date ? [$request->start_date, $request->end_date] : null;
+        $data = $this->transactionService->membership_list($search, $pagging, $date, $status);
         $response=[
             'data' => $data
         ];

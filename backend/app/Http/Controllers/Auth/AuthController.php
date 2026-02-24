@@ -12,9 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rules\Password;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Mail;
 
@@ -73,7 +71,7 @@ class AuthController extends Controller
         $isAdmin = false;
         if ($user && method_exists($user, 'getRoleNames')) {
             $roleNames = array_map('strtolower', $user->getRoleNames()->toArray());
-            if (in_array('admin', $roleNames) || in_array('superadmin', $roleNames)) {
+            if (in_array('admin', $roleNames) || in_array('superadmin', $roleNames) || in_array('properties', $roleNames)) {
                 $isAdmin = true;
             }
         }
@@ -124,16 +122,16 @@ class AuthController extends Controller
                 'refresh_exp'   => $refreshExpiry->timestamp,
             ])
             ->cookie(
-                'refresh_token',
-                $refreshToken,
-                60 * 24,  // 1 hari (menit)
-                null,
-                null,
-                true,  // Secure (WAJIB di production https)
-                true,  // HttpOnly
-                false,
-                'Strict'
-            );
+            'refresh_token',
+            $refreshToken,
+            60 * 24,
+            '/',     // path
+            null,    // ✅ biarkan null saja!
+            false,
+            true,
+            false,
+            'Lax'
+        );
     }
 
     private function respondRefreshWithToken($token)
@@ -268,5 +266,124 @@ class AuthController extends Controller
             ];
             return response()->json($response, 400);
         }
+    }
+
+    // Untuk login Users
+
+    public function loginApps(Request $request)
+    {
+        $rules = [
+            'email' => [
+                'required',
+                'max:255'
+            ],
+            'password' => [
+                'required',
+                'string',
+            ]
+        ];
+        $validate = Validator::make($request->all(), $rules);
+
+        if ($validate->fails()) {
+            $response = [
+                'data' => $validate->errors(),
+                'message' => 'Login gagal',
+            ];
+            return response()->json($response, 400);
+        }
+
+        $credential = $request->only('email', 'password');
+
+        try {
+            if (!$token = auth()->attempt($credential)) {
+                $data = ['Email atau password salah'];
+
+                $response = [
+                    'message' => $data,
+                ];
+                return response()->json($response, 401);
+            }
+        } catch (JWTException $e) {
+            throw $e;
+        }
+
+        $user = auth()->user();
+        if ($user) {
+            $user = User::find($user->id);  // reload agar relasi roles pasti ada
+        }
+
+        if ($user && $user->status_users === 1) {
+            auth()->logout();
+            return response()->json([
+                'message' => 'Akun Anda tidak aktif.'
+            ], 403);
+        }
+
+        // Cek role admin/superadmin (case-insensitive, support superAdmin)
+        $isAdmin = false;
+        if ($user && method_exists($user, 'getRoleNames')) {
+            $roleNames = array_map('strtolower', $user->getRoleNames()->toArray());
+            if (in_array('admin', $roleNames) || in_array('superadmin', $roleNames)) {
+                $isAdmin = true;
+            }
+        }
+
+        if ($user && $user->status_users === 2 && !$isAdmin) {
+            auth()->logout();
+            return response()->json([
+                'message' => 'Email belum terverifikasi. Silakan cek email Anda.'
+            ], 403);
+        }
+
+        if ($user && method_exists($user, 'hasVerifiedEmail') && !$user->hasVerifiedEmail() && !$isAdmin) {
+            auth()->logout();
+            return response()->json([
+                'message' => 'Email belum terverifikasi. Silakan cek email Anda.'
+            ], 403);
+        }
+
+        RefreshToken::where('user_id', $user->id)->delete();
+
+        return $this->respondWithTokenloginApps($token, $user);
+    }
+
+    private function respondWithTokenloginApps($token, $user)
+    {
+        $ttl = 5;  // 5 menit
+        $expiry = now()->addMinutes($ttl)->timestamp;
+
+        $refreshToken = Str::random(64);
+        $refreshExpiry = now()->addDays(1);
+
+        RefreshToken::create([
+            'user_id' => $user->id,
+            'token' => hash('sha256', $refreshToken),
+            'expires_at' => $refreshExpiry,
+        ]);
+
+        $user->update(['last_login' => now()]);
+
+      
+        return response()
+            ->json([
+                'users' => $user,
+                'permissions' => $user->getPermissionsViaRoles()->pluck('name'),
+                'token' => $token,
+                'refresh_token' => $refreshToken,
+                'token_type' => 'bearer',
+                'expired_in' => $expiry,
+                'refresh_exp'   => $refreshExpiry->timestamp,
+            ])
+            ->cookie(
+            'refresh_token',
+            $refreshToken,
+            60 * 24,
+            '/',     // path
+            null,    // ✅ biarkan null saja!
+            false,
+            true,
+            false,
+            'Lax'
+        );
     }
 }

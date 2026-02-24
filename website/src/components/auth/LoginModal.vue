@@ -214,7 +214,7 @@ const onSubmit = async () => {
         email: form.email,
         password: form.password
     }
-    const result = await apiPostDataWithReturn('auth/login', payload, {}, false)
+    const result = await apiPostDataWithReturn('auth/login_apps', payload, {}, false)
     isSubmitting.value = false
     if (!result?.success) {
         Swal.fire({

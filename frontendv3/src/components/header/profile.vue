@@ -20,7 +20,7 @@
       >
         <img
           style="width: 100%; height: 100%; object-fit: cover"
-          :src="pathUrl + '/storage/foto/user.png'"
+          src="@/assets/images/logo/logo_idroom.png"
           alt=""
         />
       </div>

@@ -28,19 +28,21 @@ export const useAuthStore = defineStore('auth', () => {
         }))
     }
 
+
     function setAuth(data) {
         token.value = data.token
         user.value = data.users ?? null
         permissions.value = data.permissions ?? []
 
-        expiredAt.value = Date.now() + (data.expired_in * 1000)
+        // expired_in dari backend adalah unix timestamp
+        expiredAt.value = data.expired_in * 1000
 
         persist()
     }
 
     function setTokenOnly(newToken, expired_in) {
         token.value = newToken
-        expiredAt.value = Date.now() + (expired_in * 1000)
+        expiredAt.value = expired_in * 1000 // convert di sini
         persist()
     }
 

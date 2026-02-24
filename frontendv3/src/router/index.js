@@ -21,6 +21,8 @@ const bookingTransactions = () => import('@/pages/transactions/booking-transacti
 const membershipTransactions = () => import('@/pages/transactions/membership-transactions.vue');
 const topUpTransactions = () => import('@/pages/transactions/top-up-transactions.vue');
 const allTransactions = () => import('@/pages/transactions/all-transactions.vue');
+const member = () => import('@/pages/member/index.vue');
+const DasboardStaff = () => import('@/pages/dashboard/index_properties.vue');
 
 const routes = [
   {
@@ -82,6 +84,21 @@ const routes = [
   },
 
   {
+    path: '/dashboard-staff',
+    component: Body,
+    children: [
+      {
+        path: '/dashboard-staff',
+        name: 'index_properties',
+        component: DasboardStaff,
+        meta: {
+          requiresAuth: true
+        }
+      },
+    ]
+  },
+
+  {
     path: '/membership',
     component: Body,
     children: [
@@ -134,6 +151,21 @@ const routes = [
         path: '/activity-log',
         name: 'activity-log',
         component: activityLog,
+        meta: {
+          requiresAuth: true
+        }
+      },
+    ]
+  },
+
+  {
+    path: '/member',
+    component: Body,
+    children: [
+      {
+        path: '/member',
+        name: 'member',
+        component: member,
         meta: {
           requiresAuth: true
         }

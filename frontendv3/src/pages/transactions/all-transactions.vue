@@ -437,8 +437,24 @@
     const action = ref('');
     const modalAdd = ref(false);
     const filterType = ref('');
-    const filterSource = ref('');
+    const filterSource = ref(route.query.source ?? '');
+    const filterUnpaid = ref(route.query.unpaid === 'true' ? 'Y' : '');
+
     const filterDate = ref([]);
+    if(route.query.date == 'today') {
+        filterDate.value = [dayjs().startOf('day'), dayjs().endOf('day')];
+    }else if(route.query.date == 'month') {
+        filterDate.value = [dayjs().startOf('month'), dayjs().endOf('month')];
+    }else if(route.query.date == 'year') {
+        filterDate.value = [dayjs().startOf('year'), dayjs().endOf('year')];
+    }else if(route.query.date == 'custom') {
+        filterDate.value = [
+            dayjs(route.query.customStart),
+            dayjs(route.query.customEnd)
+        ];
+    }else {
+        filterDate.value = [];
+    }
     const filterStatus = ref(route.query.type ?? '');
     const state = reactive({
         listData: {},
@@ -454,6 +470,7 @@
             search: search.value,
             type: filterSource.value,
             status: filterStatus.value,
+            unpaid: filterUnpaid.value,
             start_date: filterDate.value?.[0] ? dayjs(filterDate.value[0]).format('YYYY-MM-DD') : '',
             end_date: filterDate.value?.[1] ? dayjs(filterDate.value[1]).format('YYYY-MM-DD') : '',
         };

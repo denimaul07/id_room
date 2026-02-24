@@ -237,12 +237,15 @@
                     </p>
 
                     <span
-                    class="inline-block mt-3 px-3 py-1 text-xs font-semibold rounded-full"
-                    :class="item.status === 'aktif'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-red-100 text-red-700'"
+                        class="inline-block mt-3 px-3 py-1 text-xs font-semibold rounded-full"
+                        :class="{
+                            'bg-yellow-100 text-yellow-700': item.status === 'PENDING',
+                            'bg-blue-100 text-blue-700': item.status === 'PAID',
+                            'bg-red-100 text-red-700': item.status === 'CANCELLED' || item.status === 'EXPIRED',
+                            'bg-green-100 text-green-700': item.status === 'COMPLETED'
+                        }"
                     >
-                    {{ item.status }}
+                        {{ item.status }}
                     </span>
                 </div>
 

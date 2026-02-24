@@ -96,7 +96,8 @@
                     <div class="tier-label">
                         {{ currentMembership.length > 0 ? currentMembership[0].membership.title : 'No Membership' }}
                     </div>
-                    <div class="tier-point">Rp. 0</div>
+                    <div class="tier-point">{{ parseInt(user?.balance || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
+                                                    .slice(0, -3) }}</div>
                     <button
                             class="mt-3 px-4 py-2 rounded-lg font-semibold w-full transition" :style="{ background: currentInfo.primaryColor, color: currentInfo.primaryTextColor }"
                             @click="topUpSaldo()"

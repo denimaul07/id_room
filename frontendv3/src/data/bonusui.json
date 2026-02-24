@@ -11,13 +11,23 @@
       "icon": "stroke-home",
       "iconf": "fill-home",
       "type": "link",
-      "roles": ["superAdmin", "staff", "admin"],
+      "roles": ["superAdmin", "admin"],
       "active": false
     },
     {
       "headTitle1": "Application",
       "headTitle2": "Dashboards,Widgets & Layout.",
       "type": "headtitle"
+    },
+
+    {
+      "title": "Members",
+      "path": "/member",
+      "icon": "stroke-user",
+      "iconf": "fill-user",
+      "type": "link",
+      "roles": ["superAdmin", "admin"],
+      "active": false
     },
 
     {

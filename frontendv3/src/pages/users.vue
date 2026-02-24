@@ -46,7 +46,7 @@
                                             <td class="text-center">{{ state.users.from + index }}</td>
                                             <td>{{ item.name }}</td>
                                             <td>{{ item.email }}</td>
-                                            <td>{{ item.deptname }}</td>
+                                            <td>{{ item.deptname ?? item.properties }}</td>
                                             <td>{{ item.roles.map(role => role.name).join(', ') }}</td>
                                             <td class="text-center">
                                                 <span v-if="item.status_users == 0" class="badge bg-success">Active</span>
@@ -94,20 +94,26 @@
                 </div>
             </div>
 
-            <div class="mb-3 row">
-                <label class="col-sm-4 col-form-label"> Department</label>
-                <div class="col-sm-8">
-                    <a-select v-model:value="state.form.kode" style="width: 100%" placeholder="Pilih Department">
-                        <a-select-option v-for="(item, index) in state.stores" :key="index" :value="item.kode">{{ item.deptname }}</a-select-option>
-                    </a-select>
-                </div>
-            </div>
 
             <div class="mb-3 row">
                 <label class="col-sm-4 col-form-label"> Role</label>
                 <div class="col-sm-8">
                     <a-select v-model:value="state.form.roles" style="width: 100%" placeholder="Pilih Role">
                         <a-select-option v-for="(item, index) in state.roles" :key="index" :value="item.name">{{ item.name }}</a-select-option>
+                    </a-select>
+                </div>
+            </div>
+
+            <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label"> Department</label>
+                <div class="col-sm-8">
+                    <a-select v-model:value="state.form.kode" style="width: 100%" placeholder="Pilih Department">
+                        <a-select-option 
+                            v-for="(item, index) in state.form.roles.includes('properties') ? state.listProperty : state.stores" 
+                            :key="index" 
+                            :value="item.kode">
+                            {{ item.deptname }}
+                        </a-select-option>
                     </a-select>
                 </div>
             </div>
@@ -180,6 +186,7 @@
         users :{},
         stores :{},
         roles :{},
+        listProperty :{},
     });
 
     const getData = async (page = state.users.current_page) => {
@@ -199,6 +206,14 @@
     const getToko = async () => {
         const response = await apiGetData('/master/department', {});
         state.stores = response.data;
+    };
+
+    const getProperty = async () => {
+        const response = await apiGetData("/properties/get_properties", {});
+        state.listProperty = response.data.map(property => ({
+            kode: property.odata,
+            deptname: property.properties
+        }));
     };
 
     const getRoles = async () => {
@@ -275,6 +290,7 @@
             await getData(),
             await getToko(),
             await getRoles(),
+            await getProperty(),
         ]);
     });
 

@@ -153,4 +153,18 @@ class PropertiesController extends Controller
             throw $e;
         }
     }
+
+    public function getProperties(Request $request)
+    {
+        try {
+
+            $data = $this->PropertiesService->getProperties();
+            $response = [
+                'data' => $data
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
 }

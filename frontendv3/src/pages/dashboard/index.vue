@@ -8,7 +8,6 @@
         </div>
         <div class="container-fluid">
             <div class="row widget-grid">
-                
                 <div class="col-xxl-4 col-xl-4 col-sm-12 box-col-6">
                     <div class="card profile-box">
                         <div class="card-body">
@@ -55,88 +54,9 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="row">
-                        <div class="col-md-12" v-for="data in 2" v-if="loading">
-
-                            <a href="#" class="card widget-1">
-                                <div class="card-body">
-                                    <div class="widget-content">
-                                        <div class="widget-round" :class="data.class">
-                                            <div class="bg-round">
-                                                <a-skeleton-avatar :active="true" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h4><a-skeleton-input :active="true" /></h4>
-                                            <span class="f-light">
-                                                <a-skeleton-input :active="true" size="small"/>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-
-                        <div class="col-12" v-for="data in 3" v-if="loading">
-
-                            <div class="card widget-1">
-                                <div class="card-body">
-                                    <div class="widget-content">
-                                        <div class="widget-round" :class="data.class">
-                                            <div class="bg-round">
-                                                <a-skeleton-avatar :active="true" />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h4><a-skeleton-input :active="true" /></h4>
-                                            <span class="f-light">
-                                                <a-skeleton-input :active="true" size="small"/>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-12" v-for="data in state.data" :key="data.title" v-else>
-                            <router-link :to="data.url"  class="card widget-1">
-                                <div class="card-body">
-                                    <div class="widget-content" >
-                                        <div class="widget-round" :class="data.class">
-                                            <div class="bg-round">
-                                                <svg class="svg-fill">
-                                                    <use :xlink:href="iconSpritePath + `#${data.icon}`"></use>
-                                                </svg>
-                                                <svg class="half-circle svg-fill">
-                                                    <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
-                                                </svg>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h5>{{ data.number }}</h5>
-                                            <span class="f-light">
-                                                {{ data.title }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </router-link >
-                        </div>
-
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center p-3">
-                                    <h5 class="mb-0">Revenue Composition</h5>
-                                </div>
-                                <div class="card-body">
-                                    <apexchart type="donut" height="350" :options="pieOptions" :series="pieSeries"></apexchart>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
                 </div>
+
+                
 
                 <div class="col-xxl-8 col-xl-8 col-sm-12 box-col-12">
                     <div class="row">
@@ -183,278 +103,818 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- <div class="col-md-12" v-for="data in 2" v-if="loading">
+                <div class="col-md-4" v-for="data in 3" v-if="loading">
 
-                            <a href="#" class="card widget-1">
+                    <a href="#" class="card widget-1">
+                        <div class="card-body">
+                            <div class="widget-content">
+                                <div class="widget-round" :class="data.class">
+                                    <div class="bg-round">
+                                        <a-skeleton-avatar :active="true" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4><a-skeleton-input :active="true" /></h4>
+                                    <span class="f-light">
+                                        <a-skeleton-input :active="true" size="small"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-12 pb-2" v-else>
+                    <div class="card">
+                        <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                            <h5 class="mb-0 text-dark fw-bold">
+                                <i class="fa fa-exclamation-triangle text-warning me-2"></i>
+                                Operational Alerts
+                            </h5>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="card course-box">
                                 <div class="card-body">
-                                    <div class="widget-content">
-                                        <div class="widget-round" :class="data.class">
-                                            <div class="bg-round">
-                                                <a-skeleton-avatar :active="true" />
-                                            </div>
+                                    <div class="course-widget">
+                                        <div class="course-icon warning">
+                                            <svg class="fill-icon">
+                                                <use href="@/assets/svg/icon-sprite.svg#course-1"></use>
+                                            </svg>
                                         </div>
                                         <div>
-                                            <h4><a-skeleton-input :active="true" /></h4>
-                                            <span class="f-light">
-                                                <a-skeleton-input :active="true" size="small"/>
-                                            </span>
+                                            <h4 class="mb-0"> {{ need_attention.pending_payment || 0 }} Pending Payment</h4>
+                                            <span class="f-light">Waiting for admin confirmation</span>
+                                            <router-link class="btn btn-light f-light"
+                                                to="/all-transactions?type=PENDING"> View Transactions → <span class="ms-2">
+                                                    <svg class="fill-icon f-light">
+                                                        <use href="@/assets/svg/icon-sprite.svg#arrowright"></use>
+                                                    </svg></span>
+                                            </router-link>
                                         </div>
                                     </div>
                                 </div>
-                            </a>
+                                <ul class="square-group">
+                                    <li class="square-1 warning"></li>
+                                    <li class="square-1 primary"></li>
+                                    <li class="square-2 warning1"></li>
+                                    <li class="square-3 danger"></li>
+                                    <li class="square-4 light"></li>
+                                    <li class="square-5 warning"></li>
+                                    <li class="square-6 success"></li>
+                                    <li class="square-7 success"></li>
+                                </ul>
+                            </div>
                         </div>
+                        <div class="col-md-4">
 
-                        <div class="col-12 pb-2" v-else>
-                            <div class="card mb-4 border-0 shadow-sm">
-                                <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
-                                    <h5 class="mb-0 text-dark fw-bold">
-                                        <i class="fa fa-exclamation-triangle text-warning me-2"></i>
-                                        Operational Alerts
-                                    </h5>
+                            <div class="card course-box">
+                                <div class="card-body">
+                                    <div class="course-widget">
+                                        <div class="course-icon">
+                                            <svg class="fill-icon">
+                                                <use href="@/assets/svg/icon-sprite.svg#course-2"></use>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h4 class="mb-0">{{ need_attention.unpaid_booking || 0 }} Booking Unpaid &gt; 1 Hour</h4>
+                                            <span class="f-light">Will release inventory soon</span><router-link class="btn btn-light f-light"
+                                                to="/all-transactions?type=PENDING&source=BOOKING&unpaid=true">Review Booking →<span class="ms-2">
+                                                    <svg class="fill-icon f-light">
+                                                        <use href="@/assets/svg/icon-sprite.svg#arrowright"></use>
+                                                    </svg></span></router-link>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="card-body py-4">
-                                    <div class="row g-3">
-                                        <div class="col-md-4">
-                                            <router-link
-                                                to="/admin/topup?status=pending"
-                                                class="alert alert-warning d-flex flex-column justify-content-between h-100 p-4 border-0 rounded-3 shadow-sm text-decoration-none transition"
-                                                style="min-height: 140px;"
-                                            >
-                                                <div class="d-flex align-items-center justify-content-between">
-                                                    <span class="fw-semibold text-warning-emphasis">
-                                                        Pending Topup Verification
-                                                    </span>
-                                                    <span class="badge bg-warning text-dark fs-5 rounded-circle p-3 shadow-sm">
-                                                        ⏳
-                                                    </span>
-                                                </div>
-                                                <div class="mt-3 mb-1 fs-2 fw-bold text-white text-center">
-                                                    {{ need_attention.pending_topup || 0 }}
-                                                </div>
-                                                <div class="small text-warning-emphasis text-center">
-                                                    Waiting for admin confirmation
-                                                </div>
-                                                <div class="mt-2 text-center">
-                                                    <span class="fw-semibold text-warning-emphasis text-decoration-underline">
-                                                        View Transactions →
-                                                    </span>
-                                                </div>
-                                            </router-link>
+                                <ul class="square-group">
+                                    <li class="square-1 warning"></li>
+                                    <li class="square-1 primary"></li>
+                                    <li class="square-2 warning1"></li>
+                                    <li class="square-3 danger"></li>
+                                    <li class="square-4 light"></li>
+                                    <li class="square-5 warning"></li>
+                                    <li class="square-6 success"></li>
+                                    <li class="square-7 success"></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card course-box">
+                                <div class="card-body">
+                                    <div class="course-widget">
+                                        <div class="course-icon">
+                                            <svg class="fill-icon">
+                                                <use href="@/assets/svg/icon-sprite.svg#x-circle"></use>
+                                            </svg>
                                         </div>
-                                        <div class="col-md-4">
-                                            <router-link
-                                                to="/admin/booking?status=expired"
-                                                class="alert alert-info d-flex flex-column justify-content-between h-100 p-4 border-0 rounded-3 shadow-sm text-decoration-none transition"
-                                                style="min-height: 140px;"
-                                            >
-                                                <div class="d-flex align-items-center justify-content-between">
-                                                    <span class="fw-semibold text-info-emphasis">
-                                                        Booking Unpaid &gt; 1 Hour
-                                                    </span>
-                                                    <span class="badge bg-info text-dark fs-5 rounded-circle p-3 shadow-sm">
-                                                        🕒
-                                                    </span>
-                                                </div>
-                                                <div class="mt-3 mb-1 fs-2 fw-bold text-white o text-center">
-                                                    {{ need_attention.unpaid_booking || 0 }}
-                                                </div>
-                                                <div class="small text-info-emphasis text-center">
-                                                    Will release inventory soon
-                                                </div>
-                                                <div class="mt-2 text-center">
-                                                    <span class="fw-semibold text-info-emphasis text-decoration-underline">
-                                                        Review Booking →
-                                                    </span>
-                                                </div>
-                                            </router-link>
+                                        <div>
+                                            <h4 class="mb-0">{{ need_attention.failed_payment || 0 }}  Failed Payment</h4>
+                                            <span class="f-light">Payment needs investigation</span><router-link class="btn btn-light f-light"
+                                                        to="all-transactions?type=FAILED">  View Logs → →<span class="ms-2">
+                                                    <svg class="fill-icon f-light">
+                                                        <use href="@/assets/svg/icon-sprite.svg#arrowright"></use>
+                                                    </svg></span></router-link>
                                         </div>
-                                        <div class="col-md-4">
-                                            <router-link
-                                                to="/admin/transaction?status=failed"
-                                                class="alert alert-danger d-flex flex-column justify-content-between h-100 p-4 border-0 rounded-3 shadow-sm text-decoration-none transition"
-                                                style="min-height: 140px;"
-                                            >
-                                                <div class="d-flex align-items-center justify-content-between">
-                                                    <span class="fw-semibold text-danger-emphasis">
-                                                        Failed Payment
-                                                    </span>
-                                                    <span class="badge bg-danger text-white fs-5 rounded-circle p-3 shadow-sm">
-                                                        ❌
-                                                    </span>
+                                    </div>
+                                </div>
+                                <ul class="square-group">
+                                    <li class="square-1 warning"></li>
+                                    <li class="square-1 primary"></li>
+                                    <li class="square-2 warning1"></li>
+                                    <li class="square-3 danger"></li>
+                                    <li class="square-4 light"></li>
+                                    <li class="square-5 warning"></li>
+                                    <li class="square-6 success"></li>
+                                    <li class="square-7 success"></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <Tabs v-model:value="activeTab" class="p-tab-active">
+                    <TabList class="p-tab-active">
+
+                        <Tab value="0"> <span style="color: #222 !important;">Dashboard Payment</span></Tab>
+                        <Tab value="1"> <span style="color: #222 !important;">Dashboard Booking</span></Tab>
+                        <Tab value="2"> <span style="color: #222 !important;">Dashboard Membership</span></Tab>
+                    </TabList>
+                    <TabPanels>
+                        <TabPanel value="0">
+                            <div class="row">
+                                <div class="col-xxl-4 col-xl-4 col-sm-12 box-col-6">
+                                    <div class="row">
+                                        <div class="col-md-12" v-for="data in 2" v-if="loading">
+
+                                            <a href="#" class="card widget-1">
+                                                <div class="card-body">
+                                                    <div class="widget-content">
+                                                        <div class="widget-round" :class="data.class">
+                                                            <div class="bg-round">
+                                                                <a-skeleton-avatar :active="true" />
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <h4><a-skeleton-input :active="true" /></h4>
+                                                            <span class="f-light">
+                                                                <a-skeleton-input :active="true" size="small"/>
+                                                            </span>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div class="mt-3 mb-1 fs-2 fw-bold text-white text-center">
-                                                    {{ need_attention.failed_payment || 0 }}
-                                                </div>
-                                                <div class="small text-danger-emphasis text-center">
-                                                    Payment needs investigation
-                                                </div>
-                                                <div class="mt-2 text-center">
-                                                    <span class="fw-semibold text-danger-emphasis text-decoration-underline">
-                                                        View Logs →
-                                                    </span>
-                                                </div>
-                                            </router-link>
+                                            </a>
                                         </div>
+
+                                        <div class="col-12" v-for="data in 3" v-if="loading">
+
+                                            <div class="card widget-1">
+                                                <div class="card-body">
+                                                    <div class="widget-content">
+                                                        <div class="widget-round" :class="data.class">
+                                                            <div class="bg-round">
+                                                                <a-skeleton-avatar :active="true" />
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <h4><a-skeleton-input :active="true" /></h4>
+                                                            <span class="f-light">
+                                                                <a-skeleton-input :active="true" size="small"/>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12" v-for="data in state.data" :key="data.title" v-else>
+                                            <router-link :to="data.url"  class="card widget-1">
+                                                <div class="card-body">
+                                                    <div class="widget-content" >
+                                                        <div class="widget-round" :class="data.class">
+                                                            <div class="bg-round">
+                                                                <svg class="svg-fill">
+                                                                    <use :xlink:href="iconSpritePath + `#${data.icon}`"></use>
+                                                                </svg>
+                                                                <svg class="half-circle svg-fill">
+                                                                    <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
+                                                                </svg>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <h5>{{ data.number }}</h5>
+                                                            <span class="f-light">
+                                                                {{ data.title }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </router-link >
+                                        </div>
+
+                                        <div class="col-12">
+                                            <div class="card">
+                                                <div class="card-header d-flex justify-content-between align-items-center p-3">
+                                                    <h5 class="mb-0">Revenue Composition</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <apexchart type="donut" height="350" :options="pieOptions" :series="pieSeries"></apexchart>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div class="col-xxl-8 col-xl-8 col-sm-12 box-col-12">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-header d-flex justify-content-between align-items-center p-3">
+                                                <h5 class="mb-0">Revenue Trend</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div v-if="loading">
+                                                    <a-skeleton active :paragraph="{ rows: 8 }" />
+                                                </div>
+                                                <div v-else>
+                                                    <Tabs value="0" class="p-tab-active">
+                                                        <TabList class="p-tab-active" style="color: black;">
+                                                            <Tab value="0">
+                                                                <span style="color: #222 !important;"> To days Revenue</span>
+                                                            </Tab>
+                                                            <Tab value="1">
+                                                                <span style="color: #222 !important;"> The Last 7 Days Revenue</span>
+                                                            </Tab>
+                                                            <Tab value="2">
+                                                                <span style="color: #222 !important;"> This Month Revenue</span>
+                                                            </Tab>
+                                                            <Tab value="3">
+                                                                <span style="color: #222 !important;"> This Year Revenue</span>
+                                                            </Tab>
+                                                        </TabList>
+                                                        <TabPanel value="0">
+                                                            <apexchart type="bar" height="350" :options="chartOptions" :series="series"></apexchart>
+                                                        </TabPanel>
+                                                        <TabPanel value="1">
+                                                            <apexchart type="bar" height="350" :options="weeklyOptions" :series="weeklySeries"></apexchart>
+                                                        </TabPanel>
+                                                        <TabPanel value="2">
+                                                            <apexchart type="bar" height="350" :options="monthlyOptions" :series="monthlySeries"></apexchart>
+                                                        </TabPanel>
+                                                        <TabPanel value="3">
+                                                            <apexchart type="bar" height="350" :options="yearsOptions" :series="yearsSeries"></apexchart>
+                                                        </TabPanel>
+                                                    </Tabs>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-header d-flex justify-content-between align-items-center p-3">
+                                                <h5 class="mb-0">Live Transaction Feed</h5>
+                                            </div>
+                                            <div class="card-body p-3">
+                                                <div class="table-responsive pt-2  d-md-block d-none">
+                                                    <table class="table">
+                                                        <thead>
+                                                            <tr class="border-bottom-primary">
+                                                                <th class="bg-primary text-nowrap text-center sticky-column">No</th>
+                                                                <th class="bg-primary text-nowrap text-center">User</th>
+                                                                <th class="bg-primary text-nowrap text-center">Activity</th>
+                                                                <th class="bg-primary text-nowrap text-center">Amount</th>
+                                                                <th class="bg-primary text-nowrap text-center">Status</th>
+                                                                <th class="bg-primary text-nowrap text-center">Time</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr v-if="loading"> 
+                                                                <td class="text-center" colspan="7"><a-skeleton active /></td>
+                                                            </tr>
+                                                            <tr v-else-if="state.listTransaction.length==0">
+                                                                <td class="text-center" colspan="7"><a-empty/></td>
+                                                            </tr>
+                                                            <tr v-for="(item, index) in state.listTransaction" :key="item.id" v-else>
+                                                                <td class="text-center sticky-column">{{ index + 1 }}</td>
+                                                                <td class="text-nowrap text-center">{{ item.user }}</td>
+                                                                <td class="text-nowrap">{{ item.activity }}</td>
+                                                                <td class="text-nowrap text-left">{{ item.amount.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)}}</td>
+                                                                <td class="text-nowrap text-center">
+                                                                    <span
+                                                                        :class="[
+                                                                            'badge',
+                                                                            'text-white',
+                                                                            'fw-semibold',
+                                                                            item.status === 'PAID'
+                                                                                ? 'bg-success'
+                                                                                : item.status === 'PENDING'
+                                                                                ? 'bg-warning'
+                                                                                : item.status === 'FAILED'
+                                                                                ? 'bg-danger'
+                                                                                : item.status === 'REFUNDED'
+                                                                                ? 'bg-info'
+                                                                                : item.status === 'CANCELLED'
+                                                                                ? 'bg-secondary'
+                                                                                : 'bg-light text-dark'
+                                                                        ]"
+                                                                    >
+                                                                        {{ item.status }}
+                                                                    </span>
+                                                                </td>
+                                                                <td class="text-nowrap text-center">{{ dayjs(item.created_at).format('DD MMM YYYY HH:mm:ss') }}</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>  
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-header d-flex justify-content-between align-items-center p-3">
+                                                <h5 class="mb-0">Property Performance {{ filterLabel }}</h5>
+                                            </div>
+                                            <div class="card-body p-3">
+                                                <div class="table-responsive pt-2  d-md-block d-none">
+                                                    <table class="table">
+                                                        <thead>
+                                                            <tr class="border-bottom-primary">
+                                                                <th class="bg-primary text-nowrap text-center sticky-column">No</th>
+                                                                <th class="bg-primary text-nowrap text-center">Property Name</th>
+                                                                <th class="bg-primary text-nowrap text-center">Total Bookings</th>
+                                                                <th class="bg-primary text-nowrap text-center">Revenue</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr v-if="loading"> 
+                                                                <td class="text-center" colspan="7"><a-skeleton active /></td>
+                                                            </tr>
+                                                            <tr v-else-if="state.listProperty.total==0">
+                                                                <td class="text-center" colspan="7"><a-empty/></td>
+                                                            </tr>
+                                                            <tr v-for="(item, index) in state.listProperty.data" :key="item.id" v-else>
+                                                                <td class="text-center sticky-column">{{ index + state.listProperty.from }}</td>
+                                                                <td class="text-nowrap text-left">{{ item.property }}</td>
+                                                                <td class="text-nowrap text-center">{{ item.booking_today }}</td>
+                                                                <td class="text-nowrap text-left">{{ item.revenue.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)}}</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>  
+
+                                                <div class="row py-2">
+                                                    <div class="col-sm-12 col-lg-4 col-xl-4 text-left">
+                                                        Showing {{ state.listProperty.from }} to {{ state.listProperty.to }} of {{ state.listProperty.total }} entries
+                                                    </div>
+                                                    <div class="col-sm-12 col-lg-8 col-xl-8 text-end">
+                                                        <a-pagination :current="state.listProperty.current_page" :total="state.listProperty.total" v-model:pageSize="pagging"
+                                                            @change="handlePageChange" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
-                        </div> -->
+                        </TabPanel>
 
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center p-3">
-                                    <h5 class="mb-0">Revenue Trend</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div v-if="loading">
-                                        <a-skeleton active :paragraph="{ rows: 8 }" />
+                        <TabPanel value="1">
+                            <div class="row">
+                                <div class="col-xxl-4 col-xl-4 col-sm-12 box-col-6">
+                                    <div class="col-sm-12">
+                                        <div class="card o-hidden">
+                                            <div class="card-body balance-widget">
+                                                <span class="f-w-500 f-light">Total Balance</span>
+                                                <h4 class="mb-3 mt-1 f-w-500 f-22">
+                                                    <span class="counter">{{ DataBooking.revenue }} </span><span class="f-light f-14 f-w-400 ms-1">{{ filterLabel }}</span>
+                                                </h4>
+                                                <router-link :to="`all-transactions?type=PAID&source=BOOKING&date=${selectedFilter}&customStart=${customStart}&customEnd=${customEnd}`" class="
+                                                    purchase-btn
+                                                    btn btn-primary btn-hover-effect
+                                                    f-w-500
+                                                    ">Detail Transaction</router-link>
+                                                <div class="mobile-right-img">
+                                                    <img class="mobile-img" src="@/assets/images/dashboard-2/profit.png" alt="mobile with coin" />
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div v-else>
+
+                                    <div class="col-sm-12">
+                                        <router-link :to="`booking-transactions?tab=1&date=${selectedFilter}&customStart=${customStart}&customEnd=${customEnd}`" class="card widget-1">
+                                            <div class="card-body">
+                                                <div class="widget-content" >
+                                                    <div class="widget-round primary">
+                                                        <div class="bg-round">
+                                                            <svg class="svg-fill">
+                                                                <use :xlink:href="iconSpritePath + `#arrow-up-right-circle`"></use>
+                                                            </svg>
+                                                            <svg class="half-circle svg-fill">
+                                                                <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <h5>{{ DataBooking.total_booking_today }}</h5>
+                                                        <span class="f-light">
+                                                            Total Booking {{ filterLabel }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </router-link>
+                                    </div>
+
+                                    <div class="col-sm-12">
+                                        <router-link :to="`booking-transactions?tab=1&status=COMPLETED&date=${selectedFilter}&customStart=${customStart}&customEnd=${customEnd}`" class="card widget-1">
+                                            <div class="card-body">
+                                                <div class="widget-content" >
+                                                    <div class="widget-round biru">
+                                                        <div class="bg-round">
+                                                            <svg class="svg-fill">
+                                                                <use :xlink:href="iconSpritePath + `#file-earmark-check-fill`"></use>
+                                                            </svg>
+                                                            <svg class="half-circle svg-fill">
+                                                                <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <h5>{{ DataBooking.completed_booking }}</h5>
+                                                        <span class="f-light">
+                                                            Complete Booking {{ filterLabel }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </router-link>
+                                    </div>
+
+                                    <div class="col-sm-12">
+                                        <router-link :to="`booking-transactions?tab=1&status=CANCELLED &date=${selectedFilter}&customStart=${customStart}&customEnd=${customEnd}`" class="card widget-1">
+                                            <div class="card-body">
+                                                <div class="widget-content" >
+                                                    <div class="widget-round danger">
+                                                        <div class="bg-round">
+                                                            <svg class="svg-fill">
+                                                                <use :xlink:href="iconSpritePath + `#x-circle`"></use>
+                                                            </svg>
+                                                            <svg class="half-circle svg-fill">
+                                                                <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <h5>{{ DataBooking.cancelled_booking }}</h5>
+                                                        <span class="f-light">
+                                                            Cancel Booking {{ filterLabel }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </router-link>
+                                    </div>
+                                </div>
+
+                                <div class="col-xxl-8 col-xl-8 col-sm-12 box-col-12">
+                                    <div class="row">
+                                        <div class="col-sm-12 col-lg-4 col-xl-4">
+                                            <router-link :to="`booking-transactions?tab=1&status=ACTIVE_BOOKING &date=${selectedFilter}&customStart=${customStart}&customEnd=${customEnd}`" class="card widget-1">
+                                                <div class="card-body">
+                                                    <div class="widget-content" >
+                                                        <div class="widget-round success">
+                                                            <div class="bg-round">
+                                                                <svg class="svg-fill">
+                                                                    <use :xlink:href="iconSpritePath + `#check2-circle`"></use>
+                                                                </svg>
+                                                                <svg class="half-circle svg-fill">
+                                                                    <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
+                                                                </svg>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <h5>{{ DataBooking.active_stay }}</h5>
+                                                            <span class="f-light">
+                                                                Active Booking {{ filterLabel }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </router-link>
+                                        </div>
+
+                                        <div class="col-sm-12 col-lg-4 col-xl-4">
+                                            <router-link :to="`booking-transactions?tab=2&status=CHECK_IN_TODAY&date=${selectedFilter}&customStart=${customStart}&customEnd=${customEnd}`" class="card widget-1">
+                                                <div class="card-body">
+                                                    <div class="widget-content" >
+                                                        <div class="widget-round biru">
+                                                            <div class="bg-round">
+                                                                <svg class="svg-fill">
+                                                                    <use :xlink:href="iconSpritePath + `#box-arrow-in-right`"></use>
+                                                                </svg>
+                                                                <svg class="half-circle svg-fill">
+                                                                    <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
+                                                                </svg>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <h5>{{ DataBooking.check_in_today }}</h5>
+                                                            <span class="f-light">
+                                                                Check In To Day
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </router-link>
+                                        </div>
+
+                                        <div class="col-sm-12 col-lg-4 col-xl-4">
+                                            <div class="card widget-1">
+                                                <div class="card-body">
+                                                    <div class="widget-content" >
+                                                        <div class="widget-round warning">
+                                                            <div class="bg-round">
+                                                                <svg class="svg-fill">
+                                                                    <use :xlink:href="iconSpritePath + `#box-arrow-in-left`"></use>
+                                                                </svg>
+                                                                <svg class="half-circle svg-fill">
+                                                                    <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
+                                                                </svg>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <h5>{{ DataBooking.check_out_today }}</h5>
+                                                            <span class="f-light">
+                                                                Check Out To Day
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <div class="card">
+                                                <div class="card-header d-flex justify-content-between align-items-center p-3">
+                                                    <h5 class="mb-0">Booking Availability</h5>
+                                                
+                                                </div>
+                                                <div class="card-body p-3">
+                                                    <div class="d-flex align-items-center mb-3">
+                                                        <div class="d-flex gap-2">
+                                                    
+                                                        
+
+                                                            <!-- Filter Property -->
+                                                            <a-select v-model:value="filterProperty" show-search placeholder="Pilih Property" style="width: 200px">
+                                                                <a-select-option value="">Semua Property</a-select-option>
+                                                                <a-select-option v-for="property in state.listGetProperty" :key="property.odata" :value="property.odata">{{ property.properties }}</a-select-option>  
+                                                            </a-select>
+
+
+                                                            <a-button type="primary" class="bg-dark"  @click="resetFilterBookingAvailability">
+                                                                <template #icon>
+                                                                    <ReloadOutlined />
+                                                                </template>
+                                                            </a-button>
+
+                                                        </div>
+                                                    </div>
+
+                                                    <FullCalendar
+                                                        id="calendar"
+                                                        :key="calendarKey"
+                                                        ref="calendarRef"
+                                                        :options="calendarOptions"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                
                                         <Tabs value="0" class="p-tab-active">
                                             <TabList class="p-tab-active" style="color: black;">
                                                 <Tab value="0">
-                                                    <span style="color: #222 !important;"> To days Revenue</span>
+                                                    <span style="color: #222 !important;">Today</span>
                                                 </Tab>
                                                 <Tab value="1">
-                                                    <span style="color: #222 !important;"> The Last 7 Days Revenue</span>
+                                                    <span style="color: #222 !important;">Last 7 Days</span>
                                                 </Tab>
                                                 <Tab value="2">
-                                                    <span style="color: #222 !important;"> This Month Revenue</span>
+                                                    <span style="color: #222 !important;">This Month</span>
                                                 </Tab>
                                                 <Tab value="3">
-                                                    <span style="color: #222 !important;"> This Year Revenue</span>
+                                                    <span style="color: #222 !important;">This Year</span>
                                                 </Tab>
                                             </TabList>
                                             <TabPanel value="0">
-                                                <apexchart type="bar" height="350" :options="chartOptions" :series="series"></apexchart>
+                                                <apexchart type="bar" height="350" :options="bookingStatusOptions" :series="bookingStatusDailySeries"></apexchart>
                                             </TabPanel>
                                             <TabPanel value="1">
-                                                <apexchart type="bar" height="350" :options="weeklyOptions" :series="weeklySeries"></apexchart>
+                                                <apexchart type="bar" height="350" :options="bookingStatusOptions" :series="bookingStatusWeeklySeries"></apexchart>
                                             </TabPanel>
                                             <TabPanel value="2">
-                                                <apexchart type="bar" height="350" :options="monthlyOptions" :series="monthlySeries"></apexchart>
+                                                <apexchart type="bar" height="350" :options="bookingStatusOptions" :series="bookingStatusMonthlySeries"></apexchart>
                                             </TabPanel>
                                             <TabPanel value="3">
-                                                <apexchart type="bar" height="350" :options="yearsOptions" :series="yearsSeries"></apexchart>
+                                                <apexchart type="bar" height="350" :options="bookingStatusOptions" :series="bookingStatusYearlySeries"></apexchart>
                                             </TabPanel>
                                         </Tabs>
                                     </div>
+                                    
                                 </div>
                             </div>
-                        </div>
+                        </TabPanel>
 
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center p-3">
-                                    <h5 class="mb-0">Live Transaction Feed</h5>
-                                </div>
-                                <div class="card-body p-3">
-                                    <div class="table-responsive pt-2  d-md-block d-none">
-                                        <table class="table">
-                                            <thead>
-                                                <tr class="border-bottom-primary">
-                                                    <th class="bg-primary text-nowrap text-center sticky-column">No</th>
-                                                    <th class="bg-primary text-nowrap text-center">User</th>
-                                                    <th class="bg-primary text-nowrap text-center">Activity</th>
-                                                    <th class="bg-primary text-nowrap text-center">Amount</th>
-                                                    <th class="bg-primary text-nowrap text-center">Status</th>
-                                                    <th class="bg-primary text-nowrap text-center">Time</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr v-if="loading"> 
-                                                    <td class="text-center" colspan="7"><a-skeleton active /></td>
-                                                </tr>
-                                                <tr v-else-if="state.listTransaction.length==0">
-                                                    <td class="text-center" colspan="7"><a-empty/></td>
-                                                </tr>
-                                                <tr v-for="(item, index) in state.listTransaction" :key="item.id" v-else>
-                                                    <td class="text-center sticky-column">{{ index + 1 }}</td>
-                                                    <td class="text-nowrap text-center">{{ item.user }}</td>
-                                                    <td class="text-nowrap">{{ item.activity }}</td>
-                                                    <td class="text-nowrap text-left">{{ item.amount.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)}}</td>
-                                                    <td class="text-nowrap text-center">
-                                                        <span
-                                                            :class="[
-                                                                'badge',
-                                                                'text-white',
-                                                                'fw-semibold',
-                                                                item.status === 'PAID'
-                                                                    ? 'bg-success'
-                                                                    : item.status === 'PENDING'
-                                                                    ? 'bg-warning'
-                                                                    : item.status === 'FAILED'
-                                                                    ? 'bg-danger'
-                                                                    : item.status === 'REFUNDED'
-                                                                    ? 'bg-info'
-                                                                    : item.status === 'CANCELLED'
-                                                                    ? 'bg-secondary'
-                                                                    : 'bg-light text-dark'
-                                                            ]"
-                                                        >
-                                                            {{ item.status }}
-                                                        </span>
-                                                    </td>
-                                                    <td class="text-nowrap text-center">{{ dayjs(item.created_at).format('DD MMM YYYY HH:mm:ss') }}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>  
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center p-3">
-                                    <h5 class="mb-0">Property Performance {{ filterLabel }}</h5>
-                                </div>
-                                <div class="card-body p-3">
-                                    <div class="table-responsive pt-2  d-md-block d-none">
-                                        <table class="table">
-                                            <thead>
-                                                <tr class="border-bottom-primary">
-                                                    <th class="bg-primary text-nowrap text-center sticky-column">No</th>
-                                                    <th class="bg-primary text-nowrap text-center">Property Name</th>
-                                                    <th class="bg-primary text-nowrap text-center">Total Bookings</th>
-                                                    <th class="bg-primary text-nowrap text-center">Revenue</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr v-if="loading"> 
-                                                    <td class="text-center" colspan="7"><a-skeleton active /></td>
-                                                </tr>
-                                                <tr v-else-if="state.listProperty.total==0">
-                                                    <td class="text-center" colspan="7"><a-empty/></td>
-                                                </tr>
-                                                <tr v-for="(item, index) in state.listProperty.data" :key="item.id" v-else>
-                                                    <td class="text-center sticky-column">{{ index + state.listProperty.from }}</td>
-                                                    <td class="text-nowrap text-left">{{ item.property }}</td>
-                                                    <td class="text-nowrap text-center">{{ item.booking_today }}</td>
-                                                    <td class="text-nowrap text-left">{{ item.revenue.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)}}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>  
-
-                                    <div class="row py-2">
-                                        <div class="col-sm-12 col-lg-4 col-xl-4 text-left">
-                                            Showing {{ state.listProperty.from }} to {{ state.listProperty.to }} of {{ state.listProperty.total }} entries
-                                        </div>
-                                        <div class="col-sm-12 col-lg-8 col-xl-8 text-end">
-                                            <a-pagination :current="state.listProperty.current_page" :total="state.listProperty.total" v-model:pageSize="pagging"
-                                                @change="handlePageChange" />
+                        <TabPanel value="2">
+                            <div class="row">
+                                <div class="col-xxl-4 col-xl-4 col-sm-12 box-col-6">
+                                    <div class="col-sm-12">
+                                        <div class="card o-hidden">
+                                            <div class="card-body balance-widget">
+                                                <span class="f-w-500 f-light">Total Balance</span>
+                                                <h4 class="mb-3 mt-1 f-w-500 f-22">
+                                                    <span class="counter">{{ DataMembership.revenue }} </span><span class="f-light f-14 f-w-400 ms-1">{{ filterLabel }}</span>
+                                                </h4>
+                                                <router-link :to="`all-transactions?type=PAID&source=MEMBERSHIP&date=${selectedFilter}&customStart=${customStart}&customEnd=${customEnd}`" class="
+                                                    purchase-btn
+                                                    btn btn-primary btn-hover-effect
+                                                    f-w-500
+                                                    ">Detail Transaction</router-link>
+                                                <div class="mobile-right-img">
+                                                    <img class="mobile-img" src="@/assets/images/dashboard-2/profit.png" alt="mobile with coin" />
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+
+                                    <div class="col-sm-12">
+                                        <router-link :to="`membership-transactions?tab=1&date=${selectedFilter}&customStart=${customStart}&customEnd=${customEnd}`" class="card widget-1">
+                                            <div class="card-body">
+                                                <div class="widget-content" >
+                                                    <div class="widget-round primary">
+                                                        <div class="bg-round">
+                                                            <svg class="svg-fill">
+                                                                <use :xlink:href="iconSpritePath + `#arrow-up-right-circle`"></use>
+                                                            </svg>
+                                                            <svg class="half-circle svg-fill">
+                                                                <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <h5>{{ DataMembership.total_membership }}</h5>
+                                                        <span class="f-light">
+                                                            Total Membership
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </router-link>
+                                    </div>
+
+                                    <div class="col-sm-12">
+                                        <router-link :to="`membership-transactions?tab=1&status=active&date=${selectedFilter}&customStart=${customStart}&customEnd=${customEnd}`" class="card widget-1">
+                                            <div class="card-body">
+                                                <div class="widget-content" >
+                                                    <div class="widget-round biru">
+                                                        <div class="bg-round">
+                                                            <svg class="svg-fill">
+                                                                <use :xlink:href="iconSpritePath + `#file-earmark-check-fill`"></use>
+                                                            </svg>
+                                                            <svg class="half-circle svg-fill">
+                                                                <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <h5>{{ DataMembership.total_active }}</h5>
+                                                        <span class="f-light">
+                                                            Active Membership
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </router-link>
+                                    </div>
+
+                                    <div class="col-sm-12">
+                                        <router-link :to="`membership-transactions?tab=1&status=expired&date=${selectedFilter}&customStart=${customStart}&customEnd=${customEnd}`" class="card widget-1">
+                                            <div class="card-body">
+                                                <div class="widget-content" >
+                                                    <div class="widget-round danger">
+                                                        <div class="bg-round">
+                                                            <svg class="svg-fill">
+                                                                <use :xlink:href="iconSpritePath + `#clock-history`"></use>
+                                                            </svg>
+                                                            <svg class="half-circle svg-fill">
+                                                                <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <h5>{{ DataMembership.total_expired }}</h5>
+                                                        <span class="f-light">
+                                                            Expired Membership
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </router-link>
+                                    </div>
+
+                                    <div class="col-sm-12">
+                                        <router-link :to="`membership-transactions?tab=1&status=cancelled&date=${selectedFilter}&customStart=${customStart}&customEnd=${customEnd}`" class="card widget-1">
+                                            <div class="card-body">
+                                                <div class="widget-content" >
+                                                    <div class="widget-round warning">
+                                                        <div class="bg-round">
+                                                            <svg class="svg-fill">
+                                                                <use :xlink:href="iconSpritePath + `#x-circle`"></use>
+                                                            </svg>
+                                                            <svg class="half-circle svg-fill">
+                                                                <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <h5>{{ DataMembership.total_cancelled }}</h5>
+                                                        <span class="f-light">
+                                                            Cancelled Membership
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </router-link>
+                                    </div>
+
+                                    <div class="col-sm-12">
+                                        <router-link :to="`membership-transactions?tab=1&status=completed&date=${selectedFilter}&customStart=${customStart}&customEnd=${customEnd}`" class="card widget-1">
+                                            <div class="card-body">
+                                                <div class="widget-content" >
+                                                    <div class="widget-round success">
+                                                        <div class="bg-round">
+                                                            <svg class="svg-fill">
+                                                                <use :xlink:href="iconSpritePath + `#check2-circle`"></use>
+                                                            </svg>
+                                                            <svg class="half-circle svg-fill">
+                                                                <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <h5>{{ DataMembership.total_completed }}</h5>
+                                                        <span class="f-light">
+                                                            Completed Membership
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </router-link>
+                                    </div>
                                 </div>
-                            </div>
 
-                        </div>
-
-                    </div>
-                </div>
+                                <div class="col-xxl-8 col-xl-8 col-sm-12 box-col-12">
+                                    <Tabs value="0" class="p-tab-active">
+                                        <TabList class="p-tab-active" style="color: black;">
+                                            <Tab value="0">
+                                                <span style="color: #222 !important;">Today</span>
+                                            </Tab>
+                                            <Tab value="1">
+                                                <span style="color: #222 !important;">Last 7 Days</span>
+                                            </Tab>
+                                            <Tab value="2">
+                                                <span style="color: #222 !important;">This Month</span>
+                                            </Tab>
+                                            <Tab value="3">
+                                                <span style="color: #222 !important;">This Year</span>
+                                            </Tab>
+                                        </TabList>
+                                        <TabPanel value="0">
+                                            <apexchart type="bar" height="350" :options="membershipStatusOptions" :series="membershipStatusDailySeries"></apexchart>
+                                        </TabPanel>
+                                        <TabPanel value="1">
+                                            <apexchart type="bar" height="350" :options="membershipStatusOptions" :series="membershipStatusWeeklySeries"></apexchart>
+                                        </TabPanel>
+                                        <TabPanel value="2">
+                                            <apexchart type="bar" height="350" :options="membershipStatusOptions" :series="membershipStatusMonthlySeries"></apexchart>
+                                        </TabPanel>
+                                        <TabPanel value="3">
+                                            <apexchart type="bar" height="350" :options="membershipStatusOptions" :series="membershipStatusYearlySeries"></apexchart>
+                                        </TabPanel>
+                                    </Tabs>
+                                </div>
+                            </div>  
+                        </TabPanel>
+                    </TabPanels>
+                </Tabs>
             </div>
         </div>
 
@@ -468,15 +928,131 @@
             </div>
         </a-modal>
 
-        <a-modal v-model:open="modalPDF" :footer="null" style="top: 20px" :closable=true  title="Cetak Form Pengadaan Barang" width="2000px">
-            <div class="col-12">
-                <iframe :src="pdfUrl"  width="100%" height="700px"  fullscreen="true" />
+    
+        <a-modal v-model:open="modalDetailBookingUsers" title="Detail Booking Availability" width="70%" style="top:20px" :footer="null">
+            <div class="row">
+                <div class="col-12 col-lg-6 mb-3">
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th>No Invoice</th>
+                                <td>{{ state.bookingDetail.invoice_code }}</td>
+                            </tr>
+                            <tr>
+                                <th>Status</th>
+                                <td>
+                                    <a-tag :color="state.bookingDetail.status == 'PAID' ? 'green' : state.bookingDetail.status == 'PENDING' ? 'orange' : 'red'">
+                                        {{ state.bookingDetail.status }}
+                                    </a-tag>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Metode Pembayaran</th>
+                                <td>{{ state.bookingDetail.payment_method }}</td>
+                            </tr>
+                            <tr>
+                                <th>Jumlah Tagihan</th>
+                                <td>{{ parseInt(state.bookingDetail.amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                            </tr>
+                            <tr>
+                                <th>Tanggal Dibuat</th>
+                                <td>{{ dayjs(state.bookingDetail.created_at).format('DD MMM YYYY HH:mm:ss') }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-12 col-lg-6 mb-3">
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th>User</th>
+                                <td>{{ state.bookingDetail.booking?.user?.name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Email</th>
+                                <td>{{ state.bookingDetail.booking?.user?.email }}</td>
+                            </tr>
+                            <tr>
+                                <th>Phone</th>
+                                <td>{{ state.bookingDetail.booking?.user?.phone }}</td>
+                            </tr>
+                            <tr>
+                                <th>Membership</th>
+                                <td>
+                                    {{ state.bookingDetail.booking?.membership?.title || '-' }}
+                                    <span v-if="state.bookingDetail.booking?.membership">({{ state.bookingDetail.booking.membership.discount_percent }}% diskon)</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-12 mb-3">
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th>Property</th>
+                                <td>{{ state.bookingDetail.booking?.property?.properties }}</td>
+                                <th>Room</th>
+                                <td>{{ state.bookingDetail.booking?.room?.room_name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Check-in</th>
+                                <td>{{ state.bookingDetail.booking?.checkin_date }}</td>
+                                <th>Check-out</th>
+                                <td>{{ state.bookingDetail.booking?.checkout_date }}</td>
+                            </tr>
+                            <tr>
+                                <th>Harga Dasar</th>
+                                <td>{{ parseInt(state.bookingDetail.booking?.base_price || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                <th>Diskon</th>
+                                <td>{{ parseInt(state.bookingDetail.booking?.discount_amount || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                            </tr>
+                            <tr>
+                                <th>Pajak</th>
+                                <td>{{ parseInt(state.bookingDetail.booking?.tax_amount || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                <th>Service Fee</th>
+                                <td>{{ parseInt(state.bookingDetail.booking?.service_fee || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                            </tr>
+                            <tr>
+                                <th>Total Bayar</th>
+                                <td colspan="3">{{ parseInt(state.bookingDetail.booking?.grand_total || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-12">
+                    <h5>Daftar Tamu</h5>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Nama</th>
+                                <th>Gender</th>
+                                <th>HP</th>
+                                <th>Email</th>
+                                <th>NIK</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(p, i) in state.bookingDetail.booking?.passengers || []" :key="i">
+                                <td>{{ i + 1 }}</td>
+                                <td>{{ p.guest_name }}</td>
+                                <td>{{ p.guest_gender == '0' ? 'Laki-laki' : 'Perempuan' }}</td>
+                                <td>{{ p.guest_phone }}</td>
+                                <td>{{ p.guest_email }}</td>
+                                <td>{{ p.guest_nik }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </a-modal>
+
     </div>
 </template>
 
 <script setup>
+
     import { apiGetData, apiCetakPDF, apiExportExcel, processing, loadingButton, loadingSubmit, dayjs , Swal, waitingicon, loading, pesan } from '@/store/action';
     import axios from 'axios';
     import { useDebounceFn } from '@vueuse/core'
@@ -485,7 +1061,7 @@
     import { useRouter } from "vue-router";
     import iconSpritePath from '@/assets/svg/icon-sprite.svg';
     import {
-        PrinterOutlined,
+        EyeOutlined,
         ReloadOutlined,
         FileExcelOutlined
     } from '@ant-design/icons-vue';
@@ -495,8 +1071,14 @@
     import Tab from 'primevue/tab';
     import TabPanels from 'primevue/tabpanels';
     import TabPanel from 'primevue/tabpanel';
+    import FullCalendar from "@fullcalendar/vue3";
+    import dayGridPlugin from '@fullcalendar/daygrid';
+    import timeGridPlugin from '@fullcalendar/timegrid'
+    import interactionPlugin from '@fullcalendar/interaction';
+    import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
+    import resourceTimeGridPlugin from '@fullcalendar/resource-timegrid';
     const isSuperAdmin = checkRole(['superAdmin','admin']);
-    const isStaff = checkRole(['staff']);
+    const isStaff = checkRole(['properties']);
     const store = useStore();
     const router = useRouter();
     const user = store.getters["auth/currentUser"];
@@ -515,10 +1097,35 @@
     const modalPDF = ref(false);
     const pdfUrl = ref("");
     const need_attention = ref([]);
+    const activeTab = ref('0');
+    const bookingStatusDailySeries = ref([]);
+    const bookingStatusWeeklySeries = ref([]);
+    const bookingStatusMonthlySeries = ref([]);
+    const bookingStatusYearlySeries = ref([]);
+    const bookingStatusOptions = ref({});
+
+     // Membership Status Trend
+    const membershipStatusDailySeries = ref([]);
+    const membershipStatusWeeklySeries = ref([]);
+    const membershipStatusMonthlySeries = ref([]);
+    const membershipStatusYearlySeries = ref([]);
+    const membershipStatusOptions = ref({});
+
 
     // Filter states
     const selectedYear = ref(parseInt(dayjs().format('YYYY')));
-    
+
+    //Boking
+    const DataBooking = ref([]);
+    const DataMembership = ref([]);
+
+    const filterDateBooking = ref(dayjs());
+    const filterStatusRoom = ref([]);
+    const searchBooking = ref("");
+    const loadingBooking = ref(false);
+    const modalDetailBooking = ref(false);
+    const modalDetailBookingUsers = ref(false);
+    const filterProperty = ref("");
 
     const timerSettings = () => {
         const HOURHAND = document.querySelector("#hour");
@@ -586,7 +1193,10 @@
     const state = reactive({
         data:{},
         listTransaction:{},
-        listProperty:{}
+        listProperty:{},
+        room_availability_calendar:{},
+        bookingDetail: {},
+        listGetProperty:{},
     });
 
 
@@ -598,6 +1208,7 @@
     };
 
     const getData = async (page = state.listProperty.current_page || 1) => {
+
         loading.value = true;
         const params = {page: page, selectedFilter: selectedFilter.value, customStart: customStart.value, customEnd: customEnd.value, pagging: pagging.value };
         
@@ -606,6 +1217,8 @@
         state.listTransaction = response.live_transaction_feed;
         need_attention.value = response.need_attention || [];
         state.listProperty = response.property_performance || [];
+        DataBooking.value = response.dataBooking || [];
+        DataMembership.value = response.dataMembership || [];
 
         // Daily
         const daily = response.transaction_chart?.daily || {};
@@ -905,6 +1518,200 @@
                 }
             }
         };
+
+         // Booking Status Trend
+        const bookingStatusTrend = response.booking_status_trend || {};
+        // Daily
+        bookingStatusDailySeries.value = [
+            { name: 'PENDING', data: bookingStatusTrend.daily?.PENDING || [] },
+            { name: 'PAID', data: bookingStatusTrend.daily?.PAID || [] },
+            { name: 'CANCELLED', data: bookingStatusTrend.daily?.CANCELLED || [] },
+            { name: 'EXPIRED', data: bookingStatusTrend.daily?.EXPIRED || [] },
+            { name: 'COMPLETED', data: bookingStatusTrend.daily?.COMPLETED || [] },
+        ];
+        // Weekly
+        bookingStatusWeeklySeries.value = [
+            { name: 'PENDING', data: bookingStatusTrend.weekly?.PENDING || [] },
+            { name: 'PAID', data: bookingStatusTrend.weekly?.PAID || [] },
+            { name: 'CANCELLED', data: bookingStatusTrend.weekly?.CANCELLED || [] },
+            { name: 'EXPIRED', data: bookingStatusTrend.weekly?.EXPIRED || [] },
+            { name: 'COMPLETED', data: bookingStatusTrend.weekly?.COMPLETED || [] },
+        ];
+        // Monthly
+        bookingStatusMonthlySeries.value = [
+            { name: 'PENDING', data: bookingStatusTrend.monthly?.PENDING || [] },
+            { name: 'PAID', data: bookingStatusTrend.monthly?.PAID || [] },
+            { name: 'CANCELLED', data: bookingStatusTrend.monthly?.CANCELLED || [] },
+            { name: 'EXPIRED', data: bookingStatusTrend.monthly?.EXPIRED || [] },
+            { name: 'COMPLETED', data: bookingStatusTrend.monthly?.COMPLETED || [] },
+        ];
+        // Yearly
+        bookingStatusYearlySeries.value = [
+            { name: 'PENDING', data: bookingStatusTrend.yearly?.PENDING || [] },
+            { name: 'PAID', data: bookingStatusTrend.yearly?.PAID || [] },
+            { name: 'CANCELLED', data: bookingStatusTrend.yearly?.CANCELLED || [] },
+            { name: 'EXPIRED', data: bookingStatusTrend.yearly?.EXPIRED || [] },
+            { name: 'COMPLETED', data: bookingStatusTrend.yearly?.COMPLETED || [] },
+        ];
+        // Chart options
+        bookingStatusOptions.value = {
+            chart: {
+                height: 350,
+                type: 'bar',
+                stacked: false,
+                toolbar: { show: true }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    borderRadius: 4,
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            legend: {
+                position: 'bottom',
+                markers: {
+                    width: 16,
+                    height: 16,
+                    radius: 4
+                }
+            },
+            xaxis: {
+                categories: bookingStatusTrend.daily?.dates || [],
+                labels: {
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            yaxis: {
+                min: 0,
+                title: {
+                    text: 'Total Booking',
+                    style: {
+                        color: '#222',
+                        fontSize: '14px'
+                    }
+                },
+                labels: {
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: val => val
+                }
+            },
+            fill: {
+                opacity: 1
+            },
+            grid: {
+                borderColor: '#e0e0e0'
+            }
+        };
+
+        // Membership Status Trend
+        const membershipStatusTrend = response.membership_status_trend || {};
+        // Daily
+        membershipStatusDailySeries.value = [
+            { name: 'PENDING', data: membershipStatusTrend.daily?.PENDING || [] },
+            { name: 'ACTIVE', data: membershipStatusTrend.daily?.ACTIVE || [] },
+            { name: 'EXPIRED', data: membershipStatusTrend.daily?.EXPIRED || [] },
+            { name: 'CANCELLED', data: membershipStatusTrend.daily?.CANCELLED || [] },
+        ];
+        // Weekly
+        membershipStatusWeeklySeries.value = [
+            { name: 'PENDING', data: membershipStatusTrend.weekly?.PENDING || [] },
+            { name: 'ACTIVE', data: membershipStatusTrend.weekly?.ACTIVE || [] },
+            { name: 'EXPIRED', data: membershipStatusTrend.weekly?.EXPIRED || [] },
+            { name: 'CANCELLED', data: membershipStatusTrend.weekly?.CANCELLED || [] },
+        ];
+        // Monthly
+        membershipStatusMonthlySeries.value = [
+            { name: 'PENDING', data: membershipStatusTrend.monthly?.PENDING || [] },
+            { name: 'ACTIVE', data: membershipStatusTrend.monthly?.ACTIVE || [] },
+            { name: 'EXPIRED', data: membershipStatusTrend.monthly?.EXPIRED || [] },
+            { name: 'CANCELLED', data: membershipStatusTrend.monthly?.CANCELLED || [] },
+        ];
+        // Yearly
+        membershipStatusYearlySeries.value = [
+            { name: 'PENDING', data: membershipStatusTrend.yearly?.PENDING || [] },
+            { name: 'ACTIVE', data: membershipStatusTrend.yearly?.ACTIVE || [] },
+            { name: 'EXPIRED', data: membershipStatusTrend.yearly?.EXPIRED || [] },
+            { name: 'CANCELLED', data: membershipStatusTrend.yearly?.CANCELLED || [] },
+        ];
+        // Chart options
+        membershipStatusOptions.value = {
+            chart: {
+                height: 350,
+                type: 'bar',
+                stacked: false,
+                toolbar: { show: true }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    borderRadius: 4,
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            legend: {
+                position: 'bottom',
+                markers: {
+                    width: 16,
+                    height: 16,
+                    radius: 4
+                }
+            },
+            xaxis: {
+                categories: membershipStatusTrend.daily?.dates || [],
+                labels: {
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            yaxis: {
+                min: 0,
+                title: {
+                    text: 'Total Membership',
+                    style: {
+                        color: '#222',
+                        fontSize: '14px'
+                    }
+                },
+                labels: {
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: val => val
+                }
+            },
+            fill: {
+                opacity: 1
+            },
+            grid: {
+                borderColor: '#e0e0e0'
+            }
+        };
+
+        
         loading.value = false;
     };
 
@@ -917,6 +1724,7 @@
     const selectedFilter = ref('today');
     const customStart = ref('');
     const customEnd = ref('');
+       
 
     // Label filter
     const filterLabel = computed(() => {
@@ -967,27 +1775,190 @@
         }
     };
 
-    
+    const calendarKey = ref(0)
+    const calendarRef = ref(null)
+
+    const calendarEvents = ref([]);
+    const calendarResources = computed(() => {
+        if (!state.room_availability_calendar?.rooms) return [];
+        return state.room_availability_calendar.rooms.map(room => ({
+            id: room.room_id,
+            title: room.room_name
+        }));
+    });
+
+    const getBookingAvailability = async () => {
+        loadingBooking.value = true;
+        const params = {
+            property_id: filterProperty.value,
+        };
+        const response = await apiGetData("/dashboard/booking-availability", params);
+        state.room_availability_calendar = response.data.room_availability_calendar || [];
+        calendarEvents.value = [];
+        if (state.room_availability_calendar?.rooms) {
+            state.room_availability_calendar.rooms.forEach(room => {
+                room.calendar.forEach(cell => {
+                    let color = '#28a745';
+                    let title = 'Available';
+                    if (cell.status === 'booked') {
+                        color = '#007bff';
+                        title = 'Booked' + (cell.booking_user ? ` (${cell.booking_user})` : '');
+                    } else if (cell.status === 'blocked') {
+                        color = '#dc3545';
+                        title = 'Blocked' + (cell.booking_user ? ` (${cell.booking_user})` : '');
+                    }
+                    const endDate = dayjs(cell.date).add(1, 'day').format('YYYY-MM-DD')
+
+                    calendarEvents.value.push({
+                        id: `${room.room_id}-${cell.date}`,
+                        resourceId: String(room.room_id),
+                        title,
+                        start: cell.date,
+                        end: endDate,
+                        backgroundColor: color,
+                        borderColor: color,
+                        display: 'block',
+                        extendedProps: {
+                            room_id: room.room_id,
+                            room_name: room.room_name,
+                            status: cell.status,
+                            booking_user: cell.booking_user,
+                            can_block: cell.can_block,
+                            can_open: cell.can_open,
+                            type_booking: cell.type || 'online', // default online jika tidak ada
+                            can_cancel: cell.type === 'offline', // hanya offline bisa cancel
+                            booking_odata: cell.booking_odata || null, // data booking lengkap untuk cancel jika offline
+                        }
+                    })
+                });
+            });
+        }
+        loadingBooking.value = false;
+    };
+
+    const handleEventClick = async (info) => {
+        const { room_id, status, can_block, can_open, booking_user, type_booking, can_cancel, booking_odata } = info.event.extendedProps;
+        const date = info.event.startStr;
+        if (status === 'available' && can_block) {
+            await Swal.fire('Block Room', `Room ID: ${room_id}, Date: ${date}`, 'info');
+        } else if (status === 'blocked' && can_open) {
+            await Swal.fire('Open Room', `Room ID: ${room_id}, Date: ${date}`, 'info');
+        } else if (status === 'booked') {
+            const params = {
+                booking_odata
+            };
+
+            const response = await apiGetData('dashboard/booking-detail', params);
+            state.bookingDetail = response.data;
+            modalDetailBookingUsers.value = true;
+
+        }
+    };
+
+    const calendarOptions = reactive({
+        schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',
+
+        plugins: [
+            resourceTimelinePlugin,
+            interactionPlugin
+        ],
+
+        initialView: "resourceTimelineDay",
+
+        selectable: true,
+        selectMirror: true,
+        eventOverlap: false,
+
+        headerToolbar: {
+            left: "prev,next today",
+            center: "title",
+            right: "resourceTimelineDay,resourceTimelineWeek"
+        },
+
+        views: {
+            resourceTimelineDay: {
+            type: 'resourceTimeline',
+            duration: { days: 1 },
+            slotDuration: { days: 1 }
+            },
+            resourceTimelineWeek: {
+            type: 'resourceTimeline',
+            duration: { weeks: 1 },
+            slotDuration: { days: 1 }
+            }
+        },
+
+        resources: calendarResources,
+        events: calendarEvents,
+
+        eventClick: handleEventClick,
+
+    })
+
+   
+
+
+    const getProperty = async () => {
+        const response = await apiGetData("/properties/get_properties", {});
+        state.listGetProperty = response.data || {};
+    };
+    const resetFilterBookingAvailability = () => {
+        searchBooking.value = "";
+        filterStatusRoom.value = [];
+        filterProperty.value = [];
+        filterDateBooking.value = dayjs();
+    };
 
     onMounted(async() => {
         if (isStaff) {
-            router.push({ name: "index_store" });
+            router.push({ name: "index_properties" });
             return; // Stop execution immediately
         }
         
         timerSettings()
-        await getData();
+        Promise.all([
+            getData(),
+            getBookingAvailability(),
+            getProperty()
+        ]);
     })
 
     onUnmounted(() => {
         clearTimeout(interval.value);
     })
 
+    watch([searchBooking, filterDateBooking, filterStatusRoom, filterProperty], () => {
+        getBookingAvailability();
+    });
+
+    watch(calendarEvents, () => {
+        const api = calendarRef.value?.getApi()
+        if (api) {
+            api.removeAllEvents()
+            calendarEvents.value.forEach(e => api.addEvent(e))
+        }
+    })
+
+    watch(activeTab, (val) => {
+        // Pastikan tab Booking Availability benar-benar berisi FullCalendar
+        // Cek juga jika FullCalendar visible
+        if (val === '1') {
+            setTimeout(() => {
+                calendarKey.value++;
+            }, 100); // beri delay agar DOM sudah render
+        }
+    });
+
 </script>
 
 <style scoped>
     .properties-title {
         color: #222 !important;
+    }
+
+    /* FullCalendar resource timeline min-height */
+    .fc-resource-timeline .fc-scrollgrid {
+        min-height: 200px;
     }
 
 </style>

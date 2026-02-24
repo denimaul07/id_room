@@ -61,6 +61,61 @@ class RefreshTokenController extends Controller
         ])->cookie($cookie);
     }
 
+    public function refreshApps(Request $request)
+    {
+        $rt = $request->cookie('refresh_token');
+        if (!$rt) {
+            return response()->json(['message' => 'refresh token missing'], 401);
+        }
+
+        $hashed = hash('sha256', $rt);
+
+        $record = RefreshToken::where('token', $hashed)
+            ->where('revoked', false)
+            ->where('expires_at', '>', now())
+            ->first();
+
+        if (!$record) {
+            return response()->json(['message' => 'Invalid refresh token'], 401);
+        }
+
+        // ROTATE
+        $record->update(['revoked' => true]);
+
+        $newRefresh = Str::random(64);
+        $newExpiry = now()->addDays(7);
+
+        RefreshToken::create([
+            'user_id' => $record->user_id,
+            'token' => hash('sha256', $newRefresh),
+            'expires_at' => $newExpiry
+        ]);
+
+        $user = User::find($record->user_id);
+
+        $newAccess = auth()->login($user);
+
+        // ⬇️ IMPORTANT: millisecond!
+        $accessExpiryMs = now()->addMinutes(5)->valueOf();
+
+        $cookie = cookie(
+            'refresh_token',
+            $newRefresh,
+            60 * 24 * 7,
+            '/',
+            null,
+            false,
+            true,
+            false,
+            'Lax'
+        );
+
+        return response()->json([
+            'token' => $newAccess,
+            'expired_in' => $accessExpiryMs,
+        ])->cookie($cookie);
+    }
+
     public function logout(Request $request)
     {
         $rt = $request->refresh_token;

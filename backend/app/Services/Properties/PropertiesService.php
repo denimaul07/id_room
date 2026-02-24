@@ -181,4 +181,9 @@ class PropertiesService
 
         return $popularCity;
     }
+
+    public function getProperties()
+    {
+        return Properties::where('isActive', 0)->get();
+    }
 }
