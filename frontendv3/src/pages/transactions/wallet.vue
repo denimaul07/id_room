@@ -115,100 +115,82 @@
             </div>
         </div>
 
-        <a-drawer v-model:open="modalAdd" :width="500" :closable="true" :maskClosable="true" title="Transaction Detail">
-            <div class="mb-3 row">
-                <label class="col-sm-3 col-form-label">No Invoice</label>
-                <div class="col-sm-9">
-                    <a-input v-model:value="state.detail.topup_transactions.invoice_code" readonly />
+        <a-modal v-model:open="modalAdd" width="900px" style="top:20px" :closable="true" :maskClosable="true" title="Transaction Detail" :footer="false">
+            <div class="row">
+                <div class="col-6">
+                    <h5 class="mb-3">Informasi Transaksi</h5>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th>No Invoice</th>
+                                <td>{{ state.detail.topup_transactions?.invoice_code || '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th>User</th>
+                                <td>{{ state.detail.user?.name || '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Email</th>
+                                <td>{{ state.detail.user?.email || '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Phone</th>
+                                <td>{{ state.detail.user?.phone || '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Type</th>
+                                <td>{{ state.detail.type || '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Source</th>
+                                <td>{{ state.detail.source || '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Description</th>
+                                <td>{{ state.detail.description || '-' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-6">
+                    <h5 class="mb-3">Detail Pembayaran</h5>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr>
+                                <th>Amount</th>
+                                <td>
+                                    {{ state.detail.amount ? parseInt(state.detail.amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) : '-' }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Balance Before</th>
+                                <td>
+                                    {{ state.detail.balance_before ? parseInt(state.detail.balance_before).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) : '-' }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Balance After</th>
+                                <td>
+                                    {{ state.detail.balance_after ? parseInt(state.detail.balance_after).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) : '-' }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Payment Method</th>
+                                <td>{{ state.detail.topup_transactions?.payment_method || '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Payment Status</th>
+                                <td>{{ state.detail.topup_transactions?.status || '-' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Created At</th>
+                                <td>{{ state.detail.created_at ? dayjs(state.detail.created_at).format('DD MMM YYYY HH:mm:ss') : '-' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-
-            <div class="mb-3 row">
-                <label class="col-sm-3 col-form-label">User</label>
-                <div class="col-sm-9">
-                    <a-input v-model:value="state.detail.user.name" readonly />
-                </div>
-            </div>
-
-            <div class="mb-3 row">
-                <label class="col-sm-3 col-form-label">Email</label>
-                <div class="col-sm-9">
-                    <a-input v-model:value="state.detail.user.email" readonly />
-                </div>
-            </div>
-
-            <div class="mb-3 row">
-                <label class="col-sm-3 col-form-label">Phone</label>
-                <div class="col-sm-9">
-                    <a-input v-model:value="state.detail.user.phone" readonly />
-                </div>
-            </div>
-
-            <div class="mb-3 row">
-                <label class="col-sm-3 col-form-label">Type</label>
-                <div class="col-sm-9">
-                    <a-input v-model:value="state.detail.type" readonly />
-                </div>
-            </div>
-
-            <div class="mb-3 row">
-                <label class="col-sm-3 col-form-label">Source</label>
-                <div class="col-sm-9">
-                    <a-input v-model:value="state.detail.source" readonly />
-                </div>
-            </div>
-
-            <div class="mb-3 row">
-                <label class="col-sm-3 col-form-label">Amount</label>
-                <div class="col-sm-9">
-                    <a-input :value="parseInt(state.detail.amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)" readonly />
-                </div>
-            </div>
-
-            <div class="mb-3 row">
-                <label class="col-sm-3 col-form-label">Balance Before</label>
-                <div class="col-sm-9">
-                    <a-input :value="parseInt(state.detail.balance_before).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)" readonly />
-                </div>
-            </div>
-
-            <div class="mb-3 row">
-                <label class="col-sm-3 col-form-label">Balance After</label>
-                <div class="col-sm-9">
-                    <a-input :value="parseInt(state.detail.balance_after).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)" readonly />
-                </div>
-            </div>
-
-
-            <div class="mb-3 row">
-                <label class="col-sm-3 col-form-label">Description</label>
-                <div class="col-sm-9">
-                    <a-input v-model:value="state.detail.description" readonly />
-                </div>
-            </div>
-
-
-            <div class="mb-3 row">
-                <label class="col-sm-3 col-form-label">Payment Method</label>
-                <div class="col-sm-9">
-                    <a-input v-model:value="state.detail.topup_transactions.payment_method" readonly />
-                </div>
-            </div>
-
-            <div class="mb-3 row">
-                <label class="col-sm-3 col-form-label">Payment Status</label>
-                <div class="col-sm-9">
-                    <a-input v-model:value="state.detail.topup_transactions.status" readonly />
-                </div>
-            </div>
-
-            <div class="mb-3 row">
-                <label class="col-sm-3 col-form-label">Created At</label>
-                <div class="col-sm-9">
-                    <a-input v-model:value="state.detail.created_at" readonly />
-                </div>
-            </div>
-        </a-drawer>  
+        </a-modal>  
     </div>
 </template> 
 

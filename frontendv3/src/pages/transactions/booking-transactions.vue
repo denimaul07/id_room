@@ -81,7 +81,7 @@
                                                                     </a-button>
                                                                 </a-tooltip>
                                                                 
-                                                                <a-tooltip title="Batal Transaction" v-if="(data.status === 'PAID' || data.status === 'PENDING') && dayjs().isBefore(dayjs(data.booking.checkin_date))">
+                                                                <a-tooltip title="Batal Transaction" v-if="(data.status == 'PAID' || data.status == 'PENDING') && dayjs().isBefore(dayjs(data.booking.checkin_date))">
                                                                     <a-button type="primary" size="small" class="bg-danger" @click="cancel(data)">
                                                                         <template #icon>
                                                                             <CloseOutlined />

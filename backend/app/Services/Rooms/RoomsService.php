@@ -4,6 +4,7 @@ namespace App\Services\Rooms;
 
 use App\Models\Properties;
 use App\Models\Rooms;
+use App\Models\RoomSub;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -13,11 +14,12 @@ class RoomsService
     public function list($search = null, $pagging = null, $property_odata = null)
     {
         if (empty($property_odata)) {
-            return Rooms::whereRaw('1 = 0')->paginate($pagging);
+            return Rooms::with('subRooms')->whereRaw('1 = 0')->paginate($pagging);
         }
 
         return Rooms::search($search)
             ->where('property_odata', $property_odata)
+            ->with('subRooms')
             ->paginate($pagging);
     }
 
@@ -41,10 +43,6 @@ class RoomsService
             'room_type' => $data['room_type'],
             'capacity' => $data['capacity'],
             'luas' => $data['luas'],
-            'include_breakfast' => $data['include_breakfast'],
-            'price' => $data['price'],
-            'price_month' => $data['price_month'] ?? null,
-            'price_year' => $data['price_year'] ?? null,
             'image' => $data['image'] ?? null,
             'status' => $data['status']
         ]);
@@ -82,10 +80,6 @@ class RoomsService
         $room->room_type = $data['room_type'];
         $room->capacity = $data['capacity'];
         $room->luas = $data['luas'];
-        $room->include_breakfast = $data['include_breakfast'];
-        $room->price = $data['price'];
-        $room->price_month = $data['price_month'] ?? null;
-        $room->price_year = $data['price_year'] ?? null;
         $room->image = $data['image'] ?? null;
         $room->status = $data['status'];
 
@@ -125,5 +119,77 @@ class RoomsService
             throw new HttpResponseException(response()->json(['error' => 'Room not found'], 404));
         }
         return $room;
+    }
+
+    public function getSubRoom($odata_room)
+    {
+        $room = RoomSub::where('odata_room', $odata_room)->get();
+
+        return $room;
+    }
+
+    public function createSubRoom(array $data)
+    {
+        $room = Rooms::where('odata', $data['odata_room'])->first();
+        if (!$room) {
+            throw new HttpResponseException(response()->json(['error' => 'Room not found'], 404));
+        }
+
+        $subRoom = RoomSub::create([
+            'odata' => (string) Str::uuid(),
+            'odata_room' => $data['odata_room'],
+            'id_room' => $room->id,
+            'name_room' => $data['name_room'],
+            'code_room' => $data['code_room'],
+            'include_breakfast' => $data['include_breakfast'],
+            'smoking_area' => $data['smoking_area'],
+            'type_bed' => $data['type_bad'],
+            'price' => $data['price'],
+            'sale' => $data['sale'],
+            'price_month' => $data['price_month'] ?? null,
+            'price_year' => $data['price_year'] ?? null,
+            'total_room' => $data['total_room'] ?? null,
+            'status' => $data['status']
+        ]);
+
+        activity()
+            ->performedOn($subRoom)
+            ->causedBy(Auth::user())
+            ->withProperties(['attributes' => $data])
+            ->event('create')
+            ->log('created sub room');
+
+        return $subRoom;
+    }
+
+    public function updateSubRoom(array $data)
+    {
+        $subRoom = RoomSub::where('odata', $data['odata'])->first();
+        if (!$subRoom) {
+            throw new HttpResponseException(response()->json(['error' => 'Sub Room not found'], 404));
+        }
+
+        $subRoom->name_room = $data['name_room'];
+        $subRoom->code_room = $data['code_room'];
+        $subRoom->include_breakfast = $data['include_breakfast'];
+        $subRoom->smoking_area = $data['smoking_area'];
+        $subRoom->type_bed = $data['type_bad'];
+        $subRoom->price = $data['price'];
+        $subRoom->sale = $data['sale'];
+        $subRoom->price_month = $data['price_month'] ?? null;
+        $subRoom->price_year = $data['price_year'] ?? null;
+        $subRoom->total_room = $data['total_room'] ?? null;
+        $subRoom->status = $data['status'];
+
+        $subRoom->save();
+
+
+        activity()
+            ->performedOn($subRoom)
+            ->causedBy(Auth::user())
+            ->withProperties(['attributes' => $data])
+            ->event('update')
+            ->log('updated sub room');
+        return $subRoom;
     }
 }

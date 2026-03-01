@@ -15,7 +15,7 @@
                     style="background:#ffffff;border-radius:14px;overflow:hidden;">
                     <tr>
                         <td style="background:#0f172a;padding:24px;text-align:center;">
-                            <img src="{{ public_path('storage/logo/logo.webp') }}" height="42" alt="ID Room">
+                            <img src="{{ asset('storage/logo/logo.webp') }}"  alt="ID Room">
                         </td>
                     </tr>
 

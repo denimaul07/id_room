@@ -5,7 +5,7 @@
             <DashboardSidebar :activeMenu="activeMenu" @menu="activeMenu = $event" />
         </div>
         <main class="content flex-1 w-full">
-            <component :is="menuComponent" />
+            <component :is="menuComponent" @menu="activeMenu = $event" />
             <router-view />
         </main>
     </div>
@@ -20,6 +20,7 @@
     import MyMembership from './MyMembership.vue';
     import TransactionContent from './TransactionContent.vue';
     import Booking from './Booking.vue';
+    import PointsContent from './PointsContent.vue';
     const activeMenu = ref('dashboard')
 
     const menuComponent = computed(() => {
@@ -30,6 +31,7 @@
             case 'mymembership': return MyMembership
             case 'transactions': return TransactionContent
             case 'booking': return Booking  
+            case 'points': return PointsContent
             default: return DashboardContent
         }
     })

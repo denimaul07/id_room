@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Rooms\RoomsRequest;
 use App\Http\Requests\Rooms\RoomsUpdateRequest;
+use App\Http\Requests\Rooms\RoomSubRoomRequest;
 use App\Services\Rooms\RoomsService;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Exceptions\JWTException;
@@ -43,10 +44,6 @@ class RoomController extends Controller
                 'room_type',
                 'capacity',
                 'luas',
-                'include_breakfast',
-                'price',
-                'price_month',
-                'price_year',
                 'image',
                 'status'
             ]));
@@ -70,11 +67,7 @@ class RoomController extends Controller
                 'room_name',
                 'room_type',
                 'capacity',
-                'luas',
-                'include_breakfast',    
-                'price',
-                'price_month',
-                'price_year',
+                'luas',  
                 'image',
                 'status'
             ]));
@@ -94,5 +87,57 @@ class RoomController extends Controller
         $odata = $request->odata;
         $this->RoomsService->delete($odata);
         return response()->json(['success' => true]);
+    }
+
+    public function getSubRoom(Request $request)
+    {
+        $odata_room = $request->odata_room;
+        $data = $this->RoomsService->getSubRoom($odata_room);
+        return response()->json(['data' => $data]);
+    }
+
+    public function storeSubRoom(RoomSubRoomRequest $request)
+    {
+        $data = $request->only([
+            'odata_room',
+            'name_room',
+            'code_room',
+            'include_breakfast',
+            'type_bad',
+            'sale',
+            'price',
+            'price_month',
+            'price_year',
+            'smoking_area',
+            'status',
+            'total_room'
+        ]);
+
+        $this->RoomsService->createSubRoom($data);
+
+        return response()->json(['message' => 'Sub Room created successfully']);
+    }
+
+
+    public function updateSubRoom(RoomSubRoomRequest $request)
+    {
+        $data = $request->only([
+            'odata',
+            'name_room',
+            'code_room',
+            'type_bad',
+            'price',
+            'sale',
+            'price_month',
+            'price_year',
+            'include_breakfast',
+            'smoking_area',
+            'status',
+            'total_room'
+        ]);
+
+        $this->RoomsService->updateSubRoom($data);
+
+        return response()->json(['message' => 'Sub Room updated successfully']);
     }
 }

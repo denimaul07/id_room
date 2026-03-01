@@ -45,6 +45,12 @@ $api->version('v1', function ($api) {
         $api->post('/update-profile', 'App\Http\Controllers\Admin\AdminUserController@updateProfile');
     });
 
+    $api->group(['prefix' => 'myAccount','middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+        $api->put('/update_profile', 'App\Http\Controllers\Admin\AdminUserController@update_Profile');
+        $api->put('/update_wa', 'App\Http\Controllers\Admin\AdminUserController@updateWa');
+        $api->post('/send_wa', 'App\Http\Controllers\Admin\AdminUserController@sendWa');
+    });
+
     $api->group(['prefix' => 'public'], function ($api) {
         $api->get('/info', 'App\Http\Controllers\PublicController@info');
         $api->post('/contact-me', 'App\Http\Controllers\PublicController@contactMe');
@@ -56,10 +62,18 @@ $api->version('v1', function ($api) {
         $api->get('/properties-jual', 'App\Http\Controllers\PublicController@listPropertiesJual');
         $api->get('/properties-facilities', 'App\Http\Controllers\PublicController@listPropertiesFacilities');
         $api->get('/property-detail', 'App\Http\Controllers\PublicController@propertyDetail');
+        $api->get('/property-detail-sell', 'App\Http\Controllers\PublicController@propertyDetailSell');
         $api->get('/popular-city', 'App\Http\Controllers\PublicController@popularCity');
         $api->get('/kode-negara', 'App\Http\Controllers\PublicController@kodeNegara');
         $api->get('/properties_booking', 'App\Http\Controllers\PublicController@properties_booking');
-        $api->post('/proses_booking', 'App\Http\Controllers\PublicController@prosesBooking');
+
+        $api->group(['middleware' => ['jwt.auth', 'role:users']], function ($api) {
+            $api->post('/proses_booking', 'App\Http\Controllers\PublicController@prosesBooking');
+            $api->get('/coupons_booking', 'App\Http\Controllers\PublicController@couponsBooking');
+            $api->get('/cek_coupon', 'App\Http\Controllers\PublicController@cekCoupon');
+            $api->post('/tukar_point', 'App\Http\Controllers\PublicController@tukarPoint');
+            $api->get('/me', 'App\Http\Controllers\PublicController@me');
+        });
     });
 
     $api->group(['prefix' => 'master', 'middleware' => ['jwt.auth']], function ($api) {
@@ -110,7 +124,7 @@ $api->version('v1', function ($api) {
     
     });
 
-    $api->group(['prefix' => 'properties', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+    $api->group(['prefix' => 'properties', 'middleware' => ['jwt.auth', 'role:superAdmin|admin|properties']], function ($api) {
         $api->get('/index', 'App\Http\Controllers\PropertiesController@index');
         $api->post('/store', 'App\Http\Controllers\PropertiesController@store');
         $api->post('/update', 'App\Http\Controllers\PropertiesController@update');
@@ -125,6 +139,9 @@ $api->version('v1', function ($api) {
         $api->post('/store', 'App\Http\Controllers\RoomController@store');
         $api->post('/update', 'App\Http\Controllers\RoomController@update');
         $api->delete('/index', 'App\Http\Controllers\RoomController@destroy');
+        $api->get('/getSubRoom', 'App\Http\Controllers\RoomController@getSubRoom');
+        $api->post('/storeSubRoom', 'App\Http\Controllers\RoomController@storeSubRoom');
+        $api->put('/updateSubRoom', 'App\Http\Controllers\RoomController@updateSubRoom');
     });
 
     $api->group(['prefix' => 'promotions', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
@@ -134,14 +151,14 @@ $api->version('v1', function ($api) {
         $api->delete('/index', 'App\Http\Controllers\PromoController@destroy');
     });
 
-    $api->group(['prefix' => 'property_facilities', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+    $api->group(['prefix' => 'property_facilities', 'middleware' => ['jwt.auth', 'role:superAdmin|admin|properties']], function ($api) {
         $api->get('/index', 'App\Http\Controllers\PropertyFacilitiesController@index');
         $api->post('/store', 'App\Http\Controllers\PropertyFacilitiesController@store');
         $api->post('/update', 'App\Http\Controllers\PropertyFacilitiesController@update');
         $api->delete('/index', 'App\Http\Controllers\PropertyFacilitiesController@destroy');
     });
 
-    $api->group(['prefix' => 'property_gallery', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+    $api->group(['prefix' => 'property_gallery', 'middleware' => ['jwt.auth', 'role:superAdmin|admin|properties']], function ($api) {
         $api->get('/index', 'App\Http\Controllers\PropertyGalleryController@index');
         $api->post('/store', 'App\Http\Controllers\PropertyGalleryController@store');
         $api->post('/update', 'App\Http\Controllers\PropertyGalleryController@update');
@@ -155,7 +172,7 @@ $api->version('v1', function ($api) {
         $api->delete('/index', 'App\Http\Controllers\RoomFacilitiesController@destroy');
     });
 
-    $api->group(['prefix' => 'facilities', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+    $api->group(['prefix' => 'facilities', 'middleware' => ['jwt.auth', 'role:superAdmin|admin|properties']], function ($api) {
         $api->get('/index', 'App\Http\Controllers\FacilitiesController@index');
         $api->post('/store', 'App\Http\Controllers\FacilitiesController@store');
         $api->post('/update', 'App\Http\Controllers\FacilitiesController@update');
@@ -214,17 +231,28 @@ $api->version('v1', function ($api) {
             $api->get('/store', 'App\Http\Controllers\Admin\DepartmentController@index');
             $api->post('/store', 'App\Http\Controllers\Admin\DepartmentController@store');
             $api->put('/store', 'App\Http\Controllers\Admin\DepartmentController@update');
+
+            $api->get('/referral', 'App\Http\Controllers\ReferralSettingController@index');
+            $api->post('/referral', 'App\Http\Controllers\ReferralSettingController@update');
+
+            $api->get('/coupons', 'App\Http\Controllers\CouponController@index');
+            $api->post('/coupons', 'App\Http\Controllers\CouponController@store');
+            $api->put('/coupons', 'App\Http\Controllers\CouponController@update');
+
+            $api->get('/ppn_tax_point', 'App\Http\Controllers\PpnTaxPointController@index');
+            $api->post('/ppn_tax_point', 'App\Http\Controllers\PpnTaxPointController@update');
         });
     });
 
     $api->group(['prefix' => 'dashboard', 'middleware' => ['jwt.auth']], function ($api) {
         $api->get('/booking-detail', 'App\Http\Controllers\DashboardController@bookingDetail');
         
-        $api->group(['middleware' => ['jwt.auth', 'role:properties']], function ($api) {
+        $api->group(['middleware' => ['jwt.auth', 'role:properties|receptionis']], function ($api) {
             $api->get('/summary_properties', 'App\Http\Controllers\DashboardController@overviewProperties');
             $api->post('/checkin_booking', 'App\Http\Controllers\DashboardController@checkinBooking');
             $api->post('/checkout_booking', 'App\Http\Controllers\DashboardController@checkoutBooking');
             $api->post('/block_room', 'App\Http\Controllers\DashboardController@blockRoom');
+            $api->post('/prepare_room', 'App\Http\Controllers\DashboardController@prepareRoom');
             $api->post('/open_room', 'App\Http\Controllers\DashboardController@openRoom');
         });
 
@@ -241,6 +269,7 @@ $api->version('v1', function ($api) {
         $api->get('/booking_transactions', 'App\Http\Controllers\TransactionController@index_booking_transactions');
         $api->get('/top_up_transactions', 'App\Http\Controllers\TransactionController@index_top_up_transactions');
         $api->get('/membership_transactions', 'App\Http\Controllers\TransactionController@index_membership_transactions');
+        $api->get('/point_transactions', 'App\Http\Controllers\TransactionController@index_point_transactions');
         $api->get('/all_transactions', 'App\Http\Controllers\TransactionController@index_all_transactions');
         $api->get('/detail_transaction', 'App\Http\Controllers\TransactionController@detail_transaction');
         $api->get('/detail', 'App\Http\Controllers\TransactionController@detail');
@@ -251,5 +280,25 @@ $api->version('v1', function ($api) {
 
     $api->group(['prefix' => 'member', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
         $api->get('/index', 'App\Http\Controllers\MemberController@index');
+    });
+
+    $api->group(['prefix' => 'contacts', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+        $api->get('/index', 'App\Http\Controllers\ContactController@index');
+    });
+
+    $api->group(['prefix' => 'crm', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+        $api->get('/index', 'App\Http\Controllers\CrmController@index');
+        $api->post('/index', 'App\Http\Controllers\CrmController@store');
+        $api->put('/index', 'App\Http\Controllers\CrmController@update');
+        $api->put('/process', 'App\Http\Controllers\CrmController@process');
+        $api->put('/process_followup', 'App\Http\Controllers\CrmController@process_followup');
+
+        $api->get('/source', 'App\Http\Controllers\CrmController@get_source');
+        $api->get('/remark', 'App\Http\Controllers\CrmController@get_remark');
+        $api->get('/history', 'App\Http\Controllers\CrmController@get_history');
+    });
+
+    $api->group(['prefix' => 'points','middleware' => ['jwt.auth', 'role:users']], function ($api) {
+        $api->get('/myPoints', 'App\Http\Controllers\PointsController@myPoints');
     });
 });

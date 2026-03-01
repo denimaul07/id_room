@@ -50,17 +50,24 @@
 
 <script setup>
 import { computed } from 'vue'
-
+import { useRoute } from 'vue-router'
+import dayjs from 'dayjs'
+const route = useRoute()
 const imageBaseUrl = import.meta.env.VITE_PATH_FILE_BASE_URL + '/storage/'
 const props = defineProps({
-  item: Object
+  item: Object,
+  startDate: String,
+  endDate: String
 })
+
 
 const detailLink = computed(() => {
   const odata = props.item?.slug
+  const startDate = (props.startDate ?? route.query.startDate) || dayjs().format('YYYY-MM-DD')
+  const endDate = (props.endDate ?? route.query.endDate) || dayjs().add(1, 'day').format('YYYY-MM-DD')
   return {
     path: '/rent-details',
-    query: { odata }
+    query: { odata, startDate, endDate }
   }
 })
 
@@ -94,10 +101,10 @@ const badgeTags = computed(() => {
 
 const priceInfo = computed(() => {
   const candidates = [
-    { value: props.item?.price_per_night, label: 'Night' },
-    { value: props.item?.price_per_monthly, label: 'Month' },
-    { value: props.item?.price_per_year, label: 'Year' }
-  ].filter((entry) => typeof entry.value === 'number' && entry.value > 0)
+    { value: Number(props.item?.price_per_night), label: 'Night' },
+    { value: Number(props.item?.price_per_monthly), label: 'Month' },
+    { value: Number(props.item?.price_per_year), label: 'Year' }
+  ].filter((entry) => entry.value > 0)
 
   if (!candidates.length) {
     return { value: 0, label: 'Rent' }

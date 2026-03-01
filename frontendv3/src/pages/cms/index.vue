@@ -10,7 +10,7 @@
             <div class="row widget-grid ms-2">
                 <div class="card">
                     <div class="card-body">
-                        <Tabs value="0" class="p-tab-active">
+                        <Tabs value="0" class="p-tab-active" scrollable>
                             <TabList class="p-tab-active">
                                 <Tab value="0"> <i class="fa fa-cogs" /> Site Settings</Tab>
                                 <Tab value="1"> <i class="fa fa-envelope" /> Contact Me</Tab>
@@ -20,6 +20,7 @@
                                 <Tab value="5"> <i class="fa fa-cogs" /> Services</Tab>
                                 <Tab value="6"> <i class="fa fa-briefcase" /> Testimonial</Tab>
                                 <Tab value="7"> <i class="fa fa-shopping-cart" /> Jual & Sewa</Tab>
+                                <Tab value="8"> <i class="fa fa-cogs" /> PPN, Fee dan Point</Tab>
                             </TabList>
                             <TabPanels>
                                 <TabPanel value="0">
@@ -46,6 +47,9 @@
                                 <TabPanel value="7">
                                     <JualSewaSettings />
                                 </TabPanel>
+                                <TabPanel value="8">
+                                    <PpnTaxPoint />
+                                </TabPanel>
                             </TabPanels>
                         </Tabs>
                     </div>
@@ -70,5 +74,5 @@ import RenovasiSettings from './renovasi/index.vue';
 import ServicesSettings from './services/index.vue';
 import TestimonialSettings from './testimoni/index.vue';
 import JualSewaSettings from './settings/jual_sewa.vue';
-
+import PpnTaxPoint from './settings/ppn_tax_point.vue';
 </script>

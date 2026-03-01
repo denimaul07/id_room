@@ -11,7 +11,7 @@
       "icon": "stroke-home",
       "iconf": "fill-home",
       "type": "link",
-      "roles": ["superAdmin", "admin"],
+      "roles": ["superAdmin", "admin","properties"],
       "active": false
     },
     {
@@ -25,6 +25,26 @@
       "path": "/member",
       "icon": "stroke-user",
       "iconf": "fill-user",
+      "type": "link",
+      "roles": ["superAdmin", "admin"],
+      "active": false
+    },
+
+    {
+      "title": "CRM",
+      "path": "/crm",
+      "icon": "stroke-task",
+      "iconf": "fill-task",
+      "type": "link",
+      "roles": ["superAdmin", "admin"],
+      "active": false
+    },
+
+    {
+      "title": "Contacts",
+      "path": "/contacts",
+      "icon": "stroke-form",
+      "iconf": "fill-form",
       "type": "link",
       "roles": ["superAdmin", "admin"],
       "active": false
@@ -67,6 +87,13 @@
           "active": false
         },
         {
+          "path": "/point-transactions",
+          "title": "Point Transactions",
+          "type": "link",
+          "roles": ["superAdmin", "admin"],
+          "active": false
+        },
+        {
           "path": "/all-transactions",
           "title": "All Transactions",
           "type": "link",
@@ -92,7 +119,7 @@
       "icon": "buildings",
       "iconf": "buildings",
       "type": "link",
-      "roles": ["superAdmin", "admin"],
+      "roles": ["superAdmin", "admin","properties"],
       "active": false
     },
 
@@ -101,6 +128,16 @@
       "path": "/promotions",
       "icon": "stroke-blog",
       "iconf": "fill-blog",
+      "type": "link",
+      "roles": ["superAdmin", "admin"],
+      "active": false
+    },
+
+    {
+      "title": "Referral & Coupons",
+      "path": "/referral-coupons",
+      "icon": "gift",
+      "iconf": "gift",
       "type": "link",
       "roles": ["superAdmin", "admin"],
       "active": false

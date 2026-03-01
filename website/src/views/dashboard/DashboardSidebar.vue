@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="h-full">
         <!-- Hamburger button for mobile -->
         <button class="md:hidden fixed right-4 z-30 bg-white rounded-full shadow p-2 border border-gray-200" style="top:68px;" @click="showSidebar = true">
             <i class="fa fa-bars text-2xl"></i>
@@ -33,10 +33,69 @@
                         <!-- TIER -->
                         <div class="tier-card">
                             <div class="tier-label">
-                                {{ currentMembership.length > 0 ? currentMembership[0].membership.title : 'No Membership' }}
+                                {{ membershipTitle }}
                             </div>
-                            <div class="tier-point">0 Poin</div>
+                            <div class="tier-point">{{ parseInt(user?.balance || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
+                                                            .slice(0, -3) }}</div>
+                            <button
+                                    class="mt-3 px-4 py-2 rounded-lg font-semibold w-full transition" :style="{ background: currentInfo.primaryColor, color: currentInfo.primaryTextColor }"
+                                    @click="topUpSaldo()"
+                            >
+                                    Top Up Saldo
+                            </button>
+                            <!-- Top Up Modal -->
+                            <transition name="fade">
+                                <div v-if="showTopUp" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                                    <div class="bg-white rounded-2xl shadow-lg w-full max-w-md p-6 relative">
+                                        <button class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl" @click="showTopUp = false"><i class="fa fa-times"></i></button>
+                                        <h2 class="text-xl font-bold mb-2">Top Up Saldo</h2>
+                                        <div class="mb-4">
+                                            <div class="text-sm text-gray-500 mb-1">Saldo Anda</div>
+                                            <div class="text-2xl font-bold mb-2">Rp {{ saldo.toLocaleString('id-ID') }}</div>
+                                        </div>
+                                        <div class="mb-4">
+                                            <div class="font-semibold mb-2">Pilih Nominal</div>
+                                            <div class="flex gap-2 mb-2 flex-wrap">
+                                                <button v-for="nom in presetNominals" :key="nom" type="button"
+                                                    class="px-4 py-2 rounded-lg border font-semibold"
+                                                    :style="topUpNominal == nom ? { background: currentInfo.primaryColor, color: currentInfo.primaryTextColor } : {}"
+                                                    :class="topUpNominal == nom ? '' : 'bg-gray-50 text-gray-700 border-gray-200'"
+                                                    @click="selectNominal(nom)">
+                                                    Rp {{ nom.toLocaleString('id-ID') }}
+                                                </button>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <span>Atau isi manual</span>
+                                                <input type="text" inputmode="numeric" pattern="[0-9]*" class="border rounded px-3 py-2 " :value="manualNominal" @input="handleManualInput" placeholder="Nominal" />
+                                            </div>
+                                        </div>
+                                        <div class="mb-4 flex justify-between font-bold text-lg">
+                                            <span>Total Bayar :</span>
+                                            <span>Rp {{ topUpNominal ? topUpNominal.toLocaleString('id-ID') : '0' }}</span>
+                                        </div>
+                                        <button class="w-full py-3 rounded-lg font-semibold transition-colors" :style="topUpNominal ? { background: currentInfo.primaryColor, color: currentInfo.primaryTextColor } : {}" :disabled="!topUpNominal || topUpNominal < 10000" @click="continueTopUp">
+                                            Continue
+                                        </button>
+                                    </div>
+                                </div>
+                            </transition>
+                        
                         </div>
+                        
+                        <!-- Points -->
+                        <div class="points-box">
+                            <span>Points Kamu : </span>
+                            <strong class="points">{{ user?.wallet_point?.coin_balance || 0 }} Points</strong>
+                            <button
+                                v-if="user?.wallet_point?.coin_balance >= 5"
+                                class="ml-2 px-3 py-1 rounded text-xs"
+                                :style="{ background: currentInfo.primaryColor, color: currentInfo.primaryTextColor }"
+                                @click="openExchange"
+                            >
+                                Tukar Point
+                            </button>
+                        </div>
+                
                         <!-- MENU -->
                         <nav class="menu flex flex-col gap-3 mt-8">
                             <button class="menu-item w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2" style="justify-content: flex-start; text-align: left;" :class="{ active: activeMenu === 'dashboard' }" @click="$emit('menu', 'dashboard'); showSidebar = false">
@@ -55,6 +114,11 @@
                                 <i class="fa fa-credit-card"></i>
                                 <span>Daftar Pembelian</span>
                             </button>
+                            <button class="menu-item w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2" style="justify-content: flex-start; text-align: left;" :class="{ active: activeMenu === 'points' }" @click="$emit('menu', 'points'); showSidebar = false">
+                                <i class="fa fa-coins"></i>
+                                <span>Point Saya</span>
+                            </button>
+                            
                             <button class="menu-item w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-2" style="justify-content: flex-start; text-align: left;" :class="{ active: activeMenu === 'membership' }" @click="$emit('menu', 'membership'); showSidebar = false">
                                 <i class="fa fa-gift"></i>
                                 <span>Membership</span>
@@ -64,13 +128,20 @@
                                 <span>Akun</span>
                             </button>
                         </nav>
+
+                        <footer class="sidebar-footer mt-6">
+                            <button class="logout-btn w-full" @click="handleLogout">
+                                <i class="fa fa-sign-out-alt"></i>
+                                <span>Logout</span>
+                            </button>
+                        </footer>
                     </div>
                 </div>
             </aside>
         </transition>
 
         <!-- Sidebar for desktop -->
-        <aside class="sidebar md:sticky md:top-0 md:h-screen md:w-[260px] w-full h-auto hidden md:flex flex-col items-stretch bg-white z-20 md:border-r border-gray-200" :style="{
+        <aside class="sidebar md:w-[260px] w-full h-full hidden md:flex flex-col items-stretch bg-white z-20 md:border-r border-gray-200" :style="{
                 '--primary': primaryColor,
                 '--primary-text': currentInfo.primaryTextColor || '#ffffff'
             }">
@@ -90,11 +161,25 @@
                             <i class="fa fa-copy"></i>
                         </button>
                     </div>
+
+                    <!-- Points -->
+                    <div class="points-box">
+                        <span>Points Kamu : </span>
+                        <strong class="points">{{ user?.wallet_point?.coin_balance || 0 }} Points</strong>
+                        <button
+                            v-if="user?.wallet_point?.coin_balance >= 5"
+                            class="ml-2 px-3 py-1 rounded text-white text-xs"
+                            :style="{ background: currentInfo.primaryColor, color: currentInfo.primaryTextColor }"  
+                            @click="openExchange"
+                        >
+                            Tukar Point
+                        </button>
+                    </div>
                 </div>
                 <!-- TIER -->
                 <div class="tier-card">
                     <div class="tier-label">
-                        {{ currentMembership.length > 0 ? currentMembership[0].membership.title : 'No Membership' }}
+                        {{ membershipTitle }}
                     </div>
                     <div class="tier-point">{{ parseInt(user?.balance || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
                                                     .slice(0, -3) }}</div>
@@ -140,6 +225,7 @@
                             </div>
                         </div>
                     </transition>
+
                 
                 </div>
                 <!-- MENU -->
@@ -160,6 +246,10 @@
                         <i class="fa fa-credit-card"></i>
                         <span>Daftar Pembelian</span>
                     </button>
+                    <button class="menu-item w-full text-left px-4 py-3 rounded-lg mb-2" :class="{ active: activeMenu === 'points' }" @click="$emit('menu', 'points')">
+                        <i class="fa fa-coins"></i>
+                        <span>Point Saya</span>
+                    </button>
                     <button class="menu-item w-full text-left px-4 py-3 rounded-lg mb-2" :class="{ active: activeMenu === 'membership' }" @click="$emit('menu', 'membership')">
                         <i class="fa fa-gift"></i>
                         <span>Membership</span>
@@ -169,13 +259,53 @@
                         <span>Akun</span>
                     </button>
                 </nav>
+
+                <footer class="sidebar-footer mt-6">
+                    <button class="logout-btn w-full" @click="handleLogout">
+                        <i class="fa fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </footer>
             </div>
         </aside>
+
+        
+        <!-- Modal Tukar Point Responsive (Bottom Sheet for Mobile) -->
+        <transition name="fade">
+            <div v-if="showExchange" class="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40">
+                <div class="bg-white rounded-t-2xl md:rounded-2xl shadow-lg w-full md:max-w-md p-6 relative animate-slideup-modal" style="max-height:90vh;">
+                    <button class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-2xl z-10" @click="showExchange = false"><i class="fa fa-times"></i></button>
+                    <h2 class="text-xl font-bold mb-2">Tukar Point</h2>
+                    <div class="mb-4">
+                        <div class="text-sm text-gray-500 mb-1">Points Kamu</div>
+                        <div class="text-2xl font-bold mb-2">{{ user?.wallet_point?.coin_balance || 0 }} Points</div>
+                    </div>
+                    <div class="mb-4">
+                        <div class="font-semibold mb-2">Masukkan jumlah point (kelipatan 5)</div>
+                        <input type="number" min="5" :max="user?.wallet_point?.coin_balance" step="5"
+                            v-model.number="exchangeAmount"
+                            class="border rounded px-3 py-2 w-full"
+                            placeholder="Contoh: 10" />
+                    </div>
+                    <button
+                        class="w-full py-3 rounded-lg font-semibold"
+                        :style="canExchange ? { background: currentInfo.primaryColor, color: currentInfo.primaryTextColor } : { background: '#e5e7eb', color: '#9ca3af', cursor: 'not-allowed' }"
+                        :disabled="!canExchange || loadingExchange"
+                        @click="exchangePoints"
+                    >
+                        <span v-if="!loadingExchange">Tukar Sekarang</span>
+                        <span v-else><i class="fa fa-spinner fa-spin"></i> Loading...</span>
+                    </button>
+                </div>
+            </div>
+        </transition>
+        <!-- END Modal Tukar Point -->
     </div>
 </template>
 
 <script setup>
     import { computed, onMounted, ref } from 'vue'
+    import { apiGetData, apiPostData, Swal } from '@/store/action'
     const showSidebar = ref(false)
     import { storeToRefs } from 'pinia'
     import { useAuthStore } from '@/store/auth'
@@ -186,12 +316,16 @@
     const membershipStore = useMembershipStore()
     const { data: membership } = storeToRefs(membershipStore)
     const currentMembership = computed(() => membership.value ?? [])
+    const membershipTitle = computed(() => {
+    return currentMembership.value?.[0]?.membership?.title ?? 'No Membership'
+})
 
     defineProps({
         activeMenu: String
     })
 
-    const { user } = storeToRefs(useAuthStore())
+    const authStore = useAuthStore()
+    const { user } = storeToRefs(authStore)
     const { data: info } = storeToRefs(useInfoStore())
 
     const currentInfo = computed(() => info.value?.[0] ?? {})
@@ -272,6 +406,59 @@
         // TODO: Kirim ke backend
     }
 
+    // Tukar Point
+    const showExchange = ref(false)
+    const exchangeAmount = ref(5)
+    const canExchange = computed(() => {
+        const val = exchangeAmount.value
+        const max = user.value?.wallet_point?.coin_balance || 0
+        return val >= 5 && val % 5 === 0 && val <= max
+    })
+
+    const loadingExchange = ref(false)
+
+    function openExchange() {
+        showExchange.value = true
+    }
+
+    async function exchangePoints() {
+        if (!canExchange.value || loadingExchange.value) return
+        loadingExchange.value = true
+    
+        const payload = {
+            amount: exchangeAmount.value
+        }
+        const res = await apiPostData('/public/tukar_point', payload)
+        if (res) {
+              // Refresh data user di pinia setelah tukar point
+            await authStore.fetchUser()
+            showExchange.value = false
+            loadingExchange.value = false
+        } else {
+            loadingExchange.value = false
+        }
+        
+    }
+
+    async function handleLogout() {
+        const result = await Swal.fire({
+            title: 'Keluar dari akun?',
+            text: 'Yakin ingin logout sekarang?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Iya, Logout',
+            cancelButtonText: 'Batal',
+            reverseButtons: true
+        })
+
+        if (!result.isConfirmed) return
+
+        await apiPostData('/auth/logout', {}, false)
+        authStore.clearAuth()
+        showSidebar.value = false
+        window.location.href = '/'
+    }
+
     onMounted(async () => {
         if (!membershipStore.loaded) {
             await membershipStore.fetch()
@@ -280,6 +467,15 @@
 </script>
 
 <style>
+@media (max-width: 768px) {
+    .animate-slideup-modal {
+        animation: slideup-modal 0.25s cubic-bezier(0.4,0,0.2,1);
+    }
+    @keyframes slideup-modal {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+}
 /* Sidebar Drawer for mobile */
 .sidebar-drawer {
     position: fixed;
@@ -323,8 +519,8 @@
         width: 260px;
         border-right: 1px solid #f1f1f1;
         border-bottom: none;
-        height: 100vh !important;
-        min-height: 100vh !important;
+        height: 100% !important;
+        min-height: 100% !important;
         flex-direction: column;
         overflow-y: auto;
         overflow-x: visible;
@@ -472,6 +668,25 @@
     align-items: center;
     padding-top: 14px;
     border-top: 1px solid #eee;
+}
+
+.logout-btn {
+    border: 1px solid #ef4444;
+    color: #ef4444;
+    background: #fff;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background: #ef4444;
+    color: #fff;
 }
 
 /* TOAST */

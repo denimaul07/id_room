@@ -36,11 +36,7 @@ class RoomsRequest extends FormRequest
             'room_type' => 'required|string|max:100',
             'capacity' => 'required|integer',
             'luas' => 'required|numeric',
-            'include_breakfast' => 'required|in:Y,N',
-            'price' => 'required|numeric',
-            'price_month' => 'nullable|numeric',
-            'price_year' => 'nullable|numeric',
-            'image' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
+            'image' => 'required|image|mimes:webp|max:2048',
             'status' => 'required|integer|in:0,1'
         ];
     }
@@ -55,11 +51,10 @@ class RoomsRequest extends FormRequest
             'room_name.required' => 'The Room Name field is required.',
             'room_type.required' => 'The Room Type field is required.',
             'capacity.required' => 'The Capacity field is required.',
-            'price.required' => 'The Price field is required.',
             'luas.required' => 'The Luas field is required.',
-            'include_breakfast.required' => 'The Include Breakfast field is required.',
             'image.image' => 'The Image must be an image file.',
-            'image.mimes' => 'The Image must be a file of type: jpg, png, jpeg, gif, svg.',
+            'image.required' => 'The Image field is required.',
+            'image.mimes' => 'The Image must be a file of type: webp.',
             'image.max' => 'The Image may not be greater than 2048 kilobytes.',
             'status.required' => 'The Status field is required.',
             'status.in' => 'The Status must be 0 or 1.'

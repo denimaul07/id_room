@@ -290,12 +290,80 @@
             </div>
         </div>
 
-        <div class="flex justify-end mt-6" v-if="listData.total > paginate">
-            <pagination
-                :current-page="listData.currentPage"
-                :total-pages="listData.lastPage"
-                @page-changed="getData"
-            />
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8">
+            <div class="text-sm text-gray-600">
+                Page: {{ listData.current_page || 0 }} First: {{ (listData.current_page - 1) * paginate || 0 }} Rows: {{ paginate }}
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button 
+                    @click="changePage(1)"
+                    :disabled="listData.current_page === 1"
+                    class="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    «
+                </button>
+
+                <button 
+                    @click="changePage(listData.current_page - 1)"
+                    :disabled="listData.current_page === 1"
+                    class="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    ‹
+                </button>
+
+                <div class="flex gap-1">
+                    <button 
+                        v-for="page in visiblePages"
+                        :key="page"
+                        @click="changePage(page)"
+                        :class="listData.current_page === page 
+                            ? 'w-8 h-8 rounded-full  font-semibold flex items-center justify-center'
+                            : 'w-8 h-8 rounded-full flex items-center justify-center'"
+                        :style="listData.current_page === page 
+                            ? {
+                                background: currentInfo.primaryColor,
+                                color: currentInfo.primaryTextColor,
+                                border: 'none',
+                                boxShadow: '0 2px 8px 0 rgb(0 0 0 / 0.04)'
+                            } 
+                            : {
+                                background: '#fff',
+                                color: '#222',
+                                border: '1px solid #e5e7eb'
+                            }"
+                        >
+                        {{ page }}
+                    </button>
+                </div>
+
+                <button 
+                    @click="changePage(listData.current_page + 1)"
+                    :disabled="listData.current_page === listData.last_page"
+                    class="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    ›
+                </button>
+
+                <button 
+                    @click="changePage(listData.last_page)"
+                    :disabled="listData.current_page === listData.last_page"
+                    class="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    »
+                </button>
+
+                <select 
+                    v-model="paginate"
+                    @change="getData(1)"
+                    class="ml-4 rounded border border-gray-300 px-3 py-1 text-sm"
+                >
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+            </div>
         </div>
 
 
@@ -330,15 +398,27 @@
         return dayjs(date).format('D MMMM YYYY')
     }
 
-    const listData = ref([])
+    const listData = ref({
+        data: [],
+        total: 0,
+        current_page: 1,
+        last_page: 1
+    })
     const search = ref('')
     const filterType = ref('')
-    const paginate = ref(10)
+    const paginate = ref(5)
     const loading = ref(false)
     const pdfUrl = ref("")
     const showPdfModal = ref(false)
 
-    const getData = async (page = listData.value.currentPage) => {
+    const visiblePages = computed(() => {
+        const lastPage = Number(listData.value?.last_page || 1)
+        const safeLastPage = Number.isFinite(lastPage) && lastPage > 0 ? lastPage : 1
+        const maxPage = Math.min(5, safeLastPage)
+        return Array.from({ length: maxPage }, (_, index) => index + 1)
+    })
+
+    const getData = async (page = 1) => {
         loading.value = true
         const params = {
             page: page,
@@ -346,14 +426,29 @@
             dateFrom: dateFrom.value,
             dateTo: dateTo.value,
             search: search.value,
-            paginate: paginate.value,
+            paginate: Number(paginate.value),
             keyActive: keyActive.value,
             type: filterType.value
         }
 
         const response = await apiGetData('/membership/list-transactions', params)
-        listData.value = response.data
+        listData.value = {
+            data: response?.data?.data || [],
+            total: Number(response?.data?.total || 0),
+            current_page: Number(response?.data?.current_page || 1),
+            last_page: Number(response?.data?.last_page || 1)
+        }
         loading.value = false
+    }
+
+    const changePage = (page) => {
+        const targetPage = Number(page)
+        if (!Number.isFinite(targetPage)) return
+
+        const lastPage = Number(listData.value?.last_page || 1)
+        if (targetPage < 1 || targetPage > lastPage) return
+
+        getData(targetPage)
     }
 
     const filter = () => {

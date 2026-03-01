@@ -9,6 +9,11 @@ use App\Models\Properties;
 use App\Models\Province;
 use App\Models\Setting;
 use App\Models\Rooms;
+use App\Models\Coupon;
+use App\Models\Transactions;
+use App\Models\PointTransactions;
+use App\Models\WalletPoint;
+use App\Models\InvoiceReferral;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -351,7 +356,8 @@ class SettingService
             'bannerJualDetail',
             'colorJualDetail',
             'ppn',
-            'fee'
+            'fee',
+            'convert_point',
         ]);
     }
 
@@ -402,7 +408,6 @@ class SettingService
             'price_per_monthly',
             'price_per_year',
             'sale_price',
-            'total_rooms',
             'image',
             'created_at'
         );
@@ -551,7 +556,7 @@ class SettingService
             ->values();
     }
 
-    public function getPropertyDetail($odata)
+    public function getPropertyDetail($odata, $startDate = null, $endDate = null)
     {
         $property = Properties::with([
             'facilities.facility',
@@ -560,7 +565,50 @@ class SettingService
             'gallery',
             'rooms',
             'rooms.facilities.facility',
-        ])->where('slug', $odata)->first();
+            'rooms.subRooms',
+            'rooms' => function ($q) {
+                $q->withCount('subRooms');
+            },
+            'rooms.subRooms' => function ($q) use ($startDate, $endDate) {
+
+                    // hitung booking aktif yg overlap
+                    $q->withCount(['bookings as booked_count' => function ($bookingQuery) use ($startDate, $endDate) {
+
+                        $bookingQuery->where('status', '!=', 'CANCELLED')
+                            ->where(function ($dateQuery) use ($startDate, $endDate) {
+                                $dateQuery->whereBetween('checkin_date', [$startDate, $endDate])
+                                    ->orWhereBetween('checkout_date', [$startDate, $endDate])
+                                    ->orWhere(function ($overlapQuery) use ($startDate, $endDate) {
+                                        $overlapQuery->where('checkin_date', '<=', $startDate)
+                                            ->where('checkout_date', '>=', $endDate);
+                                    });
+                            });
+                    }]);
+                },
+            ])
+        ->where('slug', $odata)
+        ->first();
+
+        if (!$property) {
+            throw new HttpResponseException(response()->json(['error' => 'Property not found'], 404));
+        }
+
+        return $property;
+    }
+
+    public function getPropertyDetailSell($propertyOdata)
+    {
+        $property = Properties::with([
+            'facilities.facility',
+            'city',
+            'province',
+            'gallery',
+            'rooms',
+            'rooms.facilities.facility',
+            'rooms.subRooms',
+        ])
+        ->where('slug', $propertyOdata)
+        ->first();
 
         if (!$property) {
             throw new HttpResponseException(response()->json(['error' => 'Property not found'], 404));
@@ -575,11 +623,192 @@ class SettingService
         return $kodeNegara;
     }
 
-    public function properties_booking($property_id)
+    public function properties_booking($property_id, $startDate, $endDate)
     {
-        $room = Rooms::with(['property', 'facilities.facility'])
+        $room = Rooms::with(['property', 'facilities.facility', 'subRooms',
+            'subRooms' => function ($q) use ($startDate, $endDate) {
+
+                    // hitung booking aktif yg overlap
+                    $q->withCount(['bookings as booked_count' => function ($bookingQuery) use ($startDate, $endDate) {
+
+                        $bookingQuery->where('status', '!=', 'CANCELLED')
+                            ->where(function ($dateQuery) use ($startDate, $endDate) {
+                                $dateQuery->whereBetween('checkin_date', [$startDate, $endDate])
+                                    ->orWhereBetween('checkout_date', [$startDate, $endDate])
+                                    ->orWhere(function ($overlapQuery) use ($startDate, $endDate) {
+                                        $overlapQuery->where('checkin_date', '<=', $startDate)
+                                            ->where('checkout_date', '>=', $endDate);
+                                    });
+                            });
+                    }]);
+                },
+            ])
             ->where('odata', $property_id)
             ->get();
         return $room;
+    }
+
+    public function couponsBooking()
+    {
+        $userId = Auth::id();
+
+        $coupons = Coupon::where('is_active', 0)
+            ->where('is_show', 0)
+            ->whereDate('start_date', '<=', today())
+            ->whereDate('end_date', '>=', today())
+            ->where(function ($query) use ($userId) {
+                $query->where('type_coupon', 'all')
+                    ->orWhere(function ($q) use ($userId) {
+                        $q->where('type_coupon', 'member')
+                            ->where('id_user', $userId);
+                    });
+            })
+            ->get();
+
+        return $coupons;
+    }
+
+    public function cekCoupon($code, $price = null)
+    {
+        // Cari coupon
+        $coupon = Coupon::where('code', $code)->first();
+        if (!$coupon) {
+            return [
+                'valid' => false,
+                'message' => 'Coupon tidak ditemukan.'
+            ];
+        }
+
+        // Cek usage_limit (total penggunaan semua user)
+        $usedLimit=  Transactions::where('code_coupon', $code)
+            ->where('status', 'PAID')
+            ->sum('total_amount');
+        if ($coupon->usage_limit && $usedLimit >= $coupon->usage_limit) {
+            return [
+                'valid' => false,
+                'message' => 'Kuota penggunaan coupon sudah habis.'
+            ];
+        }
+
+        $usedCount = Transactions::where('code_coupon', $code)
+            ->where('status', 'PAID')
+            ->count();
+        if ($coupon->used_count && $usedCount >= $coupon->used_count) {
+            return [
+                'valid' => false,
+                'message' => 'Coupon sudah mencapai batas penggunaan.'
+            ];
+        }
+
+        // Cek usage_per_user (penggunaan per user, jika login)
+        $userId = Auth::id();
+        $usedByUser = 0;
+        if ($userId) {
+            $usedByUser =   Transactions::where('code_coupon', $code)
+                ->where('status', 'PAID')
+                ->where('user_id', $userId)
+                ->count();
+            if ($coupon->usage_per_user && $usedByUser >= $coupon->usage_per_user) {
+                return [
+                    'valid' => false,
+                    'message' => 'Kuota penggunaan coupon untuk user ini sudah habis.'
+                ];
+            }
+        }
+
+        // Validasi maximum_discount jika tipe percentage dan subtotal diberikan
+        $maxDiscount = null;
+        if ($coupon->type === 'percentage' && $price !== null) {
+            $discount = $price * ($coupon->value / 100);
+            if ($coupon->maximum_discount && $discount > $coupon->maximum_discount) {
+                $maxDiscount = $coupon->maximum_discount;
+            } else {
+                $maxDiscount = $discount;
+            }
+        }
+
+        
+
+        return [
+            'valid' => true,
+            'message' => 'Coupon valid.',
+            'sisa_kuota' => $coupon->usage_limit ? ($coupon->usage_limit - $usedCount) : null,
+            'sisa_user' => $coupon->usage_per_user ? ($coupon->usage_per_user - $usedByUser) : null,
+            'sisa_used_count' => $coupon->used_count ? ($coupon->used_count - $usedCount) : null,
+            'maximum_discount' => $maxDiscount,
+        ];
+    }
+
+    public function tukarPoint($amount)
+    {
+        $userId = Auth::id();
+        $setting = Setting::first();
+        $convertPoint = $setting->convert_point ?? 1000; // Default 1000 jika tidak diatur
+
+        // Cek apakah user memiliki point yang cukup
+        $wallet = WalletPoint::where('user_id', $userId)->first();
+        if (!$wallet || $wallet->coin_balance < $amount) {
+            throw new HttpResponseException(response()->json(['error' => 'Point tidak cukup'], 400));
+        }
+
+        // Hitung jumlah uang yang didapat
+        $moneyAmount = $amount * $convertPoint; // Contoh konversi, bisa disesuaikan
+
+        // Kurangi point dari wallet
+        $wallet->coin_balance -= $amount;
+        $wallet->save();
+
+        $invoiceReferral = InvoiceReferral::orderBy('no', 'desc')->first();
+        $newNo = $invoiceReferral ? str_pad($invoiceReferral->no + 1, 6, '0', STR_PAD_LEFT) : '000001';
+
+        // Simpan transaksi point
+        PointTransactions::create([
+            'odata' => (string) Str::uuid(),
+            'invoice_code' => 'EXC-' . $newNo,
+            'user_id' => $userId,
+            'user_odata' => $wallet->odata ?? null,
+            'type' => 'DEBIT',
+            'amount' => $amount,
+            'source' => 'exchange',
+            'reference_id' => $wallet->id ?? null,
+            'reference_odata' => $wallet->odata ?? null,
+            'description' => 'Tukar point ke saldo. Rp. : ' . $moneyAmount,
+        ]);
+
+        // Update nomor terakhir pada InvoiceReferral
+        InvoiceReferral::create([
+            'no' => $newNo,
+        ]);
+
+        //Dapat Coupon Dari Nominal
+
+        Coupon::create([
+            'odata' => (string) Str::uuid(),
+            'code' => 'CPN-' . auth()->user()->referral_code . '-' . time(),
+            'title' => 'Tukar Point - ' . $moneyAmount,
+            'type_coupon' => 'member',
+            'id_user' => $userId,
+            'odata_user' => auth()->user()->odata ?? null,
+            'type' => 'fixed',
+            'value' => $moneyAmount, // Contoh diskon 10%
+            'usage_limit' => 1, // Contoh kuota penggunaan
+            'usage_per_user' => 1, // Contoh kuota penggunaan per user
+            'used_count' => 1,
+            'start_date' => now()->format('Y-m-d'),
+            'end_date' => now()->addDays(30)->format('Y-m-d'),
+            'is_active' => 0,
+            'is_show' => 0,
+        ]);
+
+        return [
+            'message' => 'Tukar point berhasil.',
+            'money_amount' => $moneyAmount,
+            'remaining_points' => $wallet->points,
+        ];
+    }
+
+    public function getAuthenticatedUser()
+    {
+        return Auth::user();
     }
 }

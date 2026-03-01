@@ -47,7 +47,6 @@ class PropertiesUpdateRequest extends FormRequest
             'price_per_monthly' => 'nullable|numeric',
             'price_per_year' => 'nullable|numeric',
             'sale_price' => 'nullable|numeric',
-            'total_rooms' => 'required|integer',
             'isActive' => 'required|boolean',
             'images' => 'nullable|image|mimes:webp|max:2048',
         ];
@@ -72,7 +71,6 @@ class PropertiesUpdateRequest extends FormRequest
             'slug.required' => 'The Slug field is required.',
             'slug.max' => 'The Slug may not be greater than 255 characters.',   
             'price_per_night.required' => 'The Price Per Night field is required.',
-            'total_rooms.required' => 'The Total Rooms field is required.',
             'isActive.required' => 'The Active Status field is required.',
             'images.image' => 'The Images must be an image file.',
             'images.mimes' => 'The Images must be a file of type: webp.',

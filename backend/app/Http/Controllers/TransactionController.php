@@ -137,4 +137,18 @@ class TransactionController extends Controller
         ];
         return response()->json($response, 201);
     }
+
+    public function index_point_transactions(Request $request)
+    {
+        $search = $request->search;
+        $pagging = $request->pagging ?? 10;
+        $filterType = $request->type;
+        $filterSource = $request->source;
+        $filterDate = $request->start_date && $request->end_date ? [$request->start_date, $request->end_date] : null;
+        $data = $this->transactionService->list_point_transactions($search, $pagging, $filterType, $filterSource, $filterDate);
+        $response=[
+            'data' => $data
+        ];
+        return response()->json($response, 201);
+    }
 }

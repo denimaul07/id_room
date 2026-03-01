@@ -126,16 +126,6 @@
             </div>
           </div>
 
-          <div class="mb-3 row">
-            <label class="col-sm-4 col-form-label"> Starus Notif</label>
-            <div class="col-sm-8">
-              <select v-model="status_notif" class="form-control">
-                <option value="0">Email Only</option>
-                <option value="1">Wa Only</option>
-                <option value="2">Email & WA</option>
-              </select>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -201,7 +191,7 @@ import { Api } from "@/api/Api";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 import { ref, onMounted } from "vue";
-import waitingicon from "@/assets/images/logo/loading.gif";
+import waitingicon from "@/assets/images/logo/logo_idroom.png";
 const pathUrl = import.meta.env.VITE_PATH_FILE_BASE_URL;
 import Swal from "sweetalert2";
 const token = localStorage.getItem("access_token_iss");
@@ -245,7 +235,7 @@ const add = () => {
 const saveData = async () => {
   pesan.value = "Mohon Sabar, Lagi Proses Simpan Data";
   processing.value = true;
-  await Api.put("/admin/update_profile", {
+  await Api.put("/myAccount/update_profile", {
     id: id.value,
     oldpass: oldpass.value,
     newpass: newpass.value,
@@ -282,7 +272,7 @@ const saveData = async () => {
 const updateWa = async () => {
   pesan.value = "Mohon Sabar, Lagi Proses Simpan Data";
   processing.value = true;
-  await Api.put("/admin/update_wa", {
+  await Api.put("/myAccount/update_wa", {
     id: id.value,
     wa: wa.value,
     status_notif: status_notif.value,
@@ -319,7 +309,7 @@ const updateWa = async () => {
 const sendwa = async () => {
   pesan.value = "Mohon Sabar, Lagi Proses Simpan Data";
   processing.value = true;
-  await Api.post("/admin/send_wa", {
+  await Api.post("/myAccount/send_wa", {
     wa: wa.value,
     status_notif: status_notif.value,
   })

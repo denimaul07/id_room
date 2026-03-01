@@ -6,11 +6,16 @@ use App\Models\User;
 use Carbon\Carbon;
 use App\Models\PropertieInquire;
 use App\Models\Properties;
+use App\Models\Referral_Setting;
+use App\Models\PointTransactions;
+use App\Models\WalletPoint;
+use App\Models\InvoiceReferral;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -119,11 +124,11 @@ class UserController extends Controller
                 'same:password'
             ],
             'country_code' => [
-                'nullable',
+                'required',
                 'string'
             ],
             'phone' => [
-                'nullable',
+                'required',
                 'string'
             ],
             'birth_date' => [
@@ -175,6 +180,13 @@ class UserController extends Controller
             ], 400);
         }
 
+        $uniqueCode = $request->country_code . $request->phone;
+        if (User::where('phone', $uniqueCode)->exists()) {
+            return response()->json([
+                'message' => 'Nomor telepon sudah terdaftar'
+            ], 400);
+        }
+
         try {
             $referral_code = User::where('referral_code', $request->referral_code)->first();
             if ($request->referral_code && !$referral_code) {
@@ -192,14 +204,93 @@ class UserController extends Controller
                 'password' => $request->password,
                 'phone' => $request->country_code . $request->phone,
                 'birth_date' => $birthDate,
-                'referral_code' => $request->referral_code,
                 'referrer_id' => $referral_code ? $referral_code->id : null,
                 'status_users' => 2,
                 'change_password' => 1
             ]);
 
+            User::where('id', $user->id)->update([
+                'referral_code' =>  strtoupper(substr(Str::slug($user->name, ''), 0, 4)). str_pad($user->id, 4, '0', STR_PAD_LEFT) . strtoupper(Str::random(2))
+            ]);
+
             // assign role
             $user->assignRole('users');
+
+            $reward = Referral_Setting::first();
+
+            DB::transaction(function() use ($referral_code, $reward, $user) {
+
+                $wallet = WalletPoint::where('user_id', $referral_code->id)->lockForUpdate()->first();
+                if (!$wallet) {
+                    $wallet = WalletPoint::create([
+                        'odata' => (string) Str::uuid(),
+                        'user_id' => $referral_code->id,
+                        'user_odata' => $referral_code->odata,
+                        'coin_balance' => 0
+                    ]);
+                }
+                $wallet->coin_balance += $reward->reward_referrer;
+                $wallet->save();
+
+                $invoiceReferral = InvoiceReferral::orderBy('no', 'desc')->first();
+                $newNo = $invoiceReferral ? str_pad($invoiceReferral->no + 1, 6, '0', STR_PAD_LEFT) : '000001';
+
+                PointTransactions::create([
+                    'odata' => (string) Str::uuid(),
+                    'invoice_code' => 'REF-' . $newNo,
+                    'user_id' => $referral_code->id,
+                    'user_odata' => $referral_code->odata,
+                    'type' => 'credit',
+                    'amount' => $reward->reward_referrer,
+                    'source' => 'referral',
+                    'reference_id' => $wallet->id,
+                    'reference_odata' => $wallet->odata,
+                    'description' => 'Reward referral untuk ' . $user->name
+                ]);
+
+                InvoiceReferral::create([
+                    'no' => $newNo,
+                ]);
+
+                $walletReferer = WalletPoint::where('user_id', $user->id)->lockForUpdate()->first();
+                if (!$walletReferer) {
+                    $walletReferer = WalletPoint::create([
+                        'odata' => (string) Str::uuid(),
+                        'user_id' => $user->id,
+                        'user_odata' => $user->odata,
+                        'coin_balance' => 0
+                    ]);
+                }
+                $walletReferer->coin_balance += $reward->reward_referred;
+                $walletReferer->save();
+
+                $invoiceReferralReferred = InvoiceReferral::orderBy('no', 'desc')->first();
+                $newNoReferred = $invoiceReferralReferred ? str_pad($invoiceReferralReferred->no + 1, 6, '0', STR_PAD_LEFT) : '000001';
+
+                PointTransactions::create([
+                    'odata' => (string) Str::uuid(),
+                    'invoice_code' => 'REF-' . $newNoReferred,
+                    'user_id' => $user->id,
+                    'user_odata' => $user->odata,
+                    'type' => 'credit',
+                    'amount' => $reward->reward_referred,
+                    'source' => 'referral',
+                    'reference_id' => $walletReferer->id,
+                    'reference_odata' => $walletReferer->odata,
+                    'description' => 'Reward referral untuk pendaftaran'
+                ]);
+
+                InvoiceReferral::create([
+                    'no' => $newNoReferred,
+                ]);
+            });
+
+            // Log activity create user
+            activity()
+            ->causedBy(auth()->user())
+            ->performedOn($user)
+            ->withProperties(['attributes' => $user->toArray()])
+            ->log('User registered');
 
             try {
                 $user->sendEmailVerificationNotification();

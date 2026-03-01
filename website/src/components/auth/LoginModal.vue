@@ -217,6 +217,7 @@ const onSubmit = async () => {
     const result = await apiPostDataWithReturn('auth/login_apps', payload, {}, false)
     isSubmitting.value = false
     if (!result?.success) {
+        
         Swal.fire({
             icon: 'error',
             title: 'Login gagal',

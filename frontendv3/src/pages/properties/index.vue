@@ -17,7 +17,7 @@
                                     <i class="fa fa-concierge-bell" style="color: #222 !important;" />
                                     <span style="color: #222 !important;">Facilities</span>
                                 </Tab>
-                                <Tab value="2">
+                                <Tab value="2" v-if="isSuperAdmin">
                                     <i class="fa fa-city" style="color: #222 !important;" />
                                     <span style="color: #222 !important;">City</span>
                                 </Tab>
@@ -26,7 +26,7 @@
                                 <TabPanel value="0">
                                     <div class="d-flex align-items-center mb-3">
                                         <div class="d-flex gap-2">
-                                            <Button label="Tambah Property" icon="pi pi-plus" class="btn btn-dark" size="small" @click="add" />
+                                            <Button label="Tambah Property" icon="pi pi-plus" class="btn btn-dark" size="small" @click="add" v-if="isSuperAdmin" />
                                         </div>
 
                                         <div class="ms-auto">
@@ -49,7 +49,6 @@
                                                         <th class="text-center bg-dark text-nowrap">Type</th>
                                                         <th class="text-center bg-dark text-nowrap">Listing Type</th>
                                                         <th class="text-center bg-dark text-nowrap">Address</th>
-                                                        <th class="text-center bg-dark text-nowrap">Total Room</th>
                                                         <th class="text-center bg-dark text-nowrap">Harga PerMalam</th>
                                                         <th class="text-center bg-dark text-nowrap sticky-col sticky-right-1 col-status">Status</th>
                                                     </tr>
@@ -81,7 +80,6 @@
                                                             {{ data.listing_type }}
                                                         </td>
                                                         <td class="text-center text-nowrap">{{ data.address }}</td>
-                                                        <td class="text-center text-nowrap">{{ data.total_rooms }}</td>
                                                         <td class="text-center text-nowrap">{{ (data.price_per_night * 1).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
                                                     
                                                         <td class="text-center text-nowrap sticky-col sticky-right-1 col-status">
@@ -198,13 +196,6 @@
                             </div>
 
                             <div class="mb-3 row">
-                                <label class="col-sm-4 col-form-label">Total Rooms</label>
-                                <div class="col-sm-8">
-                                    <a-input v-model:value="state.form.total_rooms" placeholder="Total Rooms" />
-                                </div>
-                            </div>
-
-                            <div class="mb-3 row">
                                 <label class="col-sm-4 col-form-label">Price Per Night</label>
                                 <div class="col-sm-8">
                                     <a-input-number v-model:value="state.form.price_per_night"  :formatter="value => `Rp ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')"
@@ -252,16 +243,23 @@
                         <div class="col-sm-12">
 
                             <div class="mb-3 row">
-                                <label class="col-sm-4 col-form-label">Description</label>
+                                <label class="col-sm-4 col-form-label">Information</label>
                                 <div class="col-sm-8">
                                     <ckeditor :editor="editor" v-model="state.form.description" :config="editorConfig"></ckeditor>
                                 </div>
                             </div>  
 
                             <div class="mb-3 row">
-                                <label class="col-sm-4 col-form-label">Information</label>
+                                <label class="col-sm-4 col-form-label">Area Akomodasi</label>
                                 <div class="col-sm-8">
                                     <ckeditor :editor="editor" v-model="state.form.information" :config="editorConfig"></ckeditor>
+                                </div>
+                            </div>
+
+                            <div class="mb-3 row">
+                                <label class="col-sm-4 col-form-label">Slug</label>
+                                <div class="col-sm-8">
+                                    <a-input v-model:value="state.form.slug" placeholder="Slug" />
                                 </div>
                             </div>
                         </div>
@@ -269,12 +267,7 @@
                 </div>
 
                 <div class="col-sm-12 col-md-4 col-xl-4">
-                    <div class="mb-3 row">
-                        <label class="col-sm-4 col-form-label">Slug</label>
-                        <div class="col-sm-8">
-                            <a-input v-model:value="state.form.slug" placeholder="Slug" />
-                        </div>
-                    </div>
+                    
                     <div class="mb-3 row">
                         <label class="col-sm-4 col-form-label">Video URL</label>
                         <div class="col-sm-8">
@@ -368,6 +361,8 @@
     import ProgressBar from 'primevue/progressbar';
     import CKEditor from '@ckeditor/ckeditor5-vue';
     import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+    import checkRole from '@/store/modules/role.js';
+    const isSuperAdmin = checkRole(['superAdmin','admin']);
     const ckeditor = CKEditor.component
     const editor = ClassicEditor;
     const editorConfig = {
@@ -425,7 +420,6 @@
             type: [],
             listing_type: [],
             address: "",
-            total_rooms: 0,
             city: "",
             province: "",
             slug: "",
@@ -437,7 +431,6 @@
             price_per_monthly: 0,
             price_per_year: 0,
             sale_price: 0,
-            total_rooms: 0,
             images: "",
             banner: "",
             url_video: "",
@@ -504,7 +497,6 @@
             price_per_monthly: 0,
             price_per_year: 0,
             sale_price: 0,
-            total_rooms: 0,
             images: "",
             banner: "",
             url_video: "",
@@ -537,7 +529,6 @@
             price_per_monthly: data.price_per_monthly,
             price_per_year: data.price_per_year,
             sale_price: data.sale_price,
-            total_rooms: data.total_rooms,
             images: data.image,
             banner: data.banner,
             isActive: data.isActive,
@@ -568,7 +559,6 @@
         payload.append('price_per_monthly', state.form.price_per_monthly);
         payload.append('price_per_year', state.form.price_per_year);
         payload.append('sale_price', state.form.sale_price);
-        payload.append('total_rooms', state.form.total_rooms);
         payload.append('isActive', state.form.isActive);
         payload.append('url_video', state.form.url_video);
         if(state.form.images instanceof File){

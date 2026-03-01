@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { apiGetData, apiPostData, Swal } from '@/store/action'
 import { ref } from 'vue'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -54,6 +55,14 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.removeItem('auth_state_id_room')
     }
 
+    async function fetchUser() {
+        const res = await apiGetData('/public/me')
+        if (res) {
+            user.value = res.data
+            persist()
+        }
+    }
+
     return {
         token,
         user,
@@ -61,6 +70,7 @@ export const useAuthStore = defineStore('auth', () => {
         expiredAt,
         setAuth,
         setTokenOnly,
-        clearAuth
+        clearAuth,
+        fetchUser
     }
 })

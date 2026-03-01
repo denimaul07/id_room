@@ -20,9 +20,14 @@ const wallet = () => import('@/pages/transactions/wallet.vue');
 const bookingTransactions = () => import('@/pages/transactions/booking-transactions.vue');
 const membershipTransactions = () => import('@/pages/transactions/membership-transactions.vue');
 const topUpTransactions = () => import('@/pages/transactions/top-up-transactions.vue');
+const pointTransactions = () => import('@/pages/transactions/point-transactions.vue');
 const allTransactions = () => import('@/pages/transactions/all-transactions.vue');
 const member = () => import('@/pages/member/index.vue');
 const DasboardStaff = () => import('@/pages/dashboard/index_properties.vue');
+const DashboardReceptionis = () => import('@/pages/dashboard/index_booking.vue');
+const contacts = () => import('@/pages/contacts/index.vue');
+const crm = () => import('@/pages/crm/index.vue');
+const referralCoupons = () => import('@/pages/coupon/index.vue');
 
 const routes = [
   {
@@ -99,6 +104,21 @@ const routes = [
   },
 
   {
+    path: '/dashboard-receptionis', 
+    component: Body,
+    children: [
+      {
+        path: '/dashboard-receptionis',
+        name: 'index_booking',
+        component: DashboardReceptionis,
+        meta: {
+          requiresAuth: true
+        }
+      },
+    ]
+  },
+
+  {
     path: '/membership',
     component: Body,
     children: [
@@ -106,6 +126,34 @@ const routes = [
         path: '/membership',
         name: 'membership',
         component: membership,
+        meta: {
+          requiresAuth: true
+        }
+      },
+    ]
+  },
+  {
+    path: '/crm',
+    component: Body,
+    children: [
+      {
+        path: '/crm',
+        name: 'crm',
+        component: crm,
+        meta: {
+          requiresAuth: true
+        }
+      },
+    ]
+  },
+  {
+    path: '/contacts',
+    component: Body,
+    children: [
+      {
+        path: '/contacts',
+        name: 'contacts',
+        component: contacts,
         meta: {
           requiresAuth: true
         }
@@ -136,6 +184,21 @@ const routes = [
         path: '/promotions',
         name: 'promotions',
         component: promotions,
+        meta: {
+          requiresAuth: true
+        }
+      },
+    ]
+  },
+
+  {
+    path: '/referral-coupons',
+    component: Body,
+    children: [
+      {
+        path: '/referral-coupons',
+        name: 'referralCoupons',
+        component: referralCoupons,
         meta: {
           requiresAuth: true
         }
@@ -231,6 +294,21 @@ const routes = [
         }
       },
     ]  
+  },
+
+  {
+    path: '/point-transactions',
+    component: Body,
+    children: [
+      {
+        path: '/point-transactions',
+        name: 'pointTransactions',
+        component: pointTransactions,
+        meta: {
+          requiresAuth: true
+        }
+      },
+    ]
   },
 
   {

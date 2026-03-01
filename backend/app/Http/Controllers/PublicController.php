@@ -214,7 +214,23 @@ class PublicController extends Controller
     {
         try {
             $odata = $request->odata;
-            $property = $this->settingService->getPropertyDetail($odata);
+            $startDate = $request->startDate;
+            $endDate = $request->endDate;
+            $property = $this->settingService->getPropertyDetail($odata, $startDate, $endDate);
+            $response = [
+                'data' => $property
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
+
+    public function propertyDetailSell(Request $request)
+    {
+        try {
+            $odata = $request->odata;
+            $property = $this->settingService->getPropertyDetailSell($odata);
             $response = [
                 'data' => $property
             ];
@@ -240,7 +256,7 @@ class PublicController extends Controller
     public function properties_booking(Request $request)
     {
         try {
-            $properties = $this->settingService->properties_booking($request->property_id);
+            $properties = $this->settingService->properties_booking($request->property_id, $request->check_in, $request->check_out);
             $response = [
                 'data' => $properties
             ];
@@ -264,6 +280,65 @@ class PublicController extends Controller
             ]));
             $response = [
                 'message' => 'Booking berhasil diproses.',
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
+
+    public function couponsBooking(Request $request)
+    {
+        try {
+            $coupons = $this->settingService->couponsBooking();
+            $response = [
+                'data' => $coupons
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
+
+    public function cekCoupon(Request $request)
+    {
+        try {
+            $code = $request->code;
+            $price = $request->total;
+            $coupon = $this->settingService->cekCoupon($code, $price);
+            if (!$coupon) {
+                return response()->json(['message' => 'Kode kupon tidak valid.'], 404);
+            }
+            $response = [
+                'data' => $coupon
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
+
+    public function tukarPoint(Request $request)
+    {
+        try {
+            $amount = $request->amount;
+            $result = $this->settingService->tukarPoint($amount);
+
+            $response = [
+                'message' => 'Tukar point berhasil. Poin Anda telah dikonversi menjadi coupon.',
+            ];
+            return response()->json($response, 200);
+        } catch (JWTException $th) {
+            throw $th;
+        }
+    }
+
+    public function me(Request $request)
+    {
+        try {
+            $user = $this->settingService->getAuthenticatedUser();
+            $response = [
+                'data' => $user
             ];
             return response()->json($response, 200);
         } catch (JWTException $th) {

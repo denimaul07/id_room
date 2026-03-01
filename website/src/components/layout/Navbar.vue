@@ -37,11 +37,11 @@ async function handleLogout() {
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Iya, Keluar',
-        cancelButtonText: 'Batal',
+        cancelButtonText: 'Tidak',
         reverseButtons: true,
         customClass: {
-            confirmButton: 'border border-primary rounded-full px-6 py-2 mr-2' + (currentInfo.value?.primaryColor ? ' bg-[var(--btn-bg)] text-[var(--btn-text-color)] hover:bg-[var(--btn-bg-hover)]' : ' bg-primary text-white hover:bg-primaryHover'),
-            cancelButton: 'bg-primary text-white rounded-full px-6 py-2',
+            confirmButton: 'bg-red-600 text-white border border-red-600 rounded-full px-6 py-2 mr-2 font-medium hover:bg-red-700',
+            cancelButton: 'bg-gray-200 text-gray-700 rounded-full px-6 py-2 font-medium hover:bg-gray-300',
         },
         buttonsStyling: false
     })
@@ -121,7 +121,7 @@ watch(drawerOpen, (val) => {
                         <button @click="profileMenuOpen = !profileMenuOpen"
                             class="flex items-center gap-2 px-3 py-2 rounded-full bg-gray-100 hover:bg-gray-200 text-black transition-colors duration-300">
                             <img :src="avatarUrl" alt="User" class="h-6 w-6 rounded-full object-fit" />
-                            <span>{{ user?.name || 'Profile' }}</span>
+                            <span>{{ user?.name || 'Profile' }} | {{ user?.wallet_point?.coin_balance || 0 }} Points</span>
                         </button>
                         <div v-if="profileMenuOpen" class="absolute right-0 mt-2 w-40 bg-white rounded shadow-lg z-50">
                             <router-link to="/dashboard" class="block px-4 py-2 hover:bg-gray-100 text-black">My

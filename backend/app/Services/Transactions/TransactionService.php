@@ -5,10 +5,11 @@ namespace App\Services\Transactions;
 use App\Models\WalletLedger;
 use App\Models\BookingPayment;
 use App\Models\MembershipTransactions;
-use App\Models\TopUpTransactions;
+use App\Models\TopupTransactions;
 use App\Models\Transactions;
 use App\Models\Booking;
 use App\Models\UserMembership;
+use App\Models\PointTransactions;
 use Illuminate\Support\Str;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
@@ -97,7 +98,7 @@ class TransactionService
 
     public function list_top_up_transactions($search = null, $pagging = null,  $filterDate = null)
     {
-        return TopUpTransactions::with(['user'])
+        return TopupTransactions::with(['user'])
             ->when($search, function($q) use ($search) {
                 $q->where('invoice_code', 'like', "%$search%")
                     ->orWhereHas('user', function($q) use ($search) {
@@ -286,6 +287,7 @@ class TransactionService
                 $q->whereDate('checkin_date', \Carbon\Carbon::today())
                   ->whereDate('check_out', \Carbon\Carbon::today());
             })
+            ->where('type_booking', 'ONLINE')
             ->orderByDesc('created_at')
             ->paginate($pagging);
     }
@@ -305,6 +307,24 @@ class TransactionService
             })
             ->when($status, function($q) use ($status) {
                 $q->where('status', $status);
+            })
+            ->orderByDesc('created_at')
+            ->paginate($pagging);
+    }
+
+    public function list_point_transactions($search = null, $pagging = null, $date = null)
+    {
+        return PointTransactions::with(['user'])
+            ->when($search, function($q) use ($search) {
+                $q->where('description', 'like', "%$search%")
+                    ->orWhereHas('user', function($q) use ($search) {
+                        $q->where('name', 'like', "%$search%")
+                        ->orWhere('email', 'like', "%$search%")
+                        ->orWhere('phone', 'like', "%$search%");
+                    });
+            })
+            ->when($date, function($q) use ($date) {
+                $q->whereBetween('created_at', [$date[0], $date[1]]);
             })
             ->orderByDesc('created_at')
             ->paginate($pagging);

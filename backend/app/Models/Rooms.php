@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Properties;
 use App\Models\RoomFacilities;
+use App\Models\RoomSub;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -34,5 +35,10 @@ class Rooms extends Model
     public function facilities()
     {
         return $this->hasMany(RoomFacilities::class, 'room_odata', 'odata');
+    }
+
+    public function subRooms()
+    {
+        return $this->hasMany(RoomSub::class, 'id_room', 'id');
     }
 }

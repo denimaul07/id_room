@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Department;
 use App\Models\UserMembership;
+use App\Models\WalletPoint;
 use App\Notifications\VerifyEmailCustom;
 use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -81,7 +82,7 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         }
     }
 
-    protected $with = ['departments', 'userMemberships'];
+    protected $with = ['departments', 'userMemberships', 'wallet_point'];
 
     public function departments()
     {
@@ -91,6 +92,11 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     public function userMemberships()
     {
         return $this->hasMany(UserMembership::class, 'user_id', 'id');
+    }
+
+    public function wallet_point()
+    {
+        return $this->hasOne(WalletPoint::class, 'user_id', 'id');
     }
 
     public function getActivitylogOptions(): LogOptions

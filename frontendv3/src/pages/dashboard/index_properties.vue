@@ -216,7 +216,8 @@
                                                                 :class="{
                                                                     'bg-warning text-dark': booking.status === 'PENDING',
                                                                     'bg-success': booking.status === 'PAID' || booking.status === 'COMPLETED',
-                                                                    'bg-danger': booking.status === 'CANCELLED' || booking.status === 'EXPIRED'
+                                                                    'bg-danger': booking.status === 'CANCELLED' || booking.status === 'EXPIRED' || booking.status === 'BLOCKED',
+                                                                    'bg-info text-dark': booking.status === 'PREPARED'
                                                                 }"
                                                             >
                                                                 {{ booking.status }}
@@ -255,8 +256,12 @@
 
                                 <!-- Room Availability Calendar -->
                                 <div class="card mt-3">
-                                    <div class="card-header bg-dark text-white">
+                                    <div class="card-header bg-dark text-white d-flex align-items-center justify-content-between">
                                         <h5 class="mb-0">Room Availability Calendar</h5>
+                                        <button class="btn btn-sm btn-success" @click="openCalendarFullscreen">
+                                            <i class="fa fa-expand me-1"></i>
+                                            Full Screen
+                                        </button>
                                     </div>
                                     <div class="card-body p-2">
                                         <FullCalendar
@@ -286,6 +291,22 @@
             </div>
         </a-modal>
 
+        <a-modal
+            v-model:open="modalCalendarFullscreen"
+            title="Room Availability Calendar"
+            width="95%"
+            style="top:20px"
+            :footer="null"
+            :destroyOnClose="true"
+        >
+            <FullCalendar
+                id="calendar-fullscreen"
+                :key="calendarModalKey"
+                ref="calendarModalRef"
+                :options="calendarOptions"
+            />
+        </a-modal>
+
         <a-drawer v-model:open="modalAdd" title="Block Room" width="400px" :footer="null" :closable="true">
             <div class="row mb-3">
                 <label class="col-sm-4 col-form-label">Check-in Date</label>
@@ -305,8 +326,15 @@
                     <div class="spinner-border spinner-border-sm" role="status" v-if="loadingSubmit">
                         <span class="sr-only">Loading...</span>
                     </div>
-                    <i class="fa fa-check me-2" aria-hidden="true" v-else></i>
-                    Booked
+                    <i class="fa fa-ban me-2" aria-hidden="true" v-else></i>
+                    Block
+                </button>
+                <button type="button" :disabled="loadingButton" class="btn btn-warning text-dark ms-2" @click="prepareRoom">
+                    <div class="spinner-border spinner-border-sm" role="status" v-if="loadingSubmit">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <i class="fa fa-tools me-2" aria-hidden="true" v-else></i>
+                    Prepared
                 </button>
                 <br>
                 <ProgressBar mode="indeterminate" class="mt-3" style="height: 6px" v-if="loadingSubmit"></ProgressBar>
@@ -325,7 +353,7 @@
                             <tr>
                                 <th>Status</th>
                                 <td>
-                                    <a-tag :color="state.bookingDetail.status == 'PAID' ? 'green' : state.bookingDetail.status == 'PENDING' ? 'orange' : 'red'">
+                                    <a-tag :color="getBookingStatusColor(state.bookingDetail.status)">
                                         {{ state.bookingDetail.status }}
                                     </a-tag>
                                 </td>
@@ -377,7 +405,18 @@
                                 <th>Property</th>
                                 <td>{{ state.bookingDetail.booking?.property?.properties }}</td>
                                 <th>Room</th>
-                                <td>{{ state.bookingDetail.booking?.room?.room_name }}</td>
+                                <td>{{ state.selectedBookingCell.room_name || state.bookingDetail.booking?.room?.room_name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Sub Room</th>
+                                <td>
+                                    <span v-if="state.selectedBookingCell.sub_room_code || state.selectedBookingCell.sub_room_name">
+                                        {{ state.selectedBookingCell.sub_room_code || '-' }} - {{ state.selectedBookingCell.sub_room_name || '-' }}
+                                    </span>
+                                    <span v-else>-</span>
+                                </td>
+                                <th>Tanggal Slot</th>
+                                <td>{{ state.selectedBookingCell.date || '-' }}</td>
                             </tr>
                             <tr>
                                 <th>Check-in</th>
@@ -400,6 +439,25 @@
                             <tr>
                                 <th>Total Bayar</th>
                                 <td colspan="3">{{ parseInt(state.bookingDetail.booking?.grand_total || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-12 mb-3" v-if="state.selectedBookingCell.sub_rooms && state.selectedBookingCell.sub_rooms.length">
+                    <h5>Breakdown Sub Room (Room Ini)</h5>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="text-center">No</th>
+                                <th class="text-center">Code Room</th>
+                                <th class="text-center">Name Room</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(sub, i) in state.selectedBookingCell.sub_rooms" :key="sub.odata || i">
+                                <td class="text-center">{{ i + 1 }}</td>
+                                <td>{{ sub.code_room || '-' }}</td>
+                                <td>{{ sub.name_room || '-' }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -440,7 +498,7 @@
     import { apiGetData, apiCetakPDF, apiExportExcel, processing, loadingButton, loadingSubmit, dayjs , Swal, waitingicon, loading, pesan, apiPostData } from '@/store/action';
     import axios from 'axios';
     import { useDebounceFn } from '@vueuse/core'
-    import { ref, reactive, onUnmounted, onMounted, computed , watch} from 'vue'
+    import { ref, reactive, onUnmounted, onMounted, computed , watch, nextTick} from 'vue'
     import { useStore } from "vuex";
     import { useRouter } from "vue-router";
     import iconSpritePath from '@/assets/svg/icon-sprite.svg';
@@ -464,11 +522,14 @@
     import ProgressBar from 'primevue/progressbar';
     const calendarKey = ref(0)
     const calendarRef = ref(null)
+    const calendarModalKey = ref(0)
+    const calendarModalRef = ref(null)
     const store = useStore();
     const router = useRouter();
     const user = store.getters["auth/currentUser"];
     const modalAdd = ref(false);
     const modalDetailBookingUsers = ref(false);
+    const modalCalendarFullscreen = ref(false);
        // Filter states
     const selectedFilter = ref('today');
     const customStart = ref('');
@@ -512,10 +573,12 @@
         booking_management: [],
         room_availability_calendar: [],
         bookingDetail: [],
+        selectedBookingCell: {},
         form: {
             odata: '',
             property_odata: '',
             room_odata: '',
+            sub_room_odata: '',
             checkin_date: '',
             checkout_date: '',
             total_nights: 0
@@ -523,13 +586,81 @@
     });
 
     const calendarEvents = ref([]);
+    const getSubRoomResourceId = (subRoom) => {
+        return `sub-${subRoom?.odata || subRoom?.code_room || subRoom?.name_room}`;
+    };
+
     const calendarResources = computed(() => {
         if (!state.room_availability_calendar?.rooms) return [];
         return state.room_availability_calendar.rooms.map(room => ({
-            id: room.room_id,
-            title: room.room_name
+            id: String(room.room_id),
+            title: room.room_name,
+            children: (room.sub_rooms || []).map(sub => ({
+                id: getSubRoomResourceId(sub),
+                title: [sub.code_room, sub.name_room].filter(Boolean).join(' - ') || 'Sub Room'
+            }))
         }));
     });
+
+    const getBookingStatusColor = (status) => {
+        const normalizedStatus = String(status || '').toUpperCase();
+
+        if (normalizedStatus === 'PAID') return 'green';
+        if (normalizedStatus === 'PENDING') return 'orange';
+        if (normalizedStatus === 'PREPARED') return 'gold';
+        if (normalizedStatus === 'BLOCKED') return 'red';
+        return 'red';
+    };
+
+    const normalizeStatus = (status) => String(status || '').toUpperCase();
+
+    const isPreparedStatus = (status) => normalizeStatus(status) === 'PREPARED';
+    const isBlockedStatus = (status) => normalizeStatus(status) === 'BLOCKED';
+    const isBookedStatus = (status) => {
+        const normalizedStatus = normalizeStatus(status);
+        return ['PENDING', 'PAID', 'BOOKED', 'CONFIRMED'].includes(normalizedStatus);
+    };
+    const isAvailableStatus = (status) => {
+        const normalizedStatus = normalizeStatus(status);
+        return ['AVAILABLE', 'CANCELLED', 'EXPIRED', 'COMPLETED'].includes(normalizedStatus);
+    };
+
+    const isBookingDetailStatus = (status) => {
+        const normalizedStatus = normalizeStatus(status);
+        return isBookedStatus(normalizedStatus)
+            || isBlockedStatus(normalizedStatus)
+            || isPreparedStatus(normalizedStatus);
+    };
+
+    const getCalendarStatusPresentation = (status) => {
+        const normalizedStatus = normalizeStatus(status);
+
+        if (normalizedStatus === 'PREPARED') {
+            return {
+                title: 'Prepared',
+                color: '#f59e0b'
+            };
+        }
+
+        if (normalizedStatus === 'BLOCKED') {
+            return {
+                title: 'Blocked (Offline/Other)',
+                color: '#dc3545'
+            };
+        }
+
+        if (isBookedStatus(normalizedStatus)) {
+            return {
+                title: 'Booked',
+                color: '#007bff'
+            };
+        }
+
+        return {
+            title: 'Available',
+            color: '#28a745'
+        };
+    };
 
     const getData = async () => {
         loading.value = true;
@@ -541,19 +672,109 @@
         calendarEvents.value = [];
         if (state.room_availability_calendar?.rooms) {
             state.room_availability_calendar.rooms.forEach(room => {
-                room.calendar.forEach(cell => {
-                    let color = '#28a745';
-                    let title = 'Available';
-                    if (cell.status === 'booked') {
-                        color = '#007bff';
-                        title = 'Booked' + (cell.booking_user ? ` (${cell.booking_user})` : '');
-                    } else if (cell.status === 'blocked') {
-                        color = '#dc3545';
-                        title = 'Blocked' + (cell.booking_user ? ` (${cell.booking_user})` : '');
-                    }
+                const roomSubRooms = room.sub_rooms || [];
+                const roomCalendar = room.calendar || [];
+
+                if (roomSubRooms.length > 0) {
+                    const eventMap = new Map();
+
+                    roomCalendar.forEach((cell) => {
+                        const endDate = dayjs(cell.date).add(1, 'day').format('YYYY-MM-DD');
+
+                        roomSubRooms.forEach((subRoom) => {
+                            const subResourceId = getSubRoomResourceId(subRoom);
+                            const key = `${subResourceId}-${cell.date}`;
+                            const roomLabel = room.room_name || '';
+                            const subRoomLabel = [subRoom.code_room, subRoom.name_room].filter(Boolean).join(' - ');
+
+                            if (!eventMap.has(key)) {
+                                eventMap.set(key, {
+                                    id: `${room.room_id}-${subRoom.odata || subRoom.code_room || subRoom.name_room}-${cell.date}`,
+                                    title: ['Available', roomLabel, subRoomLabel].filter(Boolean).join(' • '),
+                                    start: cell.date,
+                                    end: endDate,
+                                    resourceId: subResourceId,
+                                    backgroundColor: '#28a745',
+                                    borderColor: '#28a745',
+                                    display: 'block',
+                                    extendedProps: {
+                                        room_id: room.room_id,
+                                        room_name: room.room_name,
+                                        status: 'available',
+                                        sub_rooms: roomSubRooms,
+                                        sub_room_odata: subRoom.odata || null,
+                                        sub_room_code: subRoom.code_room || null,
+                                        sub_room_name: subRoom.name_room || null,
+                                        booking_user: null,
+                                        can_block: cell.can_block,
+                                        can_open: cell.can_open,
+                                        type_booking: cell.type || 'online',
+                                        can_cancel: false,
+                                        booking_odata: null
+                                    }
+                                });
+                            }
+                        });
+
+                        if (!isAvailableStatus(cell.status)) {
+                            const targetSubOdata = cell.sub_room_odata || null;
+                            const targetSubRoom = roomSubRooms.find((subRoom) => {
+                                return targetSubOdata && subRoom.odata === targetSubOdata;
+                            });
+
+                            const targetResourceId = targetSubRoom
+                                ? getSubRoomResourceId(targetSubRoom)
+                                : (targetSubOdata ? `sub-${targetSubOdata}` : String(room.room_id));
+
+                            const key = `${targetResourceId}-${cell.date}`;
+                            const presentation = getCalendarStatusPresentation(cell.status);
+                            let color = presentation.color;
+                            const roomLabel = room.room_name || '';
+
+                            const subRoomLabel = [cell.sub_room_code, cell.sub_room_name].filter(Boolean).join(' - ');
+                            const title = [presentation.title, roomLabel, subRoomLabel].filter(Boolean).join(' • ')
+                                + (cell.booking_user ? ` • ${cell.booking_user}` : '');
+
+                            eventMap.set(key, {
+                                id: `${room.room_id}-${targetSubOdata || key}-${cell.date}`,
+                                title,
+                                start: cell.date,
+                                end: endDate,
+                                resourceId: targetResourceId,
+                                backgroundColor: color,
+                                borderColor: color,
+                                display: 'block',
+                                extendedProps: {
+                                    room_id: room.room_id,
+                                    room_name: room.room_name,
+                                    status: cell.status,
+                                    sub_rooms: roomSubRooms,
+                                    sub_room_odata: cell.sub_room_odata || null,
+                                    sub_room_code: cell.sub_room_code || null,
+                                    sub_room_name: cell.sub_room_name || null,
+                                    booking_user: cell.booking_user,
+                                    can_block: cell.can_block,
+                                    can_open: cell.can_open,
+                                    type_booking: cell.type || 'online',
+                                    can_cancel: cell.type === 'offline',
+                                    booking_odata: cell.booking_odata
+                                }
+                            });
+                        }
+                    });
+
+                    calendarEvents.value.push(...Array.from(eventMap.values()));
+                    return;
+                }
+
+                roomCalendar.forEach((cell) => {
+                    const presentation = getCalendarStatusPresentation(cell.status);
+                    let color = presentation.color;
+                    let title = presentation.title + (cell.booking_user ? ` (${cell.booking_user})` : '');
 
                     const endDate = dayjs(cell.date).add(1, 'day').format('YYYY-MM-DD')
                     calendarEvents.value.push({
+                        id: `${room.room_id}-${cell.date}`,
                         title,
                         start: cell.date,
                         end: endDate,
@@ -563,12 +784,17 @@
                         display: 'block',
                         extendedProps: {
                             room_id: room.room_id,
+                            room_name: room.room_name,
                             status: cell.status,
+                            sub_rooms: roomSubRooms,
+                            sub_room_odata: cell.sub_room_odata || null,
+                            sub_room_code: cell.sub_room_code || null,
+                            sub_room_name: cell.sub_room_name || null,
                             booking_user: cell.booking_user,
                             can_block: cell.can_block,
                             can_open: cell.can_open,
-                            type_booking: cell.type, // default online jika tidak ada
-                            can_cancel: cell.type === 'offline', // hanya offline bisa cancel
+                            type_booking: cell.type || 'online',
+                            can_cancel: cell.type === 'offline',
                             booking_odata: cell.booking_odata
                         }
                     })
@@ -589,21 +815,51 @@
 
     // Pindahkan handleEventClick ke atas sebelum calendarOptions
     const handleEventClick = async (info) => {
-        const { room_id, status, can_block, can_open, booking_user, type_booking, can_cancel, booking_odata } = info.event.extendedProps;
+        const {
+            room_id,
+            room_name,
+            status,
+            can_block,
+            can_open,
+            booking_user,
+            type_booking,
+            can_cancel,
+            booking_odata,
+            sub_room_odata,
+            sub_room_code,
+            sub_room_name,
+            sub_rooms,
+        } = info.event.extendedProps;
         const date = info.event.startStr;
-        if (status === 'available' && can_block) {
+
+        state.selectedBookingCell = {
+            room_id,
+            room_name,
+            date,
+            status,
+            booking_user,
+            type_booking,
+            can_cancel,
+            sub_room_odata,
+            sub_room_code,
+            sub_room_name,
+            sub_rooms: sub_rooms || [],
+        };
+
+        if (isAvailableStatus(status) && can_block) {
             state.form = {
                 odata: '',
                 room_odata: room_id,
+                sub_room_odata: sub_room_odata || '',
                 checkin_date: dayjs(date),
                 checkout_date: dayjs(date).add(1, 'day'),
             }
 
             modalAdd.value = true;
-        } else if (status === 'blocked' && can_open) {
+        } else if (isBlockedStatus(status) && can_open) {
             Swal.fire({
-                title: 'Open Available Room',
-                text: `Room ID: ${room_id}, Date: ${date}, User: ${booking_user || '-'}`,
+                title: 'Open Blocked Room',
+                text: `Status blocked artinya kamar sudah ter-booking offline/lainnya. Buka kembali kamar ini?\nRoom ID: ${room_id}, Date: ${date}, User: ${booking_user || '-'}`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Open Room',
@@ -619,7 +875,12 @@
                     }
                 }
             });
-        } else if (status === 'booked') {
+        } else if (isBookingDetailStatus(status)) {
+            if (!booking_odata) {
+                await Swal.fire('Detail Booking', 'Data booking tidak ditemukan untuk event ini.', 'info');
+                return;
+            }
+
             const params = {
                 booking_odata
             };
@@ -631,10 +892,27 @@
         }
     };
 
+    const handleEventHover = (info) => {
+        const event = info.event;
+        const props = event.extendedProps || {};
+        const statusLabel = normalizeStatus(props.status || event.title || '');
+        const roomLabel = props.room_name || '';
+        const subRoomLabel = [props.sub_room_code, props.sub_room_name].filter(Boolean).join(' - ');
+        const dateLabel = event.start ? dayjs(event.start).format('DD MMM YYYY') : '';
+        const guestLabel = props.booking_user ? `Guest: ${props.booking_user}` : '';
+
+        const hoverTitle = [statusLabel, roomLabel, subRoomLabel, dateLabel, guestLabel]
+            .filter(Boolean)
+            .join(' • ');
+
+        info.el.setAttribute('title', hoverTitle || String(event.title || ''));
+    };
+
     const calendarOptions = reactive({
         schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',
 
         plugins: [
+            dayGridPlugin,
             resourceTimelinePlugin,
             interactionPlugin
         ],
@@ -648,7 +926,7 @@
         headerToolbar: {
             left: "prev,next today",
             center: "title",
-            right: "resourceTimelineDay,resourceTimelineWeek"
+            right: "resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth,managerGridMonth"
         },
 
         views: {
@@ -661,6 +939,16 @@
             type: 'resourceTimeline',
             duration: { weeks: 1 },
             slotDuration: { days: 1 }
+            },
+            resourceTimelineMonth: {
+            type: 'resourceTimeline',
+            duration: { months: 1 },
+            slotDuration: { days: 1 }
+            },
+            managerGridMonth: {
+            type: 'dayGridMonth',
+            buttonText: 'grid month',
+            dayMaxEvents: true
             }
         },
 
@@ -668,8 +956,17 @@
         events: calendarEvents,
 
         eventClick: handleEventClick,
+        eventDidMount: handleEventHover,
 
     })
+
+    const openCalendarFullscreen = async () => {
+        modalCalendarFullscreen.value = true;
+        await nextTick();
+        calendarModalKey.value++;
+        await nextTick();
+        calendarModalRef.value?.getApi()?.updateSize();
+    };
 
     
 
@@ -734,10 +1031,31 @@
         const payload = {
             odata: state.form.odata,
             room_odata: state.form.room_odata,
+            sub_room_odata: state.form.sub_room_odata,
             checkin_date: dayjs(state.form.checkin_date).format('YYYY-MM-DD'),
             checkout_date: dayjs(state.form.checkout_date).format('YYYY-MM-DD')
         }
         const response = await apiPostData('dashboard/block_room', payload);
+
+        if (response) {
+            modalAdd.value = false;
+            await getData();
+            loadingSubmit.value = false;
+        } else {
+            loadingSubmit.value = false;
+        }
+    };
+
+    const prepareRoom = async () => {
+        loadingSubmit.value = true;
+        const payload = {
+            odata: state.form.odata,
+            room_odata: state.form.room_odata,
+            sub_room_odata: state.form.sub_room_odata,
+            checkin_date: dayjs(state.form.checkin_date).format('YYYY-MM-DD'),
+            checkout_date: dayjs(state.form.checkout_date).format('YYYY-MM-DD')
+        }
+        const response = await apiPostData('dashboard/prepare_room', payload);
 
         if (response) {
             modalAdd.value = false;
@@ -817,11 +1135,23 @@
     })
 
     watch(calendarEvents, () => {
-        const api = calendarRef.value?.getApi()
-        if (api) {
-            api.removeAllEvents()
-            calendarEvents.value.forEach(e => api.addEvent(e))
+        const mainApi = calendarRef.value?.getApi()
+        if (mainApi) {
+            mainApi.removeAllEvents()
+            calendarEvents.value.forEach(e => mainApi.addEvent(e))
         }
+
+        const modalApi = calendarModalRef.value?.getApi()
+        if (modalApi) {
+            modalApi.removeAllEvents()
+            calendarEvents.value.forEach(e => modalApi.addEvent(e))
+        }
+    })
+
+    watch(modalCalendarFullscreen, async (isOpen) => {
+        if (!isOpen) return;
+        await nextTick();
+        calendarModalRef.value?.getApi()?.updateSize();
     })
 
 </script>

@@ -242,6 +242,7 @@
                         <Tab value="0"> <span style="color: #222 !important;">Dashboard Payment</span></Tab>
                         <Tab value="1"> <span style="color: #222 !important;">Dashboard Booking</span></Tab>
                         <Tab value="2"> <span style="color: #222 !important;">Dashboard Membership</span></Tab>
+                        <Tab value="3"> <span style="color: #222 !important;">Dashboard CRM</span></Tab>
                     </TabList>
                     <TabPanels>
                         <TabPanel value="0">
@@ -299,9 +300,7 @@
                                                                 <svg class="svg-fill">
                                                                     <use :xlink:href="iconSpritePath + `#${data.icon}`"></use>
                                                                 </svg>
-                                                                <svg class="half-circle svg-fill">
-                                                                    <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
-                                                                </svg>
+                                                                <!-- Removed halfcircle SVG reference because symbol does not exist -->
                                                             </div>
                                                         </div>
                                                         <div>
@@ -685,6 +684,11 @@
                                                                 </template>
                                                             </a-button>
 
+                                                            <button class="btn btn-sm btn-light" @click="openCalendarFullscreen">
+                                                                <i class="fa fa-expand me-1"></i>
+                                                                Full Screen
+                                                            </button>
+
                                                         </div>
                                                     </div>
 
@@ -718,13 +722,13 @@
                                                 <apexchart type="bar" height="350" :options="bookingStatusOptions" :series="bookingStatusDailySeries"></apexchart>
                                             </TabPanel>
                                             <TabPanel value="1">
-                                                <apexchart type="bar" height="350" :options="bookingStatusOptions" :series="bookingStatusWeeklySeries"></apexchart>
+                                                <apexchart type="bar" height="350" :options="bookingStatusWeeklyOptions" :series="bookingStatusWeeklySeries"></apexchart>
                                             </TabPanel>
                                             <TabPanel value="2">
-                                                <apexchart type="bar" height="350" :options="bookingStatusOptions" :series="bookingStatusMonthlySeries"></apexchart>
+                                                <apexchart type="bar" height="350" :options="bookingStatusMonthlyOptions" :series="bookingStatusMonthlySeries"></apexchart>
                                             </TabPanel>
                                             <TabPanel value="3">
-                                                <apexchart type="bar" height="350" :options="bookingStatusOptions" :series="bookingStatusYearlySeries"></apexchart>
+                                                <apexchart type="bar" height="350" :options="bookingStatusYearlyOptions" :series="bookingStatusYearlySeries"></apexchart>
                                             </TabPanel>
                                         </Tabs>
                                     </div>
@@ -901,17 +905,191 @@
                                             <apexchart type="bar" height="350" :options="membershipStatusOptions" :series="membershipStatusDailySeries"></apexchart>
                                         </TabPanel>
                                         <TabPanel value="1">
-                                            <apexchart type="bar" height="350" :options="membershipStatusOptions" :series="membershipStatusWeeklySeries"></apexchart>
+                                            <apexchart type="bar" height="350" :options="membershipStatusWeeklyOptions" :series="membershipStatusWeeklySeries"></apexchart>
                                         </TabPanel>
                                         <TabPanel value="2">
-                                            <apexchart type="bar" height="350" :options="membershipStatusOptions" :series="membershipStatusMonthlySeries"></apexchart>
+                                            <apexchart type="bar" height="350" :options="membershipStatusMonthlyOptions" :series="membershipStatusMonthlySeries"></apexchart>
                                         </TabPanel>
                                         <TabPanel value="3">
-                                            <apexchart type="bar" height="350" :options="membershipStatusOptions" :series="membershipStatusYearlySeries"></apexchart>
+                                            <apexchart type="bar" height="350" :options="membershipStatusYearlyOptions" :series="membershipStatusYearlySeries"></apexchart>
                                         </TabPanel>
                                     </Tabs>
                                 </div>
                             </div>  
+                        </TabPanel>
+
+                        <TabPanel value="3">
+                            <div class="row">
+                                <div class="col-xxl-4 col-xl-4 col-sm-12 box-col-6">
+                                    <router-link :to="`crm?tab=TOTAL&date=${selectedFilter}&customStart=${customStart}&customEnd=${customEnd}`" class="card widget-1">
+                                        <div class="card-body">
+                                            <div class="widget-content" >
+                                                <div class="widget-round primary">
+                                                    <div class="bg-round">
+                                                        <svg class="svg-fill">
+                                                            <use :xlink:href="iconSpritePath + `#arrow-up-right-circle`"></use>
+                                                        </svg>
+                                                        <svg class="half-circle svg-fill">
+                                                            <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h5>{{ crmSummary.total_crm }}</h5>
+                                                    <span class="f-light">
+                                                        Total CRM {{ filterLabel }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </router-link>
+
+                                    <router-link :to="`crm?tab=NEEDFU&status=OPEN&date=${selectedFilter}&customStart=${customStart}&customEnd=${customEnd}`" class="card widget-1">
+                                        <div class="card-body">
+                                            <div class="widget-content" >
+                                                <div class="widget-round biru">
+                                                    <div class="bg-round">
+                                                        <svg class="svg-fill">
+                                                            <use :xlink:href="iconSpritePath + `#file-earmark-check-fill`"></use>
+                                                        </svg>
+                                                        <svg class="half-circle svg-fill">
+                                                            <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h5>{{ crmSummary.total_needfu }}</h5>
+                                                    <span class="f-light">
+                                                        Need Follow Up CRM {{ filterLabel }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </router-link>
+
+                                    <router-link :to="`crm?tab=FOLLOWUP&status=IN_PROGRESS&date=${selectedFilter}&customStart=${customStart}&customEnd=${customEnd}`" class="card widget-1">
+                                        <div class="card-body">
+                                            <div class="widget-content" >
+                                                <div class="widget-round warning">
+                                                    <div class="bg-round">
+                                                        <svg class="svg-fill">
+                                                            <use :xlink:href="iconSpritePath + `#clock-history`"></use>
+                                                        </svg>
+                                                        <svg class="half-circle svg-fill">
+                                                            <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h5>{{ crmSummary.total_followup }}</h5>
+                                                    <span class="f-light">
+                                                        In Progress CRM {{ filterLabel }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </router-link>
+
+                                    <router-link :to="`crm?tab=CLOSING&status=CLOSED&date=${selectedFilter}&customStart=${customStart}&customEnd=${customEnd}`" class="card widget-1">
+                                        <div class="card-body">
+                                            <div class="widget-content" >
+                                                <div class="widget-round success">
+                                                    <div class="bg-round">
+                                                        <svg class="svg-fill">
+                                                            <use :xlink:href="iconSpritePath + `#check2-circle`"></use>
+                                                        </svg>
+                                                        <svg class="half-circle svg-fill">
+                                                            <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h5>{{ crmSummary.total_closing }}</h5>
+                                                    <span class="f-light">
+                                                        Closed CRM {{ filterLabel }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </router-link>
+
+                                    <router-link :to="`crm?tab=LOST&status=LOST&date=${selectedFilter}&customStart=${customStart}&customEnd=${customEnd}`" class="card widget-1">
+                                        <div class="card-body">
+                                            <div class="widget-content" >
+                                                <div class="widget-round danger">
+                                                    <div class="bg-round">
+                                                        <svg class="svg-fill">
+                                                            <use :xlink:href="iconSpritePath + `#x-circle`"></use>
+                                                        </svg>
+                                                        <svg class="half-circle svg-fill">
+                                                            <use :xlink:href="iconSpritePath + `#halfcircle`"></use>
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h5>{{ crmSummary.total_lost }}</h5>
+                                                    <span class="f-light">
+                                                        Lost CRM {{ filterLabel }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </router-link> 
+                                </div>
+
+                                <div class="col-xxl-8 col-xl-8 col-sm-12 box-col-12">
+                                    <Tabs value="0" class="p-tab-active">
+                                        <TabList class="p-tab-active" style="color: black;">
+                                        <Tab value="0"><span style="color: #222 !important;">Today</span></Tab>
+                                        <Tab value="1"><span style="color: #222 !important;">Last 7 Days</span></Tab>
+                                        <Tab value="2"><span style="color: #222 !important;">This Month</span></Tab>
+                                        <Tab value="3"><span style="color: #222 !important;">This Year</span></Tab>
+                                        </TabList>
+                                        <TabPanel value="0">
+                                            <apexchart type="bar" height="350" :options="crmChartOptions" :series="crmDailySeries"></apexchart>
+                                        </TabPanel>
+                                        <TabPanel value="1">
+                                            <apexchart type="bar" height="350" :options="crmChartWeeklyOptions" :series="crmWeeklySeries"></apexchart>
+                                        </TabPanel>
+                                        <TabPanel value="2">
+                                            <apexchart type="bar" height="350" :options="crmChartMonthlyOptions" :series="crmMonthlySeries"></apexchart>
+                                        </TabPanel>
+                                        <TabPanel value="3">
+                                            <apexchart type="bar" height="350" :options="crmChartYearlyOptions" :series="crmYearlySeries"></apexchart>
+                                        </TabPanel>
+                                    </Tabs>
+                                    <div class="mt-4">
+                                        <h5>User Achievement Status {{ filterLabel }}</h5>
+                                        <div v-if="!state.userAchievement || Object.keys(state.userAchievement).length === 0" class="text-center p-4">
+                                            <p class="mb-0">No achievement data available.</p>
+                                        </div>
+                                        <div v-else class="table-responsive">
+                                            <table class="table table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="text-center">No</th>
+                                                        <th class="text-center">User Name</th>
+                                                        <th class="text-center">Need FU</th>
+                                                        <th class="text-center">FollowUp</th>
+                                                        <th class="text-center">Lost</th>
+                                                        <th class="text-center">Closing</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-for="(ach, idx) in state.userAchievement" :key="ach.assigned_name">
+                                                        <td class="text-center">{{ idx + 1 }}</td>
+                                                        <td>{{ ach.assigned_name}}</td>
+                                                        <td class="text-center">{{ ach.needfu }}</td>
+                                                        <td class="text-center">{{ ach.followup }}</td>
+                                                        <td class="text-center">{{ ach.lost }}</td>
+                                                        <td class="text-center">{{ ach.closing }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </TabPanel>
                     </TabPanels>
                 </Tabs>
@@ -928,6 +1106,22 @@
             </div>
         </a-modal>
 
+        <a-modal
+            v-model:open="modalCalendarFullscreen"
+            title="Room Availability Calendar"
+            width="95%"
+            style="top:20px"
+            :footer="null"
+            :destroyOnClose="true"
+        >
+            <FullCalendar
+                id="calendar-fullscreen"
+                :key="calendarModalKey"
+                ref="calendarModalRef"
+                :options="calendarOptions"
+            />
+        </a-modal>
+
     
         <a-modal v-model:open="modalDetailBookingUsers" title="Detail Booking Availability" width="70%" style="top:20px" :footer="null">
             <div class="row">
@@ -941,7 +1135,7 @@
                             <tr>
                                 <th>Status</th>
                                 <td>
-                                    <a-tag :color="state.bookingDetail.status == 'PAID' ? 'green' : state.bookingDetail.status == 'PENDING' ? 'orange' : 'red'">
+                                    <a-tag :color="getBookingStatusColor(state.bookingDetail.status)">
                                         {{ state.bookingDetail.status }}
                                     </a-tag>
                                 </td>
@@ -993,7 +1187,18 @@
                                 <th>Property</th>
                                 <td>{{ state.bookingDetail.booking?.property?.properties }}</td>
                                 <th>Room</th>
-                                <td>{{ state.bookingDetail.booking?.room?.room_name }}</td>
+                                <td>{{ state.selectedBookingCell.room_name || state.bookingDetail.booking?.room?.room_name }}</td>
+                            </tr>
+                            <tr>
+                                <th>Sub Room</th>
+                                <td>
+                                    <span v-if="state.selectedBookingCell.sub_room_code || state.selectedBookingCell.sub_room_name">
+                                        {{ state.selectedBookingCell.sub_room_code || '-' }} - {{ state.selectedBookingCell.sub_room_name || '-' }}
+                                    </span>
+                                    <span v-else>-</span>
+                                </td>
+                                <th>Tanggal Slot</th>
+                                <td>{{ state.selectedBookingCell.date || '-' }}</td>
                             </tr>
                             <tr>
                                 <th>Check-in</th>
@@ -1016,6 +1221,25 @@
                             <tr>
                                 <th>Total Bayar</th>
                                 <td colspan="3">{{ parseInt(state.bookingDetail.booking?.grand_total || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-12 mb-3" v-if="state.selectedBookingCell.sub_rooms && state.selectedBookingCell.sub_rooms.length">
+                    <h5>Breakdown Sub Room (Room Ini)</h5>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="text-center">No</th>
+                                <th class="text-center">Code Room</th>
+                                <th class="text-center">Name Room</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(sub, i) in state.selectedBookingCell.sub_rooms" :key="sub.odata || i">
+                                <td class="text-center">{{ i + 1 }}</td>
+                                <td>{{ sub.code_room || '-' }}</td>
+                                <td>{{ sub.name_room || '-' }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1056,7 +1280,7 @@
     import { apiGetData, apiCetakPDF, apiExportExcel, processing, loadingButton, loadingSubmit, dayjs , Swal, waitingicon, loading, pesan } from '@/store/action';
     import axios from 'axios';
     import { useDebounceFn } from '@vueuse/core'
-    import { ref, reactive, onUnmounted, onMounted, computed , watch} from 'vue'
+    import { ref, reactive, onUnmounted, onMounted, computed , watch, nextTick} from 'vue'
     import { useStore } from "vuex";
     import { useRouter } from "vue-router";
     import iconSpritePath from '@/assets/svg/icon-sprite.svg';
@@ -1079,6 +1303,7 @@
     import resourceTimeGridPlugin from '@fullcalendar/resource-timegrid';
     const isSuperAdmin = checkRole(['superAdmin','admin']);
     const isStaff = checkRole(['properties']);
+    const isReceptionis = checkRole(['receptionis']);
     const store = useStore();
     const router = useRouter();
     const user = store.getters["auth/currentUser"];
@@ -1103,6 +1328,10 @@
     const bookingStatusMonthlySeries = ref([]);
     const bookingStatusYearlySeries = ref([]);
     const bookingStatusOptions = ref({});
+    const bookingStatusWeeklyOptions = ref({});
+    const bookingStatusMonthlyOptions = ref({});
+    const bookingStatusYearlyOptions = ref({});
+
 
      // Membership Status Trend
     const membershipStatusDailySeries = ref([]);
@@ -1110,6 +1339,28 @@
     const membershipStatusMonthlySeries = ref([]);
     const membershipStatusYearlySeries = ref([]);
     const membershipStatusOptions = ref({});
+    const membershipStatusWeeklyOptions = ref({});
+    const membershipStatusMonthlyOptions = ref({});
+    const membershipStatusYearlyOptions = ref({});
+
+
+    // CRM Status Trend
+    const crmDailySeries = ref([]);
+    const crmWeeklySeries = ref([]);
+    const crmMonthlySeries = ref([]);
+    const crmYearlySeries = ref([]);
+    const crmChartOptions = ref({});
+    const crmChartWeeklyOptions = ref({});  
+    const crmChartMonthlyOptions = ref({});
+    const crmChartYearlyOptions = ref({});
+
+    const crmSummary = ref({
+        total_crm: 0,
+        total_needfu: 0,
+        total_followup: 0,
+        total_closing: 0,
+        total_lost: 0,
+    });
 
 
     // Filter states
@@ -1196,8 +1447,20 @@
         listProperty:{},
         room_availability_calendar:{},
         bookingDetail: {},
+        selectedBookingCell: {},
         listGetProperty:{},
+        userAchievement:{},
     });
+
+    const getBookingStatusColor = (status) => {
+        const normalizedStatus = String(status || '').toUpperCase();
+
+        if (normalizedStatus === 'PAID') return 'green';
+        if (normalizedStatus === 'PENDING') return 'orange';
+        if (normalizedStatus === 'PREPARED') return 'gold';
+        if (normalizedStatus === 'BLOCKED') return 'red';
+        return 'red';
+    };
 
 
     const clear = async () => {
@@ -1519,41 +1782,18 @@
             }
         };
 
-         // Booking Status Trend
-        const bookingStatusTrend = response.booking_status_trend || {};
-        // Daily
+
+         // Daily
+        const dailyBooking = response.booking_status_trend?.daily || {};
         bookingStatusDailySeries.value = [
-            { name: 'PENDING', data: bookingStatusTrend.daily?.PENDING || [] },
-            { name: 'PAID', data: bookingStatusTrend.daily?.PAID || [] },
-            { name: 'CANCELLED', data: bookingStatusTrend.daily?.CANCELLED || [] },
-            { name: 'EXPIRED', data: bookingStatusTrend.daily?.EXPIRED || [] },
-            { name: 'COMPLETED', data: bookingStatusTrend.daily?.COMPLETED || [] },
+            { name: 'PENDING', data: dailyBooking.pending || [] },
+            { name: 'PAID', data: dailyBooking.paid || [] },
+            { name: 'CANCELLED', data: dailyBooking.cancelled || [] },
+            { name: 'EXPIRED', data: dailyBooking.expired || [] },
+            { name: 'COMPLETED', data: dailyBooking.completed || [] },
+            { name: 'BLOCKED', data: dailyBooking.blocked || [] },
         ];
-        // Weekly
-        bookingStatusWeeklySeries.value = [
-            { name: 'PENDING', data: bookingStatusTrend.weekly?.PENDING || [] },
-            { name: 'PAID', data: bookingStatusTrend.weekly?.PAID || [] },
-            { name: 'CANCELLED', data: bookingStatusTrend.weekly?.CANCELLED || [] },
-            { name: 'EXPIRED', data: bookingStatusTrend.weekly?.EXPIRED || [] },
-            { name: 'COMPLETED', data: bookingStatusTrend.weekly?.COMPLETED || [] },
-        ];
-        // Monthly
-        bookingStatusMonthlySeries.value = [
-            { name: 'PENDING', data: bookingStatusTrend.monthly?.PENDING || [] },
-            { name: 'PAID', data: bookingStatusTrend.monthly?.PAID || [] },
-            { name: 'CANCELLED', data: bookingStatusTrend.monthly?.CANCELLED || [] },
-            { name: 'EXPIRED', data: bookingStatusTrend.monthly?.EXPIRED || [] },
-            { name: 'COMPLETED', data: bookingStatusTrend.monthly?.COMPLETED || [] },
-        ];
-        // Yearly
-        bookingStatusYearlySeries.value = [
-            { name: 'PENDING', data: bookingStatusTrend.yearly?.PENDING || [] },
-            { name: 'PAID', data: bookingStatusTrend.yearly?.PAID || [] },
-            { name: 'CANCELLED', data: bookingStatusTrend.yearly?.CANCELLED || [] },
-            { name: 'EXPIRED', data: bookingStatusTrend.yearly?.EXPIRED || [] },
-            { name: 'COMPLETED', data: bookingStatusTrend.yearly?.COMPLETED || [] },
-        ];
-        // Chart options
+
         bookingStatusOptions.value = {
             chart: {
                 height: 350,
@@ -1580,7 +1820,7 @@
                 }
             },
             xaxis: {
-                categories: bookingStatusTrend.daily?.dates || [],
+                categories: dailyBooking.dates || [],
                 labels: {
                     style: {
                         colors: '#222',
@@ -1591,13 +1831,13 @@
             yaxis: {
                 min: 0,
                 title: {
-                    text: 'Total Booking',
                     style: {
                         color: '#222',
                         fontSize: '14px'
                     }
                 },
                 labels: {
+                    formatter: val => val,
                     style: {
                         colors: '#222',
                         fontSize: '14px'
@@ -1617,37 +1857,223 @@
             }
         };
 
+        // Weekly
+        const weeklyBooking = response.booking_status_trend?.weekly || {};
+        bookingStatusWeeklySeries.value = [
+            { name: 'PENDING', data: weeklyBooking.pending || [] },
+            { name: 'PAID', data: weeklyBooking.paid || [] },
+            { name: 'CANCELLED', data: weeklyBooking.cancelled || [] },
+            { name: 'EXPIRED', data: weeklyBooking.expired || [] },
+            { name: 'COMPLETED', data: weeklyBooking.completed || [] },
+            { name: 'BLOCKED', data: weeklyBooking.blocked || [] },
+        ];
+
+        bookingStatusWeeklyOptions.value = {
+            chart: {
+                height: 350,
+                type: 'bar',
+                stacked: false,
+                toolbar: { show: true }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    borderRadius: 4,
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            legend: {
+                position: 'bottom',
+                markers: {
+                    width: 16,
+                    height: 16,
+                    radius: 4
+                }
+            },
+            xaxis: {
+                categories: weeklyBooking.dates || [],
+                labels: {
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            yaxis: {
+                min: 0,
+                title: {
+                    style: {
+                        color: '#222',
+                        fontSize: '14px'
+                    }
+                },
+                labels: {
+                    formatter: val =>  val,
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: val => val
+                }
+            },
+            fill: {
+                opacity: 1
+            },
+            grid: {
+                borderColor: '#e0e0e0'
+            }
+        };
+
+        // Monthly
+        const monthlyBooking = response.booking_status_trend?.monthly || {};
+        bookingStatusMonthlySeries.value = [
+            { name: 'PENDING', data: monthlyBooking.pending || [] },
+            { name: 'PAID', data: monthlyBooking.paid || [] },
+            { name: 'CANCELLED', data: monthlyBooking.cancelled || [] },
+            { name: 'EXPIRED', data: monthlyBooking.expired || [] },
+            { name: 'COMPLETED', data: monthlyBooking.completed || [] },
+            { name: 'BLOCKED', data: monthlyBooking.blocked || [] },
+        ];
+        bookingStatusMonthlyOptions.value = {
+            chart: {
+                height: 350,
+                type: 'bar',
+                stacked: false,
+                toolbar: { show: true }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    borderRadius: 4,
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            legend: {
+                position: 'bottom',
+                markers: {
+                    width: 16,
+                    height: 16,
+                    radius: 4
+                }
+            },
+            xaxis: {
+                categories: monthlyBooking.dates || [],
+                labels: {
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            yaxis: {
+                min: 0,
+                title: {
+                    style: {
+                        color: '#222',
+                        fontSize: '14px'
+                    },
+                },
+                labels: {
+                    formatter: val => val,
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: val => val
+                }
+            },
+            fill: {
+                opacity: 1
+            },
+            grid: {
+                borderColor: '#e0e0e0'
+                        }
+        };
+
+        // Yearly
+        const yearlyBooking = response.booking_status_trend?.yearly || {};
+        bookingStatusYearlySeries.value = [
+            { name: 'PENDING', data: yearlyBooking.pending || [] },
+            { name: 'PAID', data: yearlyBooking.paid || [] },
+            { name: 'CANCELLED', data: yearlyBooking.cancelled || [] },
+            { name: 'EXPIRED', data: yearlyBooking.expired || [] },
+            { name: 'COMPLETED', data: yearlyBooking.completed || [] },
+            { name: 'BLOCKED', data: yearlyBooking.blocked || [] },
+        ];
+
+        bookingStatusYearlyOptions.value = {
+            chart: {
+                type: 'bar',
+                height: 350
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    borderRadius: 5,
+                    borderRadiusApplication: 'end',
+                    dataLabels: {
+                        position: 'top'
+                    }
+                },
+            },
+            dataLabels: {
+                enabled: true,
+                formatter: val => val,
+                offsetY: -10,
+                style: {
+                    fontSize: '12px',
+                    colors: ['#222']
+                }
+            },
+                stroke: {
+                show: true,
+                width: 2,
+                colors: ['transparent']
+            },
+            xaxis: {
+                categories: ['Jan','Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct','Nov','Dec'],
+            },
+            yaxis: {
+                labels: {
+                    formatter: val => val
+                }
+            },
+            fill: {
+                opacity: 1
+            },
+            tooltip: {
+                y: {
+                    formatter: val => val
+                }
+            }
+        };
+
         // Membership Status Trend
         const membershipStatusTrend = response.membership_status_trend || {};
         // Daily
         membershipStatusDailySeries.value = [
-            { name: 'PENDING', data: membershipStatusTrend.daily?.PENDING || [] },
-            { name: 'ACTIVE', data: membershipStatusTrend.daily?.ACTIVE || [] },
-            { name: 'EXPIRED', data: membershipStatusTrend.daily?.EXPIRED || [] },
-            { name: 'CANCELLED', data: membershipStatusTrend.daily?.CANCELLED || [] },
+            { name: 'PENDING', data: membershipStatusTrend.daily?.pending || [] },
+            { name: 'ACTIVE', data: membershipStatusTrend.daily?.active || [] },
+            { name: 'EXPIRED', data: membershipStatusTrend.daily?.expired || [] },
+            { name: 'CANCELLED', data: membershipStatusTrend.daily?.cancelled || [] },
         ];
-        // Weekly
-        membershipStatusWeeklySeries.value = [
-            { name: 'PENDING', data: membershipStatusTrend.weekly?.PENDING || [] },
-            { name: 'ACTIVE', data: membershipStatusTrend.weekly?.ACTIVE || [] },
-            { name: 'EXPIRED', data: membershipStatusTrend.weekly?.EXPIRED || [] },
-            { name: 'CANCELLED', data: membershipStatusTrend.weekly?.CANCELLED || [] },
-        ];
-        // Monthly
-        membershipStatusMonthlySeries.value = [
-            { name: 'PENDING', data: membershipStatusTrend.monthly?.PENDING || [] },
-            { name: 'ACTIVE', data: membershipStatusTrend.monthly?.ACTIVE || [] },
-            { name: 'EXPIRED', data: membershipStatusTrend.monthly?.EXPIRED || [] },
-            { name: 'CANCELLED', data: membershipStatusTrend.monthly?.CANCELLED || [] },
-        ];
-        // Yearly
-        membershipStatusYearlySeries.value = [
-            { name: 'PENDING', data: membershipStatusTrend.yearly?.PENDING || [] },
-            { name: 'ACTIVE', data: membershipStatusTrend.yearly?.ACTIVE || [] },
-            { name: 'EXPIRED', data: membershipStatusTrend.yearly?.EXPIRED || [] },
-            { name: 'CANCELLED', data: membershipStatusTrend.yearly?.CANCELLED || [] },
-        ];
-        // Chart options
+
+         // Chart options
         membershipStatusOptions.value = {
             chart: {
                 height: 350,
@@ -1711,6 +2137,378 @@
             }
         };
 
+        // Weekly
+        membershipStatusWeeklySeries.value = [
+            { name: 'PENDING', data: membershipStatusTrend.weekly?.pending || [] },
+            { name: 'ACTIVE', data: membershipStatusTrend.weekly?.active || [] },
+            { name: 'EXPIRED', data: membershipStatusTrend.weekly?.expired || [] },
+            { name: 'CANCELLED', data: membershipStatusTrend.weekly?.cancelled || [] },
+        ];
+
+        membershipStatusWeeklyOptions.value = {
+            chart: {
+                height: 350,
+                type: 'bar',
+                stacked: false,
+                toolbar: { show: true }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    borderRadius: 4,
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            legend: {
+                position: 'bottom',
+                markers: {
+                    width: 16,
+                    height: 16,
+                    radius: 4
+                }
+            },
+            xaxis: {
+                categories: membershipStatusTrend.weekly?.dates || [],
+                labels: {
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            yaxis: {
+                min: 0,
+                title: {
+                    text: 'Total Membership',
+                    style: {
+                        color: '#222',
+                        fontSize: '14px'
+                    }
+                },
+                labels: {
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: val => val
+                }
+            },
+            fill: {
+                opacity: 1
+            },
+            grid: {
+                borderColor: '#e0e0e0'
+            }
+        };
+
+        // Monthly
+        membershipStatusMonthlySeries.value = [
+            { name: 'PENDING', data: membershipStatusTrend.monthly?.pending || [] },
+            { name: 'ACTIVE', data: membershipStatusTrend.monthly?.active || [] },
+            { name: 'EXPIRED', data: membershipStatusTrend.monthly?.expired || [] },
+            { name: 'CANCELLED', data: membershipStatusTrend.monthly?.cancelled || [] },
+        ];
+
+        membershipStatusMonthlyOptions.value = {
+            chart: {
+                height: 350,
+                type: 'bar',
+                stacked: false,
+                toolbar: { show: true }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    borderRadius: 4,
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            legend: {
+                position: 'bottom',
+                markers: {
+                    width: 16,
+                    height: 16,
+                    radius: 4
+                }
+            },
+            xaxis: {
+                categories: membershipStatusTrend.monthly?.dates || [],
+                labels: {
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            yaxis: {
+                min: 0,
+                title: {
+                    text: 'Total Membership',
+                    style: {
+                        color: '#222',
+                        fontSize: '14px'
+                    }
+                },
+                labels: {
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            tooltip: {
+                y: {
+                    formatter: val => val
+                }
+            },
+            fill: {
+                opacity: 1
+            },
+            grid: {
+                borderColor: '#e0e0e0'
+            }
+        };
+
+        // Yearly
+        membershipStatusYearlySeries.value = [
+            { name: 'PENDING', data: membershipStatusTrend.yearly?.pending || [] },
+            { name: 'ACTIVE', data: membershipStatusTrend.yearly?.active || [] },
+            { name: 'EXPIRED', data: membershipStatusTrend.yearly?.expired || [] },
+            { name: 'CANCELLED', data: membershipStatusTrend.yearly?.cancelled || [] },
+        ];
+       
+        membershipStatusYearlyOptions.value = {
+            chart: {
+                height: 350,
+                type: 'bar',
+                stacked: false,
+                toolbar: { show: true }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    borderRadius: 4,
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            legend: {
+                position: 'bottom',
+                markers: {
+                    width: 16,
+                    height: 16,
+                    radius: 4
+                }
+            },
+
+            xaxis: {
+                categories: ['Jan','Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct','Nov','Dec'],
+                labels: {
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            yaxis: {
+                min: 0,
+                title: {
+                    text: 'Total Membership',
+                    style: {
+                        color: '#222',
+                        fontSize: '14px'
+                    }
+                },
+                labels: {
+                    style: {
+                        colors: '#222',
+                        fontSize: '14px'
+                    }
+                }
+            },
+
+            tooltip: {
+                y: {
+                    formatter: val => val
+                }
+            },
+            fill: {
+                opacity: 1
+            },
+            grid: {
+                borderColor: '#e0e0e0'
+            }
+        };
+
+
+        const crmChart = response.crm_status_trend || {};
+        crmDailySeries.value = [
+            { name: 'NEEDFU', data: crmChart.daily?.needfu || [] },
+            { name: 'FOLLOWUP', data: crmChart.daily?.followup || [] },
+            { name: 'CLOSING', data: crmChart.daily?.closing || [] },
+            { name: 'LOST', data: crmChart.daily?.lost || [] },
+        ];
+        crmWeeklySeries.value = [
+            { name: 'NEEDFU', data: crmChart.weekly?.needfu || [] },
+            { name: 'FOLLOWUP', data: crmChart.weekly?.followup || [] },
+            { name: 'CLOSING', data: crmChart.weekly?.closing || [] },
+            { name: 'LOST', data: crmChart.weekly?.lost || [] },
+        ];
+        crmMonthlySeries.value = [
+            { name: 'NEEDFU', data: crmChart.monthly?.needfu || [] },
+            { name: 'FOLLOWUP', data: crmChart.monthly?.followup || [] },
+            { name: 'CLOSING', data: crmChart.monthly?.closing || [] },
+            { name: 'LOST', data: crmChart.monthly?.lost || [] },
+        ];
+        crmYearlySeries.value = [
+            { name: 'NEEDFU', data: crmChart.yearly?.needfu || [] },
+            { name: 'FOLLOWUP', data: crmChart.yearly?.followup || [] },
+            { name: 'CLOSING', data: crmChart.yearly?.closing || [] },
+            { name: 'LOST', data: crmChart.yearly?.lost || [] },
+        ];
+
+        crmChartOptions.value = {
+            chart: {
+                height: 350,
+                type: 'bar',
+                stacked: false,
+                toolbar: { show: true }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    borderRadius: 4,
+                }
+            },
+            dataLabels: { enabled: false },
+            legend: { position: 'bottom' },
+            xaxis: {
+                categories: crmChart.daily?.dates || [],
+                labels: { style: { colors: '#222', fontSize: '14px' } }
+            },
+            yaxis: {
+                min: 0,
+                title: { text: 'Total CRM', style: { color: '#222', fontSize: '14px' } },
+                labels: { style: { colors: '#222', fontSize: '14px' } }
+            },
+            tooltip: { y: { formatter: val => val } },
+            fill: { opacity: 1 },
+            grid: { borderColor: '#e0e0e0' }
+        };
+
+        crmChartWeeklyOptions.value = {
+            chart: {
+                height: 350,
+                type: 'bar',
+                stacked: false,
+                toolbar: { show: true }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    borderRadius: 4,
+                }
+            },
+            dataLabels: { enabled: false },
+            legend: { position: 'bottom' },
+            xaxis: {
+                categories: crmChart.weekly?.dates || [],
+                labels: { style: { colors: '#222', fontSize: '14px' } }
+            },
+            yaxis: {
+                min: 0,
+                title: { text: 'Total CRM', style: { color: '#222', fontSize: '14px' } },
+                labels: { style: { colors: '#222', fontSize: '14px' } }
+            },
+            tooltip: { y: { formatter: val => val } },
+            fill: { opacity: 1 },
+            grid: { borderColor: '#e0e0e0' }
+        };
+
+        crmChartMonthlyOptions.value = {
+            chart: {
+                height: 350,
+                type: 'bar',
+                stacked: false,
+                toolbar: { show: true }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    borderRadius: 4,
+                }
+            },
+            dataLabels: { enabled: false },
+            legend: { position: 'bottom' },
+            xaxis: {
+                categories: crmChart.monthly?.dates || [],
+                labels: { style: { colors: '#222', fontSize: '14px' } }
+            },
+            yaxis: {
+                min: 0,
+                title: { text: 'Total CRM', style: { color: '#222', fontSize: '14px' } },
+                labels: { style: { colors: '#222', fontSize: '14px' } }
+            },
+            tooltip: { y: { formatter: val => val } },
+            fill: { opacity: 1 },
+            grid: { borderColor: '#e0e0e0' }
+        };
+
+        crmChartYearlyOptions.value = {
+            chart: {
+                height: 350,
+                type: 'bar',
+                stacked: false,
+                toolbar: { show: true }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    borderRadius: 4,
+                }
+            },
+            dataLabels: { enabled: false },
+            legend: { position: 'bottom' },
+            xaxis: {
+                categories: ['Jan','Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct','Nov','Dec'],
+                labels: { style: { colors: '#222', fontSize: '14px' } }
+            },
+            yaxis: {
+                min: 0,
+                title: { text: 'Total CRM', style: { color: '#222', fontSize: '14px' } },
+                labels: { style: { colors: '#222', fontSize: '14px' } }
+            },
+            tooltip: { y: { formatter: val => val } },
+            fill: { opacity: 1 },
+            grid: { borderColor: '#e0e0e0' }
+        };
+
+        // CRM Summary
+        crmSummary.value = response.dataCrm || {
+            total_crm: 0,
+            total_needfu: 0,
+            total_followup: 0,
+            total_closing: 0,
+            total_lost: 0,
+        };
+
+        state.userAchievement = response.user_achievement || {};
         
         loading.value = false;
     };
@@ -1777,13 +2575,74 @@
 
     const calendarKey = ref(0)
     const calendarRef = ref(null)
+    const calendarModalKey = ref(0)
+    const calendarModalRef = ref(null)
+    const modalCalendarFullscreen = ref(false)
 
     const calendarEvents = ref([]);
+    const getSubRoomResourceId = (room, subRoom) => {
+        const roomKey = room?.room_id || room?.id || room?.odata || 'room';
+        const subRoomKey = subRoom?.odata || subRoom?.code_room || subRoom?.name_room || 'sub';
+        return `sub-${roomKey}-${subRoomKey}`;
+    };
+
+    const normalizeStatus = (status) => String(status || '').toUpperCase();
+
+    const isPreparedStatus = (status) => normalizeStatus(status) === 'PREPARED';
+    const isBlockedStatus = (status) => normalizeStatus(status) === 'BLOCKED';
+    const isBookedStatus = (status) => {
+        const normalizedStatus = normalizeStatus(status);
+        return ['PENDING', 'PAID', 'BOOKED', 'CONFIRMED'].includes(normalizedStatus);
+    };
+    const isAvailableStatus = (status) => {
+        const normalizedStatus = normalizeStatus(status);
+        return ['AVAILABLE', 'CANCELLED', 'EXPIRED', 'COMPLETED'].includes(normalizedStatus);
+    };
+
+    const isBookingDetailStatus = (status) => {
+        const normalizedStatus = normalizeStatus(status);
+        return isBookedStatus(normalizedStatus);
+    };
+
+    const getCalendarStatusPresentation = (status) => {
+        const normalizedStatus = normalizeStatus(status);
+
+        if (isPreparedStatus(normalizedStatus)) {
+            return {
+                title: 'Prepared',
+                color: '#f59e0b'
+            };
+        }
+
+        if (isBlockedStatus(normalizedStatus)) {
+            return {
+                title: 'Blocked (Offline/Other)',
+                color: '#dc3545'
+            };
+        }
+
+        if (isBookedStatus(normalizedStatus)) {
+            return {
+                title: 'Booked',
+                color: '#007bff'
+            };
+        }
+
+        return {
+            title: 'Available',
+            color: '#28a745'
+        };
+    };
+
     const calendarResources = computed(() => {
         if (!state.room_availability_calendar?.rooms) return [];
         return state.room_availability_calendar.rooms.map(room => ({
-            id: room.room_id,
-            title: room.room_name
+            id: String(room.room_id),
+            title: room.room_name,
+            children: (room.sub_rooms || []).map(sub => ({
+                id: getSubRoomResourceId(room, sub),
+                title: [sub.code_room, sub.name_room].filter(Boolean).join(' - ') || 'Sub Room'
+            }))
         }));
     });
 
@@ -1797,17 +2656,108 @@
         calendarEvents.value = [];
         if (state.room_availability_calendar?.rooms) {
             state.room_availability_calendar.rooms.forEach(room => {
-                room.calendar.forEach(cell => {
-                    let color = '#28a745';
-                    let title = 'Available';
-                    if (cell.status === 'booked') {
-                        color = '#007bff';
-                        title = 'Booked' + (cell.booking_user ? ` (${cell.booking_user})` : '');
-                    } else if (cell.status === 'blocked') {
-                        color = '#dc3545';
-                        title = 'Blocked' + (cell.booking_user ? ` (${cell.booking_user})` : '');
-                    }
-                    const endDate = dayjs(cell.date).add(1, 'day').format('YYYY-MM-DD')
+                const roomSubRooms = room.sub_rooms || [];
+                const roomCalendar = room.calendar || [];
+
+                if (roomSubRooms.length > 0) {
+                    const eventMap = new Map();
+
+                    roomCalendar.forEach((cell) => {
+                        const endDate = dayjs(cell.date).add(1, 'day').format('YYYY-MM-DD');
+
+                        roomSubRooms.forEach((subRoom) => {
+                            const subResourceId = getSubRoomResourceId(room, subRoom);
+                            const key = `${subResourceId}-${cell.date}`;
+                            const roomLabel = room.room_name || '';
+                            const subRoomLabel = [subRoom.code_room, subRoom.name_room].filter(Boolean).join(' - ');
+
+                            if (!eventMap.has(key)) {
+                                eventMap.set(key, {
+                                    id: `${room.room_id}-${subRoom.odata || subRoom.code_room || subRoom.name_room}-${cell.date}`,
+                                    resourceId: subResourceId,
+                                    title: ['Available', roomLabel, subRoomLabel].filter(Boolean).join(' • '),
+                                    start: cell.date,
+                                    end: endDate,
+                                    backgroundColor: '#28a745',
+                                    borderColor: '#28a745',
+                                    display: 'block',
+                                    extendedProps: {
+                                        room_id: room.room_id,
+                                        room_name: room.room_name,
+                                        status: 'available',
+                                        sub_rooms: roomSubRooms,
+                                        sub_room_odata: subRoom.odata || null,
+                                        sub_room_code: subRoom.code_room || null,
+                                        sub_room_name: subRoom.name_room || null,
+                                        booking_user: null,
+                                        can_block: cell.can_block,
+                                        can_open: cell.can_open,
+                                        type_booking: cell.type || 'online',
+                                        can_cancel: false,
+                                        booking_odata: null,
+                                    }
+                                });
+                            }
+                        });
+
+                        if (!isAvailableStatus(cell.status)) {
+                            const targetSubOdata = cell.sub_room_odata || null;
+                            const targetSubRoom = roomSubRooms.find((subRoom) => {
+                                return targetSubOdata && subRoom.odata === targetSubOdata;
+                            });
+
+                            const targetResourceId = targetSubRoom
+                                ? getSubRoomResourceId(room, targetSubRoom)
+                                : (targetSubOdata ? `sub-${room.room_id}-${targetSubOdata}` : null);
+
+                            if (targetResourceId) {
+                                const key = `${targetResourceId}-${cell.date}`;
+                                const presentation = getCalendarStatusPresentation(cell.status);
+                                let color = presentation.color;
+                                const roomLabel = room.room_name || '';
+
+                                const subRoomLabel = [cell.sub_room_code, cell.sub_room_name].filter(Boolean).join(' - ');
+                                const title = [presentation.title, roomLabel, subRoomLabel].filter(Boolean).join(' • ')
+                                    + (cell.booking_user ? ` • ${cell.booking_user}` : '');
+
+                                eventMap.set(key, {
+                                    id: `${room.room_id}-${targetSubOdata || key}-${cell.date}`,
+                                    resourceId: targetResourceId,
+                                    title,
+                                    start: cell.date,
+                                    end: endDate,
+                                    backgroundColor: color,
+                                    borderColor: color,
+                                    display: 'block',
+                                    extendedProps: {
+                                        room_id: room.room_id,
+                                        room_name: room.room_name,
+                                        status: cell.status,
+                                        sub_rooms: roomSubRooms,
+                                        sub_room_odata: cell.sub_room_odata || null,
+                                        sub_room_code: cell.sub_room_code || null,
+                                        sub_room_name: cell.sub_room_name || null,
+                                        booking_user: cell.booking_user,
+                                        can_block: cell.can_block,
+                                        can_open: cell.can_open,
+                                        type_booking: cell.type || 'online',
+                                        can_cancel: cell.type === 'offline',
+                                        booking_odata: cell.booking_odata || null,
+                                    }
+                                });
+                            }
+                        }
+                    });
+
+                    calendarEvents.value.push(...Array.from(eventMap.values()));
+                    return;
+                }
+
+                roomCalendar.forEach((cell) => {
+                    const endDate = dayjs(cell.date).add(1, 'day').format('YYYY-MM-DD');
+                    const presentation = getCalendarStatusPresentation(cell.status);
+                    let color = presentation.color;
+                    let title = presentation.title + (cell.booking_user ? ` (${cell.booking_user})` : '');
 
                     calendarEvents.value.push({
                         id: `${room.room_id}-${cell.date}`,
@@ -1822,14 +2772,18 @@
                             room_id: room.room_id,
                             room_name: room.room_name,
                             status: cell.status,
+                            sub_rooms: roomSubRooms,
+                            sub_room_odata: cell.sub_room_odata || null,
+                            sub_room_code: cell.sub_room_code || null,
+                            sub_room_name: cell.sub_room_name || null,
                             booking_user: cell.booking_user,
                             can_block: cell.can_block,
                             can_open: cell.can_open,
-                            type_booking: cell.type || 'online', // default online jika tidak ada
-                            can_cancel: cell.type === 'offline', // hanya offline bisa cancel
-                            booking_odata: cell.booking_odata || null, // data booking lengkap untuk cancel jika offline
+                            type_booking: cell.type || 'online',
+                            can_cancel: cell.type === 'offline',
+                            booking_odata: cell.booking_odata || null,
                         }
-                    })
+                    });
                 });
             });
         }
@@ -1837,13 +2791,48 @@
     };
 
     const handleEventClick = async (info) => {
-        const { room_id, status, can_block, can_open, booking_user, type_booking, can_cancel, booking_odata } = info.event.extendedProps;
+        const {
+            room_id,
+            room_name,
+            status,
+            can_block,
+            can_open,
+            booking_user,
+            type_booking,
+            can_cancel,
+            booking_odata,
+            sub_room_odata,
+            sub_room_code,
+            sub_room_name,
+            sub_rooms,
+        } = info.event.extendedProps;
         const date = info.event.startStr;
-        if (status === 'available' && can_block) {
-            await Swal.fire('Block Room', `Room ID: ${room_id}, Date: ${date}`, 'info');
-        } else if (status === 'blocked' && can_open) {
-            await Swal.fire('Open Room', `Room ID: ${room_id}, Date: ${date}`, 'info');
-        } else if (status === 'booked') {
+
+        state.selectedBookingCell = {
+            room_id,
+            room_name,
+            date,
+            status,
+            booking_user,
+            type_booking,
+            can_cancel,
+            sub_room_odata,
+            sub_room_code,
+            sub_room_name,
+            sub_rooms: sub_rooms || [],
+        };
+
+        if (isAvailableStatus(status)) {
+            await Swal.fire('Room Available', `Room ID: ${room_id}, Date: ${date}`, 'info');
+        } else if (isBlockedStatus(status) || isPreparedStatus(status)) {
+            const statusLabel = isPreparedStatus(status) ? 'PREPARED' : 'BLOCKED';
+            await Swal.fire('Room Status', `Status ${statusLabel} (view only).\nRoom ID: ${room_id}, Date: ${date}`, 'info');
+        } else if (isBookingDetailStatus(status)) {
+            if (!booking_odata) {
+                await Swal.fire('Detail Booking', 'Data booking tidak ditemukan untuk event ini.', 'info');
+                return;
+            }
+
             const params = {
                 booking_odata
             };
@@ -1855,10 +2844,27 @@
         }
     };
 
+    const handleEventHover = (info) => {
+        const event = info.event;
+        const props = event.extendedProps || {};
+        const statusLabel = normalizeStatus(props.status || event.title || '');
+        const roomLabel = props.room_name || '';
+        const subRoomLabel = [props.sub_room_code, props.sub_room_name].filter(Boolean).join(' - ');
+        const dateLabel = event.start ? dayjs(event.start).format('DD MMM YYYY') : '';
+        const guestLabel = props.booking_user ? `Guest: ${props.booking_user}` : '';
+
+        const hoverTitle = [statusLabel, roomLabel, subRoomLabel, dateLabel, guestLabel]
+            .filter(Boolean)
+            .join(' • ');
+
+        info.el.setAttribute('title', hoverTitle || String(event.title || ''));
+    };
+
     const calendarOptions = reactive({
         schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives',
 
         plugins: [
+            dayGridPlugin,
             resourceTimelinePlugin,
             interactionPlugin
         ],
@@ -1872,7 +2878,7 @@
         headerToolbar: {
             left: "prev,next today",
             center: "title",
-            right: "resourceTimelineDay,resourceTimelineWeek"
+            right: "resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth,managerGridMonth"
         },
 
         views: {
@@ -1885,6 +2891,16 @@
             type: 'resourceTimeline',
             duration: { weeks: 1 },
             slotDuration: { days: 1 }
+            },
+            resourceTimelineMonth: {
+            type: 'resourceTimeline',
+            duration: { months: 1 },
+            slotDuration: { days: 1 }
+            },
+            managerGridMonth: {
+            type: 'dayGridMonth',
+            buttonText: 'grid month',
+            dayMaxEvents: true
             }
         },
 
@@ -1892,8 +2908,17 @@
         events: calendarEvents,
 
         eventClick: handleEventClick,
+        eventDidMount: handleEventHover,
 
     })
+
+    const openCalendarFullscreen = async () => {
+        modalCalendarFullscreen.value = true;
+        await nextTick();
+        calendarModalKey.value++;
+        await nextTick();
+        calendarModalRef.value?.getApi()?.updateSize();
+    };
 
    
 
@@ -1912,6 +2937,9 @@
     onMounted(async() => {
         if (isStaff) {
             router.push({ name: "index_properties" });
+            return; // Stop execution immediately
+        }else if (isReceptionis) {
+            router.push({ name: "index_booking" });
             return; // Stop execution immediately
         }
         
@@ -1932,11 +2960,23 @@
     });
 
     watch(calendarEvents, () => {
-        const api = calendarRef.value?.getApi()
-        if (api) {
-            api.removeAllEvents()
-            calendarEvents.value.forEach(e => api.addEvent(e))
+        const mainApi = calendarRef.value?.getApi()
+        if (mainApi) {
+            mainApi.removeAllEvents()
+            calendarEvents.value.forEach(e => mainApi.addEvent(e))
         }
+
+        const modalApi = calendarModalRef.value?.getApi()
+        if (modalApi) {
+            modalApi.removeAllEvents()
+            calendarEvents.value.forEach(e => modalApi.addEvent(e))
+        }
+    })
+
+    watch(modalCalendarFullscreen, async (isOpen) => {
+        if (!isOpen) return;
+        await nextTick();
+        calendarModalRef.value?.getApi()?.updateSize();
     })
 
     watch(activeTab, (val) => {

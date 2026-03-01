@@ -13,7 +13,7 @@
                 <WelcomeCard class="mt-3" :currentMembership="currentMembership" :user="user" />
             </div>
             <div class="w-full md:w-2/3">
-                <MembershipStatusCard class="mt-3" :currentMembership="currentMembership" :user="user"/>
+                <MembershipStatusCard class="mt-3" :currentMembership="currentMembership" :user="user" @menu="$emit('menu', $event)"/>
             </div>
         </div>
         <br>

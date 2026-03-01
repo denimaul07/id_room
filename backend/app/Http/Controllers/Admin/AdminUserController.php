@@ -35,7 +35,7 @@ class AdminUserController extends Controller
             ->leftJoin('departments','departments.kode','=','users.kode')
             ->leftJoin('properties','properties.odata','=','users.kode')
             ->whereHas('roles', function ($query) {
-                $query->whereIn('name', ['admin', 'superAdmin','properties']);
+                $query->whereIn('name', ['admin', 'superAdmin','properties','receptionis']);
             })
             ->where(function ($query) use ($request) {
                 $query->where('email', "like", "%" . $request->search . "%");
@@ -359,6 +359,106 @@ class AdminUserController extends Controller
             return response()->json($response, 200);
         }
     }
+
+    public function updateWa(Request $request)
+    {
+        $rules = [
+            'wa' => [
+                'required',
+            ],
+
+        ];
+
+        $validate= Validator::make($request->all(), $rules);
+
+        if ($validate->fails()) {
+            $response = [
+                'data' => $validate->errors()->all(),
+                'message' => 'Failed Input',
+            ];
+            return response()->json($response, 400);
+        }
+
+        $user = User::findOrFail(Auth::id());
+        $user->update([
+            'wa' => $request->input('wa'),
+        ]);
+
+        $response = [
+            'data' => 'WhatsApp Updated',
+            'message' => 'Suceess',
+        ];
+
+        return response()->json($response, 200);
+    }
     
+    public function sendWa(Request $request)
+    {
+        $rules = [
+            'wa' => [
+                'required',
+            ],
+
+        ];
+
+        $validate= Validator::make($request->all(), $rules);
+
+        if ($validate->fails()) {
+            $response = [
+                'data' => $validate->errors()->all(),
+                'message' => 'Failed Input',
+            ];
+            return response()->json($response, 400);
+        }
+
+        $user = User::findOrFail(Auth::id());
+
+        // Send WhatsApp message using external API
+        $response = Http::post('https://api.whatsapp.com/send', [
+            'phone' => $request->input('wa'),
+            'message' => 'This is a test message from ID Room.',
+        ]);
+
+        if ($response->successful()) {
+            return response()->json(['message' => 'WhatsApp message sent successfully'], 200);
+        } else {
+            return response()->json(['message' => 'Failed to send WhatsApp message'], 500);
+        }
+    }
+
+    public function update_Profile(Request $request)
+    {
+        $rules = [
+            'oldpass' => ['required'],
+            'newpass' => ['required', 'min:6'],
+        ];
+
+        $validate = Validator::make($request->all(), $rules);
+
+        if ($validate->fails()) {
+            $response = [
+                'data' => $validate->errors(),
+                'message' => 'Failed Input',
+            ];
+            return response()->json($response, 400);
+        }
+
+        $user = User::findOrFail(Auth::id());
+
+        if (!\Hash::check($request->input('oldpass'), $user->password)) {
+            return response()->json(['message' => 'Old password does not match'], 400);
+        }
+
+        $user->update([
+            'password' => $request->input('newpass'),
+        ]);
+
+        $response = [
+            'data' => 'Profile Updated',
+            'message' => 'Success',
+        ];
+
+        return response()->json($response, 200);
+    }
 
 }

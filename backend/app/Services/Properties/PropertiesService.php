@@ -11,9 +11,17 @@ use Illuminate\Support\Str;
 
 class PropertiesService
 {
-    public function list($search = null, $pagging = 10)
+    public function list($search = null, $paging = 10)
     {
-        return Properties::search($search)->orderBy('created_at', 'desc')->paginate($pagging);
+        // If the user role is 'properties', filter by the user's odata
+        $user = Auth::user();
+        if ($user && $user->hasRole('properties')) {
+            return Properties::where('odata', $user->kode)
+                ->search($search)
+                ->orderBy('created_at', 'desc')
+                ->paginate($paging);
+        }
+        return Properties::search($search)->orderBy('created_at', 'desc')->paginate($paging);
     }
 
     public function create(array $data)
@@ -43,7 +51,6 @@ class PropertiesService
             'price_per_monthly' => $data['price_per_monthly'],
             'price_per_year' => $data['price_per_year'],
             'sale_price' => $data['sale_price'],
-            'total_rooms' => $data['total_rooms'],
             'isActive' => $data['isActive'],
             'image' => $imagePath,
             'banner' => $bannerPath,
@@ -93,7 +100,6 @@ class PropertiesService
         $property->price_per_monthly = $data['price_per_monthly'];
         $property->price_per_year = $data['price_per_year'];
         $property->sale_price = $data['sale_price'];
-        $property->total_rooms = $data['total_rooms'];
         $property->isActive = $data['isActive'];
         $property->url_video = $data['url_video'];
 
@@ -137,7 +143,7 @@ class PropertiesService
         return $property;
     }
 
-    public function getListCity($search = null, $pagging = 10)
+    public function getListCity($search = null, $paging = 10)
     {
         $query = PopularCity::with('city');
 
@@ -147,7 +153,7 @@ class PropertiesService
             });
         }
 
-        return $query->paginate($pagging);
+        return $query->paginate($paging);
     }
 
     public function updatePopularCity(array $data)

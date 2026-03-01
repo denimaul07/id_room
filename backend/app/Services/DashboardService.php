@@ -10,6 +10,7 @@ use App\Models\Booking;
 use App\Models\BookingPayment;
 use App\Models\UserMembership;
 use App\Models\Rooms;
+use App\Models\Crm;
 
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Str;
@@ -371,156 +372,427 @@ class DashboardService
             'cancelled_booking' => $cancelledBooking,
         ];
 
-
-        // Booking Status Trend breakdown (daily, weekly, monthly, yearly)
-        $statusList = ['PENDING', 'PAID', 'CANCELLED', 'EXPIRED', 'COMPLETED'];
-        $bookingStatusTrendFormat = function($arr) use ($statusList) {
+        // Helper to flatten breakdown array to chart format
+        $formatChartBooking = function($arr) {
             $dates = array_map(function($item) { return $item['date']; }, $arr);
-            $statusCounts = [];
-            foreach ($statusList as $status) {
-                $statusCounts[$status] = array_map(function($item) use ($status) {
-                    return $item[$status] ?? 0;
-                }, $arr);
-            }
+            $pending = array_map(function($item) { return $item['pending'] ?? 0; }, $arr);
+            $paid = array_map(function($item) { return $item['paid'] ?? 0; }, $arr);
+            $cancelled = array_map(function($item) { return $item['cancelled'] ?? 0; }, $arr);
+            $expired = array_map(function($item) { return $item['expired'] ?? 0; }, $arr);
+            $completed = array_map(function($item) { return $item['completed'] ?? 0; }, $arr);
+            $blocked = array_map(function($item) { return $item['blocked'] ?? 0; }, $arr);
             if (empty($dates)) {
-                $result = ['dates' => []];
-                foreach ($statusList as $status) {
-                    $result[$status] = [0];
-                }
-                return $result;
+                return [
+                    'dates' => [],
+                    'pending' => [0],
+                    'paid' => [0],
+                    'cancelled' => [0],
+                    'expired' => [0],
+                    'completed' => [0],
+                    'blocked' => [0],
+                ];
             }
-            $result = ['dates' => $dates];
-            foreach ($statusList as $status) {
-                $result[$status] = $statusCounts[$status];
-            }
-            return $result;
+
+            return [
+                'dates' => $dates,
+                'pending' => $pending,
+                'paid' => $paid,
+                'cancelled' => $cancelled,
+                'expired' => $expired,
+                'completed' => $completed,
+                'blocked' => $blocked,
+            ];
         };
 
-        // Format daily, weekly, monthly, yearly booking status trend
-        $bookingDailyStatus = [];
-        foreach ($daily as $item) {
-            $row = ['date' => $item['date']];
-            foreach ($statusList as $status) {
-                $row[$status] = Booking::whereDate('created_at', $item['date'])->where('type_booking', 'ONLINE')->where('status', $status)->count();
+        // Get daily booking status breakdown
+        $dailyRawBooking = Booking::selectRaw('DATE(created_at) as date, status, COUNT(*) as total')
+            ->whereBetween('created_at', [Carbon::today()->startOfDay(), Carbon::today()->endOfDay()])
+            ->where('type_booking', 'ONLINE')
+            ->groupBy('date', 'status')
+            ->orderBy('date')
+            ->get();
+
+        $dailyBooking = [];
+        foreach ($dailyRawBooking as $row) {
+            $date = $row->date;
+            $status = strtoupper($row->status);
+            if (!isset($dailyBooking[$date])) {
+                $dailyBooking[$date] = [
+                    'date' => $date,
+                    'pending' => 0,
+                    'paid' => 0,
+                    'cancelled' => 0,
+                    'expired' => 0,
+                    'completed' => 0,
+                    'blocked' => 0,
+                ];
             }
-            $bookingDailyStatus[] = $row;
+            if ($status === 'PENDING') {
+                $dailyBooking[$date]['pending'] = (int)$row->total;
+            } elseif ($status === 'PAID') {
+                $dailyBooking[$date]['paid'] = (int)$row->total;
+            } elseif ($status === 'CANCELLED') {
+                $dailyBooking[$date]['cancelled'] = (int)$row->total;
+            } elseif ($status === 'EXPIRED') {
+                $dailyBooking[$date]['expired'] = (int)$row->total;
+            } elseif ($status === 'COMPLETED') {
+                $dailyBooking[$date]['completed'] = (int)$row->total;
+            } elseif ($status === 'BLOCKED') {
+                $dailyBooking[$date]['blocked'] = (int)$row->total;
+            }
         }
 
-        $bookingWeeklyStatus = [];
-        foreach ($weekly as $item) {
-            $row = ['date' => $item['date']];
-            foreach ($statusList as $status) {
-                $row[$status] = Booking::whereDate('created_at', $item['date'])->where('type_booking', 'ONLINE')->where('status', $status)->count();
-            }
-            $bookingWeeklyStatus[] = $row;
+        usort($dailyBooking, function($a, $b) {
+            return strtotime($a['date']) - strtotime($b['date']);
+        });
+        $dailyBooking = array_values($dailyBooking);
+
+
+
+        // Ambil data 7 hari terakhir breakdown by type
+        // Ambil data 7 hari terakhir breakdown by status
+        $last7DaysBooking = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::today()->subDays($i)->toDateString();
+            $last7DaysBooking[$date] = [
+                'date' => $date,
+                'pending' => 0,
+                'paid' => 0,
+                'cancelled' => 0,
+                'expired' => 0,
+                'completed' => 0,
+                'blocked' => 0,
+            ];
         }
 
-        $bookingMonthlyStatus = [];
-        foreach ($monthly as $item) {
-            $row = ['date' => $item['date']];
-            foreach ($statusList as $status) {
-                $row[$status] = Booking::whereDate('created_at', $item['date'])->where('type_booking', 'ONLINE')->where('status', $status)->count();
+        $weeklyRawBooking = Booking::selectRaw('DATE(created_at) as date, status, COUNT(*) as total')
+            ->whereBetween('created_at', [Carbon::today()->subDays(6)->startOfDay(), Carbon::today()->endOfDay()])
+            ->where('type_booking', 'ONLINE')
+            ->groupBy('date', 'status')
+            ->orderBy('date')
+            ->get();
+
+        foreach ($weeklyRawBooking as $row) {
+            $date = $row->date;
+            $status = strtoupper($row->status);
+            if (isset($last7DaysBooking[$date])) {
+            if ($status === 'PENDING') {
+                $last7DaysBooking[$date]['pending'] = (int)$row->total;
+            } elseif ($status === 'PAID') {
+                $last7DaysBooking[$date]['paid'] = (int)$row->total;
+            } elseif ($status === 'CANCELLED') {
+                $last7DaysBooking[$date]['cancelled'] = (int)$row->total;
+            } elseif ($status === 'EXPIRED') {
+                $last7DaysBooking[$date]['expired'] = (int)$row->total;
+            } elseif ($status === 'COMPLETED') {
+                $last7DaysBooking[$date]['completed'] = (int)$row->total;
+            } elseif ($status === 'BLOCKED') {
+                $last7DaysBooking[$date]['blocked'] = (int)$row->total;
             }
-            $bookingMonthlyStatus[] = $row;
+            }
         }
 
-        $bookingYearlyStatus = [];
-        foreach ($yearly as $item) {
-            $row = ['date' => $item['date']];
-            foreach ($statusList as $status) {
-                $row[$status] = Booking::whereYear('created_at', substr($item['date'], 0, 4))
-                    ->whereMonth('created_at', substr($item['date'], 5, 2))
-                    ->where('type_booking', 'ONLINE')
-                    ->where('status', $status)
-                    ->count();
-            }
-            $bookingYearlyStatus[] = $row;
+        // Re-index as numeric array
+        $weeklyBooking  = array_values($last7DaysBooking);
+
+        // Ambil data bulan ini pertanggal (harian dalam bulan berjalan)
+        $startOfMonth = Carbon::now()->startOfMonth()->startOfDay();
+        $endOfMonth = Carbon::now()->endOfMonth()->endOfDay();
+
+        // Siapkan array tanggal dalam bulan ini breakdown by status
+        $daysInMonthBooking  = [];
+        $periodBooking  = CarbonPeriod::create($startOfMonth, $endOfMonth);
+        foreach ($periodBooking as $date) {
+            $daysInMonthBooking[$date->toDateString()] = [
+                'date' => $date->toDateString(),
+                'pending' => 0,
+                'paid' => 0,
+                'cancelled' => 0,
+                'expired' => 0,
+                'completed' => 0,
+                'blocked' => 0,
+            ];
         }
 
-        $response['booking_status_trend'] = [
-            'daily' => $bookingStatusTrendFormat($bookingDailyStatus),
-            'weekly' => $bookingStatusTrendFormat($bookingWeeklyStatus),
-            'monthly' => $bookingStatusTrendFormat($bookingMonthlyStatus),
-            'yearly' => $bookingStatusTrendFormat($bookingYearlyStatus),
-        ];
+        // Query booking per tanggal dan status di bulan ini
+        $monthlyRawBooking  = Booking::selectRaw('DATE(created_at) as date, status, COUNT(*) as total')
+            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->where('type_booking', 'ONLINE')
+            ->groupBy('date', 'status')
+            ->orderBy('date')
+            ->get();
+
+        foreach ($monthlyRawBooking as $row) {
+            $date = $row->date;
+            $status = strtoupper($row->status);
+            if (isset($daysInMonthBooking[$date])) {
+                if ($status === 'PENDING') {
+                    $daysInMonthBooking[$date]['pending'] = (int)$row->total;
+                } elseif ($status === 'PAID') {
+                    $daysInMonthBooking[$date]['paid'] = (int)$row->total;
+                } elseif ($status === 'CANCELLED') {
+                    $daysInMonthBooking[$date]['cancelled'] = (int)$row->total;
+                } elseif ($status === 'EXPIRED') {
+                    $daysInMonthBooking[$date]['expired'] = (int)$row->total;
+                } elseif ($status === 'COMPLETED') {
+                    $daysInMonthBooking[$date]['completed'] = (int)$row->total;
+                } elseif ($status === 'BLOCKED') {
+                    $daysInMonthBooking[$date]['blocked'] = (int)$row->total;
+                }
+            }
+        }
+
+        // Re-index as numeric array
+        $monthly = array_values($daysInMonthBooking);
+
+        $startOfYearBooking  = Carbon::now()->startOfYear()->startOfDay();
+        $endOfYearBooking = Carbon::now()->endOfYear()->endOfDay();
+        $monthsInYearBooking  = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $month = Carbon::create($startOfYearBooking->year, $m, 1);
+            $monthsInYearBooking[$month->format('Y-m')] = [
+            'date' => $month->format('Y-m'),
+            'pending' => 0,
+            'paid' => 0,
+            'cancelled' => 0,
+            'expired' => 0,
+            'completed' => 0,
+            'blocked' => 0,
+            ];
+        }
+
+        // Query booking per bulan dan status di tahun ini
+        $yearlyRawBooking  = Booking::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as date, status, COUNT(*) as total')
+            ->whereBetween('created_at', [$startOfYearBooking, $endOfYearBooking])
+            ->where('type_booking', 'ONLINE')
+            ->groupBy('date', 'status')
+            ->orderBy('date')
+            ->get();
+
+        foreach ($yearlyRawBooking as $row) {
+            $date = $row->date;
+            $status = strtoupper($row->status);
+            if (isset($monthsInYearBooking[$date])) {
+            if ($status === 'PENDING') {
+                $monthsInYearBooking[$date]['pending'] = (int)$row->total;
+            } elseif ($status === 'PAID') {
+                $monthsInYearBooking[$date]['paid'] = (int)$row->total;
+            } elseif ($status === 'CANCELLED') {
+                $monthsInYearBooking[$date]['cancelled'] = (int)$row->total;
+            } elseif ($status === 'EXPIRED') {
+                $monthsInYearBooking[$date]['expired'] = (int)$row->total;
+            } elseif ($status === 'COMPLETED') {
+                $monthsInYearBooking[$date]['completed'] = (int)$row->total;
+            } elseif ($status === 'BLOCKED') {
+                $monthsInYearBooking[$date]['blocked'] = (int)$row->total;
+            }
+            }
+        }
+
+        // Re-index as numeric array
+        $yearlyBooking  = array_values($monthsInYearBooking);
 
         // Membership Status Trend breakdown (daily, weekly, monthly, yearly)
 
-        $membershipStatusList = ['PENDING', 'ACTIVE', 'EXPIRED', 'CANCELLED'];
-        $membershipStatusTrendFormat = function($arr) use ($membershipStatusList) {
+        $formatChartMembership = function($arr) {
             $dates = array_map(function($item) { return $item['date']; }, $arr);
-            $statusCounts = [];
-            foreach ($membershipStatusList as $status) {
-                $statusCounts[$status] = array_map(function($item) use ($status) {
-                    return $item[$status] ?? 0;
-                }, $arr);
-            }
+            $pending = array_map(function($item) { return $item['pending'] ?? 0; }, $arr);
+            $active = array_map(function($item) { return $item['active'] ?? 0; }, $arr);
+            $expired = array_map(function($item) { return $item['expired'] ?? 0; }, $arr);
+            $cancelled = array_map(function($item) { return $item['cancelled'] ?? 0; }, $arr);
             if (empty($dates)) {
-                $result = ['dates' => []];
-                foreach ($membershipStatusList as $status) {
-                    $result[$status] = [0];
-                }
-                return $result;
+                return [
+                    'dates' => [],
+                    'pending' => [0],
+                    'active' => [0],
+                    'expired' => [0],
+                    'cancelled' => [0],
+                ];
             }
-            $result = ['dates' => $dates];
-            foreach ($membershipStatusList as $status) {
-                $result[$status] = $statusCounts[$status];
-            }
-            return $result;
+            return [
+                'dates' => $dates,
+                'pending' => $pending,
+                'active' => $active,
+                'expired' => $expired,
+                'cancelled' => $cancelled,
+            ];
         };
 
-        // Format daily, weekly, monthly, yearly membership status trend
+        
+        $membershipDailyRaw = UserMembership::selectRaw('DATE(created_at) as date, status, COUNT(*) as total')
+        ->whereBetween('created_at', [Carbon::today()->startOfDay(), Carbon::today()->endOfDay()])
+        ->groupBy('date', 'status')
+        ->orderBy('date')
+        ->get();
+
+        $membershipDaily = [];
+        foreach ($membershipDailyRaw as $row) {
+            $date = $row->date;
+            $status = strtoupper($row->status);
+            if (!isset($membershipDaily[$date])) {
+                $membershipDaily[$date] = [
+                    'date' => $date,
+                    'pending' => 0,
+                    'active' => 0,
+                    'expired' => 0,
+                    'cancelled' => 0,
+                ];
+            }
+            if ($status === 'PENDING') {
+                $membershipDaily[$date]['pending'] = (int)$row->total;
+            } elseif ($status === 'ACTIVE') {
+                $membershipDaily[$date]['active'] = (int)$row->total;
+            } elseif ($status === 'EXPIRED') {
+                $membershipDaily[$date]['expired'] = (int)$row->total;
+            } elseif ($status === 'CANCELLED') {
+                $membershipDaily[$date]['cancelled'] = (int)$row->total;
+            }
+        }
+
+        $membershipDaily = array_values($membershipDaily);
+        $membershipDaily = $formatChartMembership($membershipDaily);
+
+        $last7DaysMembership = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::today()->subDays($i)->toDateString();
+            $last7DaysMembership[$date] = [
+                'date' => $date,
+                'pending' => 0,
+                'active' => 0,
+                'expired' => 0,
+                'cancelled' => 0,
+            ];
+        }
+
+        $membershipWeeklyRaw = UserMembership::selectRaw('DATE(created_at) as date, status, COUNT(*) as total')
+        ->whereBetween('created_at', [Carbon::today()->subDays(6)->startOfDay(), Carbon::today()->endOfDay()])
+        ->groupBy('date', 'status')
+        ->orderBy('date')
+        ->get();
+
+        foreach ($membershipWeeklyRaw as $row) {
+            $date = $row->date;
+            $status = strtoupper($row->status);
+            if (isset($last7DaysMembership[$date])) {
+                if ($status === 'PENDING') {
+                    $last7DaysMembership[$date]['pending'] = (int)$row->total;
+                } elseif ($status === 'ACTIVE') {
+                    $last7DaysMembership[$date]['active'] = (int)$row->total;
+                } elseif ($status === 'EXPIRED') {
+                    $last7DaysMembership[$date]['expired'] = (int)$row->total;
+                } elseif ($status === 'CANCELLED') {
+                    $last7DaysMembership[$date]['cancelled'] = (int)$row->total;
+                }
+            }
+        }
+
+        $membershipWeekly = array_values($last7DaysMembership);
+        $membershipWeekly = $formatChartMembership($membershipWeekly);
+
+          // Siapkan array tanggal dalam bulan ini breakdown by status
+        $daysInMonthMembership = [];
+        $periodMembership  = CarbonPeriod::create($startOfMonth, $endOfMonth);
+        foreach ($periodMembership as $date) {
+            $daysInMonthMembership[$date->toDateString()] = [
+                'date' => $date->toDateString(),
+                'pending' => 0,
+                'paid' => 0,
+                'cancelled' => 0,
+                'expired' => 0,
+                'completed' => 0,
+                'blocked' => 0,
+            ];
+        }
+
+        $membershipMonthlyRaw = UserMembership::selectRaw('DATE(created_at) as date, status, COUNT(*) as total')
+        ->whereBetween('created_at', [Carbon::now()->startOfMonth()->startOfDay(), Carbon::now()->endOfMonth()->endOfDay()])
+        ->groupBy('date', 'status')
+        ->orderBy('date')
+        ->get();
+
+        $membershipMonthly = [];
+        foreach ($membershipMonthlyRaw as $row) {
+            $date = $row->date;
+            $status = strtoupper($row->status);
+            if (!isset($daysInMonthMembership[$date])) {
+                $daysInMonthMembership[$date] = [
+                    'date' => $date,
+                    'pending' => 0,
+                    'active' => 0,
+                    'expired' => 0,
+                    'cancelled' => 0,
+                ];
+            }
+            if ($status === 'PENDING') {
+                $daysInMonthMembership[$date]['pending'] = (int)$row->total;
+            } elseif ($status === 'ACTIVE') {
+                $daysInMonthMembership[$date]['active'] = (int)$row->total;
+            } elseif ($status === 'EXPIRED') {
+                $daysInMonthMembership[$date]['expired'] = (int)$row->total;
+            } elseif ($status === 'CANCELLED') {
+                $daysInMonthMembership[$date]['cancelled'] = (int)$row->total;
+            }
+        }
+
+        $membershipMonthly = array_values($daysInMonthMembership);
+        $membershipMonthly = $formatChartMembership($membershipMonthly);
+
+
+
+        $startOfYearMembership = Carbon::now()->startOfYear()->startOfDay();
+        $endOfYearMembership = Carbon::now()->endOfYear()->endOfDay();
+        $monthsInYearMembership  = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $month = Carbon::create($startOfYearMembership->year, $m, 1);
+            $monthsInYearMembership[$month->format('Y-m')] = [
+            'date' => $month->format('Y-m'),
+            'pending' => 0,
+            'paid' => 0,
+            'cancelled' => 0,
+            'expired' => 0,
+            'completed' => 0,
+            'blocked' => 0,
+            ];
+        }
+
+
+        $membershipYearlyRaw = UserMembership::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as date, status, COUNT(*) as total')
+        ->whereBetween('created_at', [$startOfYearMembership, $endOfYearMembership])
+        ->groupBy('date', 'status')
+        ->orderBy('date')
+        ->get();
+
+        $membershipYearly = [];
+        foreach ($membershipYearlyRaw as $row) {
+            $date = $row->date;
+            $status = strtoupper($row->status);
+            if (!isset($monthsInYearMembership[$date])) {
+                $monthsInYearMembership[$date] = [
+                    'date' => $date,
+                    'pending' => 0,
+                    'active' => 0,
+                    'expired' => 0,
+                    'cancelled' => 0,
+                ];
+            }
+            if ($status === 'PENDING') {
+                $monthsInYearMembership[$date]['pending'] = (int)$row->total;
+            } elseif ($status === 'ACTIVE') {
+                $monthsInYearMembership[$date]['active'] = (int)$row->total;
+            } elseif ($status === 'EXPIRED') {
+                $monthsInYearMembership[$date]['expired'] = (int)$row->total;
+            } elseif ($status === 'CANCELLED') {
+                $monthsInYearMembership[$date]['cancelled'] = (int)$row->total;
+            }
+        }
+        $membershipYearly = array_values($monthsInYearMembership);
+        $membershipYearly = $formatChartMembership($membershipYearly);
+
 
         $revueMembership = Transactions::whereBetween('created_at', [$startDate, $endDate])
         ->where('type', 'MEMBERSHIP')
         ->where('status', 'PAID')
         ->sum('amount');
-
-        $membershipDailyStatus = [];
-        foreach ($daily as $item) {
-            $row = ['date' => $item['date']];
-            foreach ($membershipStatusList as $status) {
-                $row[$status] = UserMembership::whereDate('created_at', $item['date'])->where('status', $status)->count();
-            }
-            $membershipDailyStatus[] = $row;
-        }
-
-        $membershipWeeklyStatus = [];
-        foreach ($weekly as $item) {
-            $row = ['date' => $item['date']];
-            foreach ($membershipStatusList as $status) {
-                $row[$status] = UserMembership::whereDate('created_at', $item['date'])->where('status', $status)->count();
-            }
-            $membershipWeeklyStatus[] = $row;
-        }
-
-        $membershipMonthlyStatus = [];
-        foreach ($monthly as $item) {
-            $row = ['date' => $item['date']];
-            foreach ($membershipStatusList as $status) {
-                $row[$status] = UserMembership::whereDate('created_at', $item['date'])->where('status', $status)->count();
-            }
-            $membershipMonthlyStatus[] = $row;
-        }
-
-        $membershipYearlyStatus = [];
-        foreach ($yearly as $item) {
-            $row = ['date' => $item['date']];
-            foreach ($membershipStatusList as $status) {
-                $row[$status] = UserMembership::whereYear('created_at', substr($item['date'], 0, 4))
-                    ->whereMonth('created_at', substr($item['date'], 5, 2))
-                    ->where('status', $status)
-                    ->count();
-            }
-            $membershipYearlyStatus[] = $row;
-        }
-
-        $response['membership_status_trend'] = [
-            'daily' => $membershipStatusTrendFormat($membershipDailyStatus),
-            'weekly' => $membershipStatusTrendFormat($membershipWeeklyStatus),
-            'monthly' => $membershipStatusTrendFormat($membershipMonthlyStatus),
-            'yearly' => $membershipStatusTrendFormat($membershipYearlyStatus),
-        ];
 
         $totalMembership = UserMembership::count();
         $totalPendingMembership = UserMembership::where('status', 'PENDING')->count();
@@ -537,6 +809,205 @@ class DashboardService
             'total_cancelled' => $totalCancelledMembership,
         ];
 
+        //CRM data
+        // CRM Data
+        $totalCrm = Crm::whereBetween('tanggal_leads', [$startDate, $endDate])->count();
+        $totalCrmNeedfu = Crm::where('status', 'NEEDFU')->whereBetween('tanggal_leads', [$startDate, $endDate])->count();
+        $totalCrmFollowup = Crm::where('status', 'FOLLOWUP')->whereBetween('tanggal_leads', [$startDate, $endDate])->count();
+        $totalCrmLost = Crm::where('status', 'LOST')->whereBetween('tanggal_leads', [$startDate, $endDate])->count();
+        $totalCrmClosing = Crm::where('status', 'CLOSING')->whereBetween('tanggal_leads', [$startDate, $endDate])->count();
+
+        $dataCrm = [
+            'total_crm' => $totalCrm,
+            'total_needfu' => $totalCrmNeedfu,
+            'total_followup' => $totalCrmFollowup,
+            'total_lost' => $totalCrmLost,
+            'total_closing' => $totalCrmClosing,
+        ];
+
+        // CRM Status Trend (daily, weekly, monthly, yearly)
+        $formatChartCrm = function($arr) {
+            $dates = array_map(function($item) { return $item['date']; }, $arr);
+            $needfu = array_map(function($item) { return $item['needfu'] ?? 0; }, $arr);
+            $followup = array_map(function($item) { return $item['followup'] ?? 0; }, $arr);
+            $lost = array_map(function($item) { return $item['lost'] ?? 0; }, $arr);
+            $closing = array_map(function($item) { return $item['closing'] ?? 0; }, $arr);
+            if (empty($dates)) {
+                return [
+                    'dates' => [],
+                    'needfu' => [0],
+                    'followup' => [0],
+                    'lost' => [0],
+                    'closing' => [0],
+                ];
+            }
+            return [
+                'dates' => $dates,
+                'needfu' => $needfu,
+                'followup' => $followup,
+                'lost' => $lost,
+                'closing' => $closing,
+            ];
+        };
+
+        $crmDailyStatus = [];
+        $crmDailyRaw = Crm::selectRaw('DATE(tanggal_leads) as date, status, COUNT(*) as total')
+            ->whereBetween('tanggal_leads', [Carbon::today()->startOfDay(), Carbon::today()->endOfDay()])
+            ->groupBy('date', 'status')
+            ->orderBy('date')
+            ->get();
+        foreach ($crmDailyRaw as $row) {
+            $date = $row->date;
+            $status = strtoupper($row->status);
+            if (!isset($crmDailyStatus[$date])) {
+                $crmDailyStatus[$date] = [
+                    'date' => $date,
+                    'needfu' => 0,
+                    'followup' => 0,
+                    'lost' => 0,
+                    'closing' => 0,
+                ];
+            }
+            if ($status === 'NEEDFU') {
+                $crmDailyStatus[$date]['needfu'] = (int)$row->total;
+            } elseif ($status === 'FOLLOWUP') {
+                $crmDailyStatus[$date]['followup'] = (int)$row->total;
+            } elseif ($status === 'LOST') {
+                $crmDailyStatus[$date]['lost'] = (int)$row->total;
+            } elseif ($status === 'CLOSING') {
+                $crmDailyStatus[$date]['closing'] = (int)$row->total;
+            }
+        }
+        $crmDailyStatus = array_values($crmDailyStatus);
+        
+        $crmWeeklyStatus = [];
+        $crmWeeklyRaw = Crm::selectRaw('DATE(tanggal_leads) as date, status, COUNT(*) as total')
+            ->whereBetween('tanggal_leads', [Carbon::today()->subDays(6)->startOfDay(), Carbon::today()->endOfDay()])
+            ->groupBy('date', 'status')
+            ->orderBy('date')
+            ->get();
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::today()->subDays($i)->toDateString();
+            $crmWeeklyStatus[$date] = [
+                'date' => $date,
+                'needfu' => 0,
+                'followup' => 0,
+                'lost' => 0,
+                'closing' => 0,
+            ];
+        }
+        foreach ($crmWeeklyRaw as $row) {
+            $date = $row->date;
+            $status = strtoupper($row->status);
+            if (isset($crmWeeklyStatus[$date])) {
+                if ($status === 'NEEDFU') {
+                    $crmWeeklyStatus[$date]['needfu'] = (int)$row->total;
+                } elseif ($status === 'FOLLOWUP') {
+                    $crmWeeklyStatus[$date]['followup'] = (int)$row->total;
+                } elseif ($status === 'LOST') {
+                    $crmWeeklyStatus[$date]['lost'] = (int)$row->total;
+                } elseif ($status === 'CLOSING') {
+                    $crmWeeklyStatus[$date]['closing'] = (int)$row->total;
+                }
+            }
+        }
+        $crmWeeklyStatus = array_values($crmWeeklyStatus);
+
+        $startOfMonthCrm = Carbon::now()->startOfMonth()->startOfDay();
+        $endOfMonthCrm = Carbon::now()->endOfMonth()->endOfDay();
+        $crmMonthlyStatus = [];
+        $periodCrm = CarbonPeriod::create($startOfMonthCrm, $endOfMonthCrm);
+        foreach ($periodCrm as $date) {
+            $crmMonthlyStatus[$date->toDateString()] = [
+                'date' => $date->toDateString(),
+                'needfu' => 0,
+                'followup' => 0,
+                'lost' => 0,
+                'closing' => 0,
+            ];
+        }
+        $crmMonthlyRaw = Crm::selectRaw('DATE(tanggal_leads) as date, status, COUNT(*) as total')
+            ->whereBetween('tanggal_leads', [$startOfMonthCrm, $endOfMonthCrm])
+            ->groupBy('date', 'status')
+            ->orderBy('date')
+            ->get();
+        foreach ($crmMonthlyRaw as $row) {
+            $date = $row->date;
+            $status = strtoupper($row->status);
+            if (isset($crmMonthlyStatus[$date])) {
+                if ($status === 'NEEDFU') {
+                    $crmMonthlyStatus[$date]['needfu'] = (int)$row->total;
+                } elseif ($status === 'FOLLOWUP') {
+                    $crmMonthlyStatus[$date]['followup'] = (int)$row->total;
+                } elseif ($status === 'LOST') {
+                    $crmMonthlyStatus[$date]['lost'] = (int)$row->total;
+                } elseif ($status === 'CLOSING') {
+                    $crmMonthlyStatus[$date]['closing'] = (int)$row->total;
+                }
+            }
+        }
+        $crmMonthlyStatus = array_values($crmMonthlyStatus);
+
+        $startOfYearCrm = Carbon::now()->startOfYear()->startOfDay();
+        $endOfYearCrm = Carbon::now()->endOfYear()->endOfDay();
+        $crmYearlyStatus = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $month = Carbon::create($startOfYearCrm->year, $m, 1);
+            $crmYearlyStatus[$month->format('Y-m')] = [
+                'date' => $month->format('Y-m'),
+                'needfu' => 0,
+                'followup' => 0,
+                'lost' => 0,
+                'closing' => 0,
+            ];
+        }
+        $crmYearlyRaw = Crm::selectRaw('DATE_FORMAT(tanggal_leads, "%Y-%m") as date, status, COUNT(*) as total')
+            ->whereBetween('tanggal_leads', [$startOfYearCrm, $endOfYearCrm])
+            ->groupBy('date', 'status')
+            ->orderBy('date')
+            ->get();
+        foreach ($crmYearlyRaw as $row) {
+            $date = $row->date;
+            $status = strtoupper($row->status);
+            if (isset($crmYearlyStatus[$date])) {
+                if ($status === 'NEEDFU') {
+                    $crmYearlyStatus[$date]['needfu'] = (int)$row->total;
+                } elseif ($status === 'FOLLOWUP') {
+                    $crmYearlyStatus[$date]['followup'] = (int)$row->total;
+                } elseif ($status === 'LOST') {
+                    $crmYearlyStatus[$date]['lost'] = (int)$row->total;
+                } elseif ($status === 'CLOSING') {
+                    $crmYearlyStatus[$date]['closing'] = (int)$row->total;
+                }
+            }
+        }
+        $crmYearlyStatus = array_values($crmYearlyStatus);
+
+        // User Achievement: Count CRM by assigned_id and status
+        $userAchievements = Crm::selectRaw('assigned_id, status, COUNT(*) as total')
+            ->with('assigned:id,name') // Eager load user data
+            ->whereBetween('tanggal_leads', [$startDate, $endDate])
+            ->groupBy('assigned_id', 'status')
+            ->get()
+            ->groupBy('assigned_id')
+            ->map(function ($items, $assignedId) {
+            $user = $items->first()->assigned ?? null;
+            $result = [
+                'assigned_name' => $user ? $user->name : '-',
+                'needfu' => 0,
+                'followup' => 0,
+                'lost' => 0,
+                'closing' => 0,
+            ];
+            foreach ($items as $item) {
+                $status = strtolower($item->status);
+                if (isset($result[$status])) {
+                $result[$status] = (int)$item->total;
+                }
+            }
+            return $result;
+            })
+            ->values();
         
 
         $response = [
@@ -552,10 +1023,29 @@ class DashboardService
             'need_attention' => $needAttention,
             'property_performance' => $propertyPerformance,
             'dataBooking' => $dataBooking,
-            'booking_status_trend' => $response['booking_status_trend'],
-            'membership_status_trend' => $response['membership_status_trend'],
+            'booking_status_trend' => [
+                'daily' => $formatChartBooking($dailyBooking),
+                'weekly' => $formatChartBooking($weeklyBooking),
+                'monthly' => $formatChartBooking($monthly),
+                'yearly' => $formatChartBooking($yearlyBooking),
+            ],
+            'membership_status_trend' => [
+                'daily' => $membershipDaily,
+                'weekly' => $membershipWeekly,
+                'monthly' => $membershipMonthly,
+                'yearly' => $membershipYearly,
+            ],
             'dataMembership' => $dataMembership,
+            'crm_status_trend' => [
+                'daily' => $formatChartCrm($crmDailyStatus),
+                'weekly' => $formatChartCrm($crmWeeklyStatus),
+                'monthly' => $formatChartCrm($crmMonthlyStatus),
+                'yearly' => $formatChartCrm($crmYearlyStatus),
+            ],
+            'dataCrm' => $dataCrm,
+            'user_achievement' => $userAchievements,
         ];
+
         return $response;
     }
 
@@ -581,15 +1071,56 @@ class DashboardService
         }
 
         // Ambil rooms
-        $rooms = Rooms::when($property, function ($query) use ($property) {
+        $rooms = Rooms::with('subRooms')->when($property, function ($query) use ($property) {
             $query->where('property_odata', $property);
         })->get();
 
-        $roomIds = $rooms->pluck('odata')->toArray();
+        $roomOdataList = $rooms->pluck('odata')->toArray();
 
-        // 🔥 FIX OVERLAP QUERY
-        $bookings = Booking::whereIn('room_odata', $roomIds)
-            ->whereIn('status', ['PAID', 'CONFIRMED', 'COMPLETED'])
+        $subRoomOdataToRoomOdata = [];
+        $subRoomIdToRoomOdata = [];
+        $subRoomMetaByOdata = [];
+        $subRoomMetaById = [];
+
+        foreach ($rooms as $room) {
+            foreach ($room->subRooms as $subRoom) {
+                if (!empty($subRoom->odata)) {
+                    $subRoomOdataToRoomOdata[$subRoom->odata] = $room->odata;
+                    $subRoomMetaByOdata[$subRoom->odata] = [
+                        'odata' => $subRoom->odata,
+                        'code_room' => $subRoom->code_room,
+                        'name_room' => $subRoom->name_room,
+                    ];
+                }
+                if (!empty($subRoom->id)) {
+                    $subRoomIdToRoomOdata[$subRoom->id] = $room->odata;
+                    $subRoomMetaById[$subRoom->id] = [
+                        'odata' => $subRoom->odata,
+                        'code_room' => $subRoom->code_room,
+                        'name_room' => $subRoom->name_room,
+                    ];
+                }
+            }
+        }
+
+        $subRoomOdataList = array_keys($subRoomOdataToRoomOdata);
+        $subRoomIdList = array_keys($subRoomIdToRoomOdata);
+
+        $bookings = Booking::query()
+            ->where(function ($query) use ($subRoomOdataList, $subRoomIdList, $roomOdataList) {
+                if (!empty($subRoomOdataList)) {
+                    $query->whereIn('room_sub_odata', $subRoomOdataList);
+                }
+
+                if (!empty($subRoomIdList)) {
+                    $query->orWhereIn('room_sub_id', $subRoomIdList);
+                }
+
+                if (!empty($roomOdataList)) {
+                    $query->orWhereIn('room_odata', $roomOdataList);
+                }
+            })
+            ->whereIn('status', ['PENDING', 'PAID', 'CONFIRMED', 'BLOCKED', 'PREPARED'])
             ->where(function ($q) use ($calendarStart, $calendarEnd) {
                 $q->where('checkin_date', '<', $calendarEnd->toDateString())
                 ->where('checkout_date', '>', $calendarStart->toDateString());
@@ -601,6 +1132,20 @@ class DashboardService
         $bookingMap = [];
 
         foreach ($bookings as $booking) {
+            $targetRoomOdata = null;
+
+            if (!empty($booking->room_sub_odata) && isset($subRoomOdataToRoomOdata[$booking->room_sub_odata])) {
+                $targetRoomOdata = $subRoomOdataToRoomOdata[$booking->room_sub_odata];
+            } elseif (!empty($booking->room_sub_id) && isset($subRoomIdToRoomOdata[$booking->room_sub_id])) {
+                $targetRoomOdata = $subRoomIdToRoomOdata[$booking->room_sub_id];
+            } elseif (!empty($booking->room_odata)) {
+                $targetRoomOdata = $booking->room_odata;
+            }
+
+            if (!$targetRoomOdata) {
+                continue;
+            }
+
             $period = CarbonPeriod::create(
                 $booking->checkin_date,
                 Carbon::parse($booking->checkout_date)->subDay()
@@ -608,7 +1153,7 @@ class DashboardService
 
             foreach ($period as $date) {
                 $dateStr = $date->toDateString();
-                $bookingMap[$booking->room_odata][$dateStr] = $booking;
+                $bookingMap[$targetRoomOdata][$dateStr] = $booking;
             }
         }
 
@@ -620,6 +1165,13 @@ class DashboardService
             $row = [
                 'room_id' => $room->odata,
                 'room_name' => $room->room_name,
+                'sub_rooms' => $room->subRooms->map(function ($subRoom) {
+                    return [
+                        'odata' => $subRoom->odata,
+                        'code_room' => $subRoom->code_room,
+                        'name_room' => $subRoom->name_room,
+                    ];
+                })->values()->toArray(),
                 'calendar' => []
             ];
 
@@ -630,18 +1182,43 @@ class DashboardService
                     'status' => 'available',
                     'booking_user' => null,
                     'booking_odata' => null,
+                    'sub_room_odata' => null,
+                    'sub_room_code' => null,
+                    'sub_room_name' => null,
                     'can_block' => true,
                     'can_open' => false,
+                    'type' => null,
                 ];
 
                 if (isset($bookingMap[$room->odata][$date])) {
                     $booking = $bookingMap[$room->odata][$date];
 
-                    $cell['status'] = 'booked';
+                    if ($booking->status === 'BLOCKED') {
+                        $cell['status'] = 'blocked';
+                    } elseif ($booking->status === 'PREPARED') {
+                        $cell['status'] = 'prepared';
+                    } else {
+                        $cell['status'] = 'booked';
+                    }
                     $cell['booking_odata'] = $booking->odata;
                     $cell['booking_user'] = optional($booking->user)->name;
+
+                    $subRoomMeta = null;
+                    if (!empty($booking->room_sub_odata) && isset($subRoomMetaByOdata[$booking->room_sub_odata])) {
+                        $subRoomMeta = $subRoomMetaByOdata[$booking->room_sub_odata];
+                    } elseif (!empty($booking->room_sub_id) && isset($subRoomMetaById[$booking->room_sub_id])) {
+                        $subRoomMeta = $subRoomMetaById[$booking->room_sub_id];
+                    }
+
+                    if ($subRoomMeta) {
+                        $cell['sub_room_odata'] = $subRoomMeta['odata'];
+                        $cell['sub_room_code'] = $subRoomMeta['code_room'];
+                        $cell['sub_room_name'] = $subRoomMeta['name_room'];
+                    }
+
                     $cell['can_block'] = false;
-                    $cell['can_open'] = false;
+                    $cell['can_open'] = in_array($booking->status, ['BLOCKED', 'PREPARED']);
+                    $cell['type'] = $booking->type_booking ?? null;
                 }
 
                 $row['calendar'][] = $cell;
@@ -777,12 +1354,33 @@ class DashboardService
         }
 
         // Ambil rooms
-        $rooms = Rooms::where('property_odata', $userKode)->get();
+        $rooms = Rooms::with('subRooms')->where('property_odata', $userKode)->get();
         $roomIds = $rooms->pluck('odata')->toArray();
+        $subRoomMetaByOdata = [];
+        $subRoomMetaById = [];
+
+        foreach ($rooms as $room) {
+            foreach ($room->subRooms as $subRoom) {
+                if (!empty($subRoom->odata)) {
+                    $subRoomMetaByOdata[$subRoom->odata] = [
+                        'odata' => $subRoom->odata,
+                        'code_room' => $subRoom->code_room,
+                        'name_room' => $subRoom->name_room,
+                    ];
+                }
+                if (!empty($subRoom->id)) {
+                    $subRoomMetaById[$subRoom->id] = [
+                        'odata' => $subRoom->odata,
+                        'code_room' => $subRoom->code_room,
+                        'name_room' => $subRoom->name_room,
+                    ];
+                }
+            }
+        }
 
         // 🔥 FIX OVERLAP QUERY
         $bookings = Booking::whereIn('room_odata', $roomIds)
-            ->whereIn('status', ['PAID', 'CONFIRMED', 'COMPLETED','BLOCKED'])
+            ->whereIn('status', ['PENDING', 'PAID', 'CONFIRMED', 'BLOCKED', 'PREPARED'])
             ->where(function ($q) use ($calendarStart, $calendarEnd) {
                 $q->where('checkin_date', '<', $calendarEnd->toDateString())
                 ->where('checkout_date', '>', $calendarStart->toDateString());
@@ -813,6 +1411,13 @@ class DashboardService
             $row = [
                 'room_id' => $room->odata,
                 'room_name' => $room->room_name,
+                'sub_rooms' => $room->subRooms->map(function ($subRoom) {
+                    return [
+                        'odata' => $subRoom->odata,
+                        'code_room' => $subRoom->code_room,
+                        'name_room' => $subRoom->name_room,
+                    ];
+                })->values()->toArray(),
                 'calendar' => []
             ];
 
@@ -823,6 +1428,9 @@ class DashboardService
                     'status' => 'available',
                     'booking_user' => null,
                     'booking_odata' => null,
+                    'sub_room_odata' => null,
+                    'sub_room_code' => null,
+                    'sub_room_name' => null,
                     'can_block' => true,
                     'can_open' => false,
                     'type' => null,
@@ -831,9 +1439,29 @@ class DashboardService
                 if (isset($bookingMap[$room->odata][$date])) {
                     $booking = $bookingMap[$room->odata][$date];
 
-                    $cell['status'] = $booking->status === 'BLOCKED' ? 'blocked' : 'booked';
+                    if ($booking->status === 'BLOCKED') {
+                        $cell['status'] = 'blocked';
+                    } elseif ($booking->status === 'PREPARED') {
+                        $cell['status'] = 'prepared';
+                    } else {
+                        $cell['status'] = 'booked';
+                    }
                     $cell['booking_odata'] = $booking->odata;
                     $cell['booking_user'] = optional($booking->user)->name;
+
+                    $subRoomMeta = null;
+                    if (!empty($booking->room_sub_odata) && isset($subRoomMetaByOdata[$booking->room_sub_odata])) {
+                        $subRoomMeta = $subRoomMetaByOdata[$booking->room_sub_odata];
+                    } elseif (!empty($booking->room_sub_id) && isset($subRoomMetaById[$booking->room_sub_id])) {
+                        $subRoomMeta = $subRoomMetaById[$booking->room_sub_id];
+                    }
+
+                    if ($subRoomMeta) {
+                        $cell['sub_room_odata'] = $subRoomMeta['odata'];
+                        $cell['sub_room_code'] = $subRoomMeta['code_room'];
+                        $cell['sub_room_name'] = $subRoomMeta['name_room'];
+                    }
+
                     $cell['can_block'] = false;
                     $cell['can_open'] = true;
                     $cell['type'] = $booking->type_booking ?? null;
@@ -909,30 +1537,81 @@ class DashboardService
         return true;
     }
 
-    public function blockRoom($roomId, $checkinDate, $checkoutDate)
+    public function blockRoom($roomId, $subRoomOdata, $checkinDate, $checkoutDate, $status = 'BLOCKED')
     {
-        $room = Rooms::where('odata', $roomId)->first();
+        $status = strtoupper((string) $status);
+        if (!in_array($status, ['BLOCKED', 'PREPARED'])) {
+            throw new HttpResponseException(response()->json(['error' => 'Invalid room status'], 422));
+        }
+
+        $room = Rooms::with('subRooms')->where('odata', $roomId)->first();
         if (!$room) {
             throw new HttpResponseException(response()->json(['error' => 'Room not found'], 404));
         }
+
+        $subRoom = null;
+        if (!empty($subRoomOdata)) {
+            $subRoom = $room->subRooms->firstWhere('odata', $subRoomOdata);
+            if (!$subRoom) {
+                throw new HttpResponseException(response()->json(['error' => 'Sub room not found'], 404));
+            }
+        }
+
         // Cek apakah ada booking yang overlap dengan tanggal yang ingin diblokir
         $overlap = Booking::where('room_odata', $room->odata)
-            ->whereIn('status', ['PAID', 'PENDING', 'COMPLETED'])
+            ->whereIn('status', ['PAID', 'PENDING', 'CONFIRMED', 'BLOCKED', 'PREPARED'])
             ->where(function ($q) use ($checkinDate, $checkoutDate) {
                 $q->where('checkin_date', '<', $checkoutDate)
                 ->where('checkout_date', '>', $checkinDate);
-            })
-            ->exists();
+            });
 
-        if ($overlap) {
-            throw new HttpResponseException(response()->json(['error' => 'Cannot block room, it is already booked in the selected date range'], 400));
+        if ($subRoom) {
+            $overlap->where('room_sub_odata', $subRoom->odata);
         }
 
-        // Buat booking dengan status BLOCKED
+        $overlap = $overlap->exists();
+
+        if (!$subRoom) {
+            $roomLevelOverlap = Booking::where('room_odata', $room->odata)
+                ->whereIn('status', ['PAID', 'PENDING', 'CONFIRMED', 'BLOCKED', 'PREPARED'])
+                ->whereNull('room_sub_odata')
+                ->where(function ($q) use ($checkinDate, $checkoutDate) {
+                    $q->where('checkin_date', '<', $checkoutDate)
+                    ->where('checkout_date', '>', $checkinDate);
+                })
+                ->exists();
+
+            $overlap = $overlap || $roomLevelOverlap;
+        }
+
+        if (!empty($subRoomOdata)) {
+            $subRoomOverlapWithoutOdata = Booking::where('room_odata', $room->odata)
+                ->whereIn('status', ['PAID', 'PENDING', 'CONFIRMED', 'BLOCKED', 'PREPARED'])
+                ->where('room_sub_id', optional($subRoom)->id)
+                ->where(function ($q) use ($checkinDate, $checkoutDate) {
+                    $q->where('checkin_date', '<', $checkoutDate)
+                    ->where('checkout_date', '>', $checkinDate);
+                })
+                ->exists();
+
+            $overlap = $overlap || $subRoomOverlapWithoutOdata;
+        }
+
+        if ($checkinDate >= $checkoutDate) {
+            throw new HttpResponseException(response()->json(['error' => 'Check-out date must be greater than check-in date'], 400));
+        }
+
+        if ($overlap) {
+            throw new HttpResponseException(response()->json(['error' => 'Cannot set room status, it already has a booking in the selected date range'], 400));
+        }
+
+        // Buat booking dengan status BLOCKED / PREPARED
         $booking = new Booking();
         $booking->odata = (string) Str::uuid();
         $booking->room_id = $room->id;
         $booking->room_odata = $room->odata;
+        $booking->room_sub_id = $subRoom ? $subRoom->id : null;
+        $booking->room_sub_odata = $subRoom ? $subRoom->odata : null;
         $booking->user_id = auth()->id();
         $booking->user_odata = auth()->user()->odata;
         $booking->property_odata = $room->property_odata;
@@ -942,17 +1621,22 @@ class DashboardService
         $booking->checkout_date = $checkoutDate;
         $booking->total_nights = Carbon::parse($checkinDate)->diffInDays(Carbon::parse($checkoutDate));
         $booking->checkin = 'Y';
-        $booking->status = 'BLOCKED';
+        $booking->status = $status;
         $booking->save();
 
         return true;
     }
 
+    public function prepareRoom($roomId, $subRoomOdata, $checkinDate, $checkoutDate)
+    {
+        return $this->blockRoom($roomId, $subRoomOdata, $checkinDate, $checkoutDate, 'PREPARED');
+    }
+
     public function openRoom($bookingOdata)
     {
         $booking = Booking::where('odata', $bookingOdata)->first();
-        if (!$booking || $booking->status !== 'BLOCKED') {
-            throw new HttpResponseException(response()->json(['error' => 'Booking not found or cannot be unblocked'], 404));
+        if (!$booking || !in_array($booking->status, ['BLOCKED', 'PREPARED'])) {
+            throw new HttpResponseException(response()->json(['error' => 'Booking not found or cannot be opened'], 404));
         }
         $booking->delete();
         return true;

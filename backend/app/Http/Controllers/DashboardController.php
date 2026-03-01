@@ -97,13 +97,30 @@ class DashboardController extends Controller
     public function blockRoom(Request $request)
     {
         $roomId = $request->room_odata ?? null;
+        $subRoomOdata = $request->sub_room_odata ?? null;
         $checkinDate = $request->checkin_date ?? null;
         $checkoutDate = $request->checkout_date ?? null;
 
-        $data = $this->dashboardService->blockRoom($roomId, $checkinDate, $checkoutDate);
+        $data = $this->dashboardService->blockRoom($roomId, $subRoomOdata, $checkinDate, $checkoutDate);
 
         $response=[
             'message' => 'Room blocked successfully',
+        ];
+
+        return response()->json($response, 201);
+    }
+
+    public function prepareRoom(Request $request)
+    {
+        $roomId = $request->room_odata ?? null;
+        $subRoomOdata = $request->sub_room_odata ?? null;
+        $checkinDate = $request->checkin_date ?? null;
+        $checkoutDate = $request->checkout_date ?? null;
+
+        $data = $this->dashboardService->prepareRoom($roomId, $subRoomOdata, $checkinDate, $checkoutDate);
+
+        $response=[
+            'message' => 'Room prepared successfully',
         ];
 
         return response()->json($response, 201);

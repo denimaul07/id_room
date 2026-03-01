@@ -84,51 +84,52 @@
 
             <div v-else class="grid grid-cols-1 gap-8">
                 <div>
-                    <!-- PHOTO GALLERY -->
+                    <!-- PHOTO GALLERY - Mirip RentDetails -->
                     <section class="max-w-7xl mx-auto mt-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 h-[420px]">
-                            <!-- LEFT BIG IMAGE, aspect ratio & shadow -->
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-2 h-[380px]">
+
+                            <!-- LEFT BIG IMAGE -->
                             <div
-                                class="relative group cursor-pointer overflow-hidden shadow-lg aspect-[4/3] h-full min-h-[220px] bg-gray-100"
+                                class="md:col-span-3 relative rounded-xl overflow-hidden cursor-pointer group bg-gray-100"
                                 @click="setActiveImage(0)"
                             >
                                 <img
-                                    :src="galleryImages[0]"
-                                    class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                                    :src="galleryImages[0] || fallbackImage"
+                                    class="w-full h-full object-cover transition duration-500 group-hover:scale-105"
                                 />
                                 <div class="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition"></div>
                             </div>
 
-                            <!-- RIGHT GRID, thumbnails, overlay on last -->
-                            <div class="grid grid-cols-2 gap-3 h-full">
+                            <!-- RIGHT 3x2 GRID -->
+                            <div class="md:col-span-2 grid grid-cols-3 grid-rows-2 gap-2 h-full">
                                 <div
-                                    v-for="(img, i) in galleryImages.slice(1,5)"
+                                    v-for="(img, i) in galleryImages.slice(1,7)"
                                     :key="i"
-                                    class="relative cursor-pointer overflow-hidden  group aspect-[4/3] bg-gray-100"
-                                    @click="setActiveImage(i+1)"
+                                    class="relative rounded-xl overflow-hidden cursor-pointer group bg-gray-100"
+                                    @click="setActiveImage(i + 1)"
                                 >
                                     <img
                                         :src="img"
-                                        class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                                        class="w-full h-full object-cover transition duration-500 group-hover:scale-105"
                                     />
-                                    <!-- LAST IMAGE OVERLAY, more visible -->
+
                                     <div
-                                        v-if="i === 3 && galleryImages.length > 5"
-                                        class="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-xl transition group-hover:bg-black/70 z-10"
+                                        v-if="i === 5 && galleryImages.length > 7"
+                                        class="absolute inset-0 bg-black/60 flex items-center justify-center z-10"
                                     >
-                                        <span class="flex items-center gap-3 px-4 py-2 rounded-lg bg-black/40 backdrop-blur-sm">
-                                            <i class="fas fa-th-large text-2xl"></i>
+                                        <div class="text-white text-sm font-semibold bg-black/40 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2">
+                                            <i class="fas fa-th-large"></i>
                                             Lihat Semua Foto
-                                        </span>
+                                        </div>
                                     </div>
-                                    <!-- Overlay for hover effect on all thumbnails -->
+
                                     <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition"></div>
                                 </div>
                             </div>
                         </div>
                     </section>
 
-                    <div class="max-w-7xl mx-auto mt-6 z-20 relative">
+                    <div class="max-w-7xl mx-auto -mt-6 z-20 relative">
 
                         <!-- MAIN CONTAINER -->
                         <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 md:p-8">
@@ -138,7 +139,7 @@
 
                                 <!-- LEFT -->
                                 <div>
-                                    <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
+                                    <h1 class="text-1xl md:text-2xl font-bold text-gray-900">
                                         {{ propertyTitle }}
                                     </h1>
 
@@ -157,7 +158,7 @@
                                 <!-- RIGHT PRICE -->
                                 <div class="text-right">
                                     <p class="text-sm text-gray-500">Harga mulai dari</p>
-                                    <p class="text-3xl font-bold text-orange-500">
+                                    <p class="text-2xl font-bold text-orange-500">
                                         {{ formattedPrice }}
                                     </p>
                                 </div>
@@ -208,14 +209,13 @@
                                         <h3 class="font-semibold">Fasilitas Utama</h3>
                                     </div>
 
-                                    <ul class="mt-4 space-y-4 text-sm text-gray-700">
+                                    <ul class="mt-4 grid grid-cols-2 gap-x-6 gap-y-4 text-sm text-gray-700">
                                         <li
-                                            class="flex flex-row flex-wrap items-center gap-3"
+                                            class="flex items-center gap-3"
                                             v-for="facility in facilities"
                                             :key="facility.odata || facility.name"
-                                            style="display: inline-flex; margin-right: 1.5rem; margin-bottom: 0.5rem;"
                                         >
-                                            <i class="fas" :class="facility.icon"></i>
+                                            <i class="fas" :class="facility.icon" :style="{ color: currentInfo.primaryColor }"></i>
                                             {{ facility.name }}
                                         </li>
                                     </ul>
@@ -228,106 +228,142 @@
 
                                     <!-- TITLE -->
                                     <h2 class="text-2xl font-bold text-gray-900 mb-4 pt-4">
-                                        Tipe Unit yang Tersedia di {{ propertyTitle }}
+                                        Tipe Kamar yang Siap di Jual di {{ propertyTitle }}
                                     </h2>
+
 
                                     <!-- ROOM CARD -->
                                     <div class="overflow-hidden">
-
-                                        <div
-                                            v-for="room in propertyRooms"
-                                            :key="room.odata"
-                                            class="grid md:grid-cols-[320px_1fr] border-b last:border-b-0"
-                                        >
-
-                                            <!-- ================= LEFT IMAGE PANEL ================= -->
-                                            <div class="p-5">
-                                                <div class="relative">
-                                                    <img
-                                                    :src="getRoomImage(room)"
-                                                    class="rounded-xl w-full h-[210px] object-cover"
-                                                    />
-
-                                                    <!-- Optional Badge -->
-                                                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-r text-sm px-4 py-2 rounded-b-xl" :style="{ backgroundColor: currentInfo.primaryColor, color: currentInfo.primaryTextColor }">
-                                                    Pilihan populer di akomodasi ini
-                                                    </div>
-                                                </div>
-
-                                                <div v-if="room.luas" class="flex items-center gap-2 text-gray-700 text-sm mt-3">
-                                                    <i class="fas fa-ruler text-base"></i>
-                                                    <span>{{ room.luas }} m²</span>
-                                                </div>
-
-                                                <!-- FACILITIES -->
-                                                <ul class="mt-4 space-y-2 text-sm text-gray-600">
-                                                    <li
-                                                        v-for="facility in getRoomFacilities(room)"
-                                                        :key="facility.name"
-                                                        class="inline-flex items-center gap-2 mr-4 mb-2"
-                                                    >
-                                                        <i class="fas" :class="facility.icon"></i>
-                                                        {{ facility.name }}
-                                                    </li>
-                                                </ul>
+                                        <div v-for="room in propertyRooms" :key="room.odata" class="border rounded-xl overflow-hidden mb-6 bg-white shadow-sm">
+                                            <!-- ================= ROOM TITLE ================= -->
+                                            <div class="px-6 pt-6 pb-3">
+                                                <h3 class="text-xl font-bold text-gray-900">
+                                                {{ room.room_name }}
+                                                </h3>
                                             </div>
 
-                                            <!-- ================= RIGHT CONTENT ================= -->
-                                            <div class="mt-6">
-                                                <!-- TABLE HEADER -->
-                                                <div class="grid grid-cols-12 px-6 py-3 text-sm text-black font-semibold border-b bg-gray-100">
-                                                    <div class="col-span-4">Pilihan Unit</div>
-                                                    <div class="col-span-2 text-center">Tamu</div>
-                                                    <div class="col-span-2 text-right">Harga Jual</div>
-                                                    <div class="col-span-2 text-right">Unit</div>
-                                                    <div class="col-span-2 text-center">Aksi</div>
+                                            <div class="grid md:grid-cols-[300px_1fr]">
+
+                                                <!-- ================= LEFT IMAGE ================= -->
+                                                <div class="p-6 pt-0">
+                                                    <div class="relative">
+                                                        <img
+                                                        :src="getRoomImage(room)"
+                                                        class="rounded-xl w-full h-[200px] object-cover"
+                                                        />
+
+                                                        <div
+                                                        class="absolute bottom-0 left-0 right-0 text-xs px-4 py-2 rounded-b-xl font-semibold"
+                                                        :style="{ backgroundColor: currentInfo.primaryColor, color: '#ffffff' }"
+                                                        >
+                                                            Pilihan populer di akomodasi ini
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Room Info -->
+                                                    <div v-if="room.luas" class="flex items-center gap-2 text-gray-700 text-sm mt-4">
+                                                        <i class="fas fa-ruler"></i>
+                                                        <span>{{ room.luas }} m²</span>
+                                                    </div>
+
+                                                    <div class="flex flex-wrap gap-3 mt-4 text-sm text-gray-600">
+                                                        <div
+                                                        v-for="facility in getRoomFacilities(room)"
+                                                        :key="facility.name"
+                                                        class="flex items-center gap-2"
+                                                        >
+                                                        <i class="fas" :class="facility.icon"></i>
+                                                        {{ facility.name }}
+                                                        </div>
+                                                    </div>
                                                 </div>
 
-                                                <!-- ================= RATE PLAN LOOP ================= -->
-                                                <div class="grid grid-cols-12 px-6 py-5 border-b last:border-b-0 items-center bg-white">
+                                                <!-- ================= RIGHT TABLE ================= -->
+                                                <div>
 
-                                                    <!-- DESCRIPTION -->
-                                                    <div class="col-span-4">
-                                                        <div class="font-semibold text-gray-900">{{ room.room_name }}</div>
-                                                        <div class="text-xs text-gray-500 mt-1">{{ room.room_type }} Unit</div>
-                                                        <div class="text-xs">
-                                                            <span v-if="room.include_breakfast==='Y'" class="inline-block bg-green-600 text-white px-2 py-1 rounded-full mt-1">
-                                                                Sertifikat Lengkap
-                                                            </span>
-                                                            <span v-else class="inline-block bg-gray-300 text-gray-600 px-2 py-1 rounded-full mt-1">
-                                                                Sertifikat Tidak Lengkap
-                                                            </span>
+                                                    <!-- ================= RIGHT UNIT CARDS ================= -->
+                                                    <div class="p-6 pt-0 space-y-4">
+
+                                                        <div
+                                                            v-for="subRoom in room.sub_rooms"
+                                                            :key="subRoom.odata"
+                                                            class="border rounded-2xl p-5 hover:shadow-md transition bg-white"
+                                                        >
+                                                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+                                                                <!-- LEFT INFO -->
+                                                                <div class="flex-1">
+
+                                                                    <div class="flex items-center gap-2 flex-wrap">
+                                                                        <h4 class="font-semibold text-gray-900 text-lg">
+                                                                            {{ subRoom.name_room }} - {{ subRoom.code_room }}
+                                                                        </h4>
+
+                                                                        <span
+                                                                            class="text-xs px-2 py-1 rounded-full font-semibold"
+                                                                            :class="parseInt(subRoom.total_room) > 0
+                                                                                ? 'bg-green-100 text-green-700'
+                                                                                : 'bg-gray-200 text-gray-500'"
+                                                                        >
+                                                                            {{ parseInt(subRoom.total_room) > 0 ? 'Ready Stock' : 'Sold Out' }}
+                                                                        </span>
+                                                                    </div>
+
+                                                                    <div class="text-sm text-gray-500 mt-1">
+                                                                        {{ subRoom.type_bed }}
+                                                                    </div>
+
+                                                                    <!-- Capacity -->
+                                                                    <div class="flex items-center gap-2 text-gray-500 mt-3 text-sm">
+                                                                        <i class="fas fa-user"></i>
+                                                                        <span>{{ room.capacity }} Orang</span>
+                                                                    </div>
+
+                                                                    <!-- Stock Info -->
+                                                                    <div
+                                                                        v-if="parseInt(subRoom.total_room) <= 3 && parseInt(subRoom.total_room) > 0"
+                                                                        class="text-sm text-red-500 font-semibold mt-2"
+                                                                    >
+                                                                        Sisa {{ subRoom.total_room }} unit lagi!
+                                                                    </div>
+
+                                                                </div>
+
+                                                                <!-- RIGHT PRICE + CTA -->
+                                                                <div class="text-right min-w-[180px]">
+
+                                                                    <div class="text-2xl font-bold text-gray-900">
+                                                                        {{
+                                                                            parseInt(subRoom.sale)
+                                                                                ? parseInt(subRoom.sale)
+                                                                                    .toLocaleString('id-ID', {
+                                                                                        style: 'currency',
+                                                                                        currency: 'IDR'
+                                                                                    }).replace(',00', '')
+                                                                                : '-'
+                                                                        }}
+                                                                    </div>
+
+                                                                    <div class="text-xs text-gray-400 mb-3">
+                                                                        Harga per unit
+                                                                    </div>
+
+                                                                    <button
+                                                                        class="w-full px-4 py-2 rounded-lg font-semibold text-sm transition"
+                                                                        :style="{
+                                                                            backgroundColor: currentInfo.primaryColor,
+                                                                            color: currentInfo.primaryTextColor
+                                                                        }"
+                                                                        @click="openContactDrawer"
+                                                                    >
+                                                                        Hubungi Sales
+                                                                    </button>
+
+                                                                </div>
+
+                                                            </div>
                                                         </div>
-                                                    </div>
 
-                                                    <!-- GUEST ICON -->
-                                                    <div class="col-span-2 text-center text-gray-400 text-lg">
-                                                        <span v-if="room.capacity">
-                                                            <i class="fas fa-user" v-for="n in room.capacity" :key="n"></i>
-                                                        </span>
-                                                    </div>
-
-                                                    <!-- PRICE -->
-                                                    <div class="col-span-2 text-right">
-                                                        <div class="text-xl font-bold text-orange-500">
-                                                            {{ room.price ? room.price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).replace(',00', '') : '-' }}
-                                                        </div>
-                                                        <div class="text-xs text-gray-400">Harga Jual</div>
-                                                    </div>
-
-                                                    <div class="col-span-2 text-right text-gray-500 text-sm">
-                                                        <span class="inline-block text-xs text-white px-2 py-1 rounded-full mb-1" :style="{ backgroundColor: currentInfo.primaryColor }">
-                                                            1 x
-                                                        </span>
-                                                    </div>
-
-                                                    <!-- ACTION -->
-                                                    <div class="col-span-2 flex flex-col items-center gap-2">
-                                                        <button
-                                                            class="px-5 py-2 rounded-lg font-semibold w-24 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
-                                                            :style="{ backgroundColor: currentInfo.primaryColor , color: currentInfo.primaryTextColor }"
-                                                            @click="openContactDrawer">Tanya Unit
-                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -582,7 +618,7 @@ const propertyDescription = computed(() => property.value?.information || 'Belum
 const propertyAbout = computed(() => property.value?.description || 'Belum ada deskripsi.')
 const propertyRooms = computed(() => {
     if (!Array.isArray(property.value?.rooms)) return []
-    return property.value.rooms.filter((room) => room?.status === 0)
+    return property.value.rooms.filter((room) => room?.status == '0')
 })
 
 const formatRoomPrice = (value) => {
@@ -658,7 +694,7 @@ const fetchProperty = async () => {
     if (!odata.value) return
     isLoading.value = true
     try {
-        const response = await apiGetData('public/property-detail', { odata: odata.value })
+        const response = await apiGetData('public/property-detail-sell', { odata: odata.value })
         property.value = response?.data || null
         if (galleryImages.value.length) {
             setActiveImage(0)

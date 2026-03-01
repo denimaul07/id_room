@@ -103,7 +103,12 @@ const apiPostDataWithReturn = async (url = "", paramsData = "", axiosConfig = {}
             const title = error.response.data?.title || 'Oops... !';
 
             sweetError(title, ResObj.toString(), errorId);
-            return { success: false };
+            return {
+                success: false,
+                message: ResObj.toString(),
+                error_id: errorId,
+                title: title
+            };
         });
 };
 

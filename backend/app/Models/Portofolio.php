@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Portofolio extends Model
 {
     use HasFactory;
-    protected $table   = 'Portofolio';
+    protected $table   = 'portofolio';
     protected $hidden  = ['id'];
     protected $guarded = [];  
 

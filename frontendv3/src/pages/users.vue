@@ -109,7 +109,7 @@
                 <div class="col-sm-8">
                     <a-select v-model:value="state.form.kode" style="width: 100%" placeholder="Pilih Department">
                         <a-select-option 
-                            v-for="(item, index) in state.form.roles.includes('properties') ? state.listProperty : state.stores" 
+                            v-for="(item, index) in state.form.roles.includes('properties') || state.form.roles.includes('receptionis') ? state.listProperty : state.stores" 
                             :key="index" 
                             :value="item.kode">
                             {{ item.deptname }}

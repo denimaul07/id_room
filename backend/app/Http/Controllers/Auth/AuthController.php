@@ -71,7 +71,7 @@ class AuthController extends Controller
         $isAdmin = false;
         if ($user && method_exists($user, 'getRoleNames')) {
             $roleNames = array_map('strtolower', $user->getRoleNames()->toArray());
-            if (in_array('admin', $roleNames) || in_array('superadmin', $roleNames) || in_array('properties', $roleNames)) {
+            if (in_array('admin', $roleNames) || in_array('superadmin', $roleNames) || in_array('properties', $roleNames) || in_array('receptionis', $roleNames)) {
                 $isAdmin = true;
             }
         }
@@ -315,7 +315,14 @@ class AuthController extends Controller
         if ($user && $user->status_users === 1) {
             auth()->logout();
             return response()->json([
-                'message' => 'Akun Anda tidak aktif.'
+                'data' => [
+                    'status_users' => [
+                        'Akun Anda tidak aktif.'
+                    ],
+                ],
+                'message' => 'Akun Anda tidak aktif.',
+                'error_id' => 'USER_INACTIVE',
+                'title' => 'Oops... !'
             ], 403);
         }
 
@@ -331,16 +338,17 @@ class AuthController extends Controller
         if ($user && $user->status_users === 2 && !$isAdmin) {
             auth()->logout();
             return response()->json([
-                'message' => 'Email belum terverifikasi. Silakan cek email Anda.'
+                'data' => [
+                    'status_users' => [
+                        'Email belum terverifikasi. Silakan cek email Anda.'
+                    ],
+                ],
+                'message' => 'Email belum terverifikasi. Silakan cek email Anda.',
+                'error_id' => 'EMAIL_UNVERIFIED',
+                'title' => 'Oops... !'
             ], 403);
         }
 
-        if ($user && method_exists($user, 'hasVerifiedEmail') && !$user->hasVerifiedEmail() && !$isAdmin) {
-            auth()->logout();
-            return response()->json([
-                'message' => 'Email belum terverifikasi. Silakan cek email Anda.'
-            ], 403);
-        }
 
         RefreshToken::where('user_id', $user->id)->delete();
 
@@ -363,7 +371,7 @@ class AuthController extends Controller
 
         $user->update(['last_login' => now()]);
 
-      
+    
         return response()
             ->json([
                 'users' => $user,

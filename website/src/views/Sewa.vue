@@ -52,7 +52,7 @@
                 <!-- Sidebar -->
                 <aside class="lg:col-span-1">
                     <RentSidebar :search="search" :city="city" :type="type" :rent-type="rentType" :min-price="minPrice"
-                        :max-price="maxPrice" :facilities="facilities" @apply="onApplyFilters"
+                        :max-price="maxPrice" :facilities="facilities"  @apply="onApplyFilters"
                         @reset="onResetFilters" />
                 </aside>
 
@@ -71,7 +71,7 @@
                         </div>
                     </div>
                     <div v-else-if="hasProperties" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                        <RentCard v-for="item in properties.data" :key="item.id" :item="item" />
+                        <RentCard v-for="item in properties.data" :key="item.id" :item="item" :start-date="startDate" :end-date="endDate" />
                     </div>
                     <div v-else class="flex flex-col items-center justify-center py-12 text-gray-500">
                         <img :src="emptyImage" alt="No properties" class="w-100 max-w-full mb-4" />
@@ -124,6 +124,8 @@ const type = ref('')
 const rentType = ref('')
 const minPrice = ref(null)
 const maxPrice = ref(null)
+const startDate = ref('')
+const endDate = ref('')
 const facilities = ref([])
 const sortBy = ref('')
 const priceSort = ref('')
@@ -172,6 +174,8 @@ function syncFiltersFromQuery(query) {
         ? query.facilities
         : (query.facilities ? [query.facilities] : [])
     sortBy.value = query.sort || ''
+    startDate.value = query.startDate || ''
+    endDate.value = query.endDate || ''
     priceSort.value = query.priceSort || ''
 }
 
@@ -204,6 +208,8 @@ const onApplyFilters = (filters) => {
     minPrice.value = filters?.minPrice ?? null
     maxPrice.value = filters?.maxPrice ?? null
     facilities.value = Array.isArray(filters?.facilities) ? filters.facilities : []
+    startDate.value = filters?.startDate || ''
+    endDate.value = filters?.endDate || ''
     sortBy.value = ''
     priceSort.value = ''
     fetchProperties(1)
@@ -217,6 +223,8 @@ const onResetFilters = () => {
     minPrice.value = null
     maxPrice.value = null
     facilities.value = []
+    startDate.value = ''
+    endDate.value = ''
     sortBy.value = ''
     priceSort.value = ''
     fetchProperties(1)
