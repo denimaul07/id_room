@@ -35,10 +35,12 @@ class CrmController extends Controller
         $kodenegara= $request->kodenegara;
         $email = $request->email;
         $source = $request->source;
+        $tgl_lahir = $request->tgl_lahir;
+        $jenis_kelamin = $request->jenis_kelamin;
         $remaks = $request->remaks;
         $status = $request->status;
 
-        $crm = $this->crmService->create($request->only(['name', 'telp', 'kodenegara', 'email', 'source', 'remaks', 'status']));
+        $crm = $this->crmService->create($request->only(['name', 'telp', 'kodenegara', 'email', 'source', 'tgl_lahir', 'jenis_kelamin', 'remaks', 'status']));
         return response()->json(['message' => 'CRM data created successfully'], 201);
     }
 
@@ -52,8 +54,10 @@ class CrmController extends Controller
             $source = $request->source;
             $remaks = $request->remaks;
             $status = $request->status;
+            $tgl_lahir = $request->tgl_lahir;
+            $jenis_kelamin = $request->jenis_kelamin;
     
-            $crm = $this->crmService->update($odata, $request->only(['name', 'telp', 'kodenegara', 'email', 'source', 'remaks', 'status']));
+            $crm = $this->crmService->update($odata, $request->only(['name', 'telp', 'kodenegara', 'email', 'source', 'tgl_lahir', 'jenis_kelamin', 'remaks', 'status']));
             return response()->json(['message' => 'CRM data updated successfully'], 200);
     }
 
@@ -95,5 +99,64 @@ class CrmController extends Controller
         $data = $this->crmService->get_history($leads_odata);
         return response()->json(['data' => $data], 200);
     }
+
+    public function index_source(Request $request)
+    {
+        $search = $request->search;
+        $pagging = $request->pagging ?? 10;
+        $data = $this->crmService->list_source($search, $pagging);
+        
+        $response = [
+            'data' => $data
+        ];
+        return response()->json($response, 200);
+    }       
+
+    public function store_source(Request $request)
+    {
+        $source = $request->source;
+        $status = $request->status;
+        $data = $this->crmService->store_source($source, $status);
+        return response()->json(['message' => 'CRM source created successfully'], 201);
+    }
+
+    public function update_source(Request $request)
+    {
+        $odata = $request->odata;
+        $source = $request->source;
+        $status = $request->status;
+        $data = $this->crmService->update_source($odata, $source, $status);
+        return response()->json(['message' => 'CRM source updated successfully'], 200);
+    }
+
+    public function delete_source(Request $request)
+    {
+        $odata = $request->odata;
+        $data = $this->crmService->delete_source($odata);
+        return response()->json(['message' => 'CRM source deleted successfully'], 200);
+    }
+
+    public function index_parameter(Request $request)
+    {
+
+        $data = $this->crmService->list_parameter();
+        
+        $response = [
+            'data' => $data
+        ];
+        return response()->json($response, 200);
+    }
+
+    public function update_parameter(Request $request)
+    {
+        $rate_komisi = $request->rate_komisi;
+        $bonus_repeat = $request->bonus_repeat;
+        $point = $request->point;
+        $unit_aktif = $request->unit_aktif;
+        $target_occupancy = $request->target_occupancy;
+        $data = $this->crmService->update_parameter($rate_komisi, $bonus_repeat, $point, $unit_aktif, $target_occupancy);
+        return response()->json(['message' => 'CRM parameter updated successfully'], 200);
+    }
+
 
 }

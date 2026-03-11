@@ -241,6 +241,16 @@ $api->version('v1', function ($api) {
 
             $api->get('/ppn_tax_point', 'App\Http\Controllers\PpnTaxPointController@index');
             $api->post('/ppn_tax_point', 'App\Http\Controllers\PpnTaxPointController@update');
+
+            $api->get('/source', 'App\Http\Controllers\CrmController@index_source');
+            $api->post('/source', 'App\Http\Controllers\CrmController@store_source');
+            $api->put('/source', 'App\Http\Controllers\CrmController@update_source');
+            $api->delete('/source', 'App\Http\Controllers\CrmController@delete_source');
+
+            $api->get('/parameter', 'App\Http\Controllers\CrmController@index_parameter');
+            $api->put('/parameter', 'App\Http\Controllers\CrmController@update_parameter');
+
+            
         });
     });
 
@@ -278,15 +288,18 @@ $api->version('v1', function ($api) {
         $api->get('/membership_list', 'App\Http\Controllers\TransactionController@membership_list');
     });
 
-    $api->group(['prefix' => 'member', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+    $api->group(['prefix' => 'member', 'middleware' => ['jwt.auth', 'role:superAdmin|admin|admincro']], function ($api) {
         $api->get('/index', 'App\Http\Controllers\MemberController@index');
+        $api->get('/customers', 'App\Http\Controllers\MemberController@customers');
+        $api->put('/customers', 'App\Http\Controllers\MemberController@updateCustomer');
+        $api->get('/kota', 'App\Http\Controllers\MemberController@getKota');
     });
 
     $api->group(['prefix' => 'contacts', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
         $api->get('/index', 'App\Http\Controllers\ContactController@index');
     });
 
-    $api->group(['prefix' => 'crm', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+    $api->group(['prefix' => 'crm', 'middleware' => ['jwt.auth', 'role:superAdmin|admin|admincro']], function ($api) {
         $api->get('/index', 'App\Http\Controllers\CrmController@index');
         $api->post('/index', 'App\Http\Controllers\CrmController@store');
         $api->put('/index', 'App\Http\Controllers\CrmController@update');

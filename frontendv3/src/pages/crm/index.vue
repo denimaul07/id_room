@@ -49,6 +49,8 @@
                                                         <th class="text-center bg-dark text-nowrap">Name</th>
                                                         <th class="text-center bg-dark text-nowrap">Email</th>
                                                         <th class="text-center bg-dark text-nowrap">No Telp</th>
+                                                        <th class="text-center bg-dark text-nowrap">Tanggal Lahir</th>
+                                                        <th class="text-center bg-dark text-nowrap">Jenis Kelamin</th>
                                                         <th class="text-center bg-dark text-nowrap">Source</th>
                                                         <th class="text-center bg-dark text-nowrap">Tanggal Leads</th>
                                                     </tr>
@@ -91,6 +93,8 @@
                                                         <td class="text-center">{{ data.nama }}</td>
                                                         <td class="text-center">{{ data.email }}</td>
                                                         <td class="text-center">{{ data.notelp }}</td>
+                                                        <td class="text-center">{{ data.tgl_lahir }}</td>
+                                                        <td class="text-center">{{ data.jenis_kelamin }}</td>
                                                         <td class="text-center">{{ data.source }}</td>
                                                         <td class="text-center">{{ data.tanggal_leads }}</td>
                                                     </tr>
@@ -133,6 +137,27 @@
                 <label class="col-sm-3 col-form-label">Email</label>
                 <div class="col-sm-9">
                     <a-input v-model:value="state.form.email" placeholder="Email" style="width:100%" />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">Tanggal Lahir</label>
+                <div class="col-sm-9">
+                    <a-date-picker v-model:value="state.form.tgl_lahir" placeholder="Tanggal Lahir" style="width:100%" />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">Jenis Kelamin</label>
+                <div class="col-sm-9">
+                    <a-select
+                        v-model:value="state.form.jenis_kelamin"
+                        placeholder="Jenis Kelamin"
+                        style="width: 100%"
+                    >
+                        <a-select-option value="Laki-laki">Laki-laki</a-select-option>
+                        <a-select-option value="Perempuan">Perempuan</a-select-option>
+                    </a-select>
                 </div>
             </div>
 
@@ -184,14 +209,14 @@
                 </div>
             </div>
 
-            <div class="row mb-3" v-if="action === 'Edit'">
+            <div class="row mb-3" v-if="action === 'Add'">
                 <label class="col-sm-3 col-form-label">Keterangan Remaks</label>
                 <div class="col-sm-9">
                     <a-textarea v-model:value="state.form.ket_remarks" placeholder="Keterangan Remaks"  style="width:100%" />
                 </div>
             </div>
 
-            <div class="row mb-3" v-if="action === 'Edit'">
+            <div class="row mb-3" v-if="action === 'Add'">
                 <label class="col-sm-3 col-form-label">Status</label>
                 <div class="col-sm-9">
                     <a-select
@@ -201,8 +226,8 @@
                     >
                         <a-select-option value="NEEDFU">NEEDFU</a-select-option>
                         <a-select-option value="FOLLOWUP">FOLLOWUP</a-select-option>
-                        <a-select-option value="CLOSING">CLOSING</a-select-option>
-                        <a-select-option value="LOST">LOST</a-select-option>
+                        <a-select-option value="CLOSING" v-if="action !== 'Add'">CLOSING</a-select-option>
+                        <a-select-option value="LOST" v-if="action !== 'Add'">LOST</a-select-option>
                     </a-select>
                 </div>
             </div>
@@ -221,7 +246,7 @@
 
 
 
-            <template #footer v-if="action === 'Edit' && state.form.status === 'NEEDFU'">
+            <template #footer>
                 <button type="button" :disabled="loadingButton" class="btn btn-primary ms-2" @click="save">
                     <div class="spinner-border spinner-border-sm" role="status" v-if="loadingSubmit">
                         <span class="sr-only">Loading...</span>
@@ -379,6 +404,8 @@
             kodenegara:[],
             telp: "",
             source: [],
+            tgl_lahir: "",
+            jenis_kelamin: "",
             remaks: "",
             ket_remarks: "",
             status: [],
@@ -441,9 +468,12 @@
             name: "",
             email: "",
             kodenegara:[],
+            tgl_lahir: dayjs(),
             telp: "",
             source: [],
             remaks: "",
+            ket_remarks: "",
+            jenis_kelamin: "",
             status: [],
             tanggal_leads: dayjs()
         }
@@ -458,8 +488,11 @@
             email: state.form.email,
             kodenegara: state.form.kodenegara,
             telp: state.form.telp,
+            tgl_lahir: dayjs(state.form.tgl_lahir).format('YYYY-MM-DD'),
             source: state.form.source,
             remaks: state.form.remaks,
+            ket_remarks: state.form.ket_remarks,
+            jenis_kelamin: state.form.jenis_kelamin,
             status: state.form.status,
             tanggal_leads: state.form.tanggal_leads,
         };
@@ -514,8 +547,10 @@
             source: data.source,
             remaks: data.remaks,
             ket_remarks: data.ket_remaks,
+            jenis_kelamin: data.jenis_kelamin,
             status: data.status,
-            tanggal_leads: dayjs(data.tanggal_leads)
+            tanggal_leads: dayjs(data.tanggal_leads),
+            tgl_lahir: dayjs(data.tgl_lahir)
         }
 
         await apiGetData('/crm/history', { leads_odata: data.odata }).then((response) => {

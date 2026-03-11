@@ -5,6 +5,8 @@ use App\Models\Crm;
 use App\Models\CrmSource;
 use App\Models\CrmRemarks;
 use App\Models\CrmHistory;
+use App\Models\Parameter;
+use App\Models\User;
 use Illuminate\Support\Str;
 
 class CrmService
@@ -60,6 +62,8 @@ class CrmService
             'notelp' => $data['kodenegara'] . $data['telp'],
             'email' => $data['email'],
             'source' => $data['source'],
+            'tgl_lahir' => $data['tgl_lahir'],
+            'jenis_kelamin' => $data['jenis_kelamin'],
             'remaks' => $data['remaks'] ?? null,
             'assigned_id' => auth()->id(),
             'assigned_odata' => auth()->user()->odata
@@ -74,6 +78,8 @@ class CrmService
             'notelp' => $data['kodenegara'] . $data['telp'],
             'email' => $data['email'],
             'source' => $data['source'],
+            'tgl_lahir' => $data['tgl_lahir'],
+            'jenis_kelamin' => $data['jenis_kelamin'],
             'remaks' => $data['remaks'] ?? null,
         ]);
 
@@ -130,6 +136,39 @@ class CrmService
             'assigned_odata' => auth()->user()->odata
         ]);
 
+        if ($status === 'CLOSING') {
+
+            $cek=User::where('email', $crm->email)->first();
+            if ($cek) {
+                User::where('id', $cek->id)->update([
+                    'name' => $crm->nama,
+                    'email' => $crm->email,
+                    'phone' => $crm->notelp,
+                    'birth_date' => $crm->tgl_lahir,
+                ]);
+            }else {
+                $user = User::create([
+                    'odata' => (string) Str::uuid(),
+                    'name' => $crm->nama,
+                    'email' => $crm->email,
+                    'password' => bcrypt('password'),
+                    'phone' => $crm->notelp,
+                    'birth_date' => $crm->tgl_lahir,
+                    'gender' => $crm->jenis_kelamin,
+                    'status_users' => 0,
+                    'change_password' => 1
+                ]);
+
+                User::where('id', $user->id)->update([
+                    'referral_code' =>  strtoupper(substr(Str::slug($user->name, ''), 0, 4)). str_pad($user->id, 4, '0', STR_PAD_LEFT) . strtoupper(Str::random(2))
+                ]);
+
+                // assign role
+                $user->assignRole('users');
+            }
+        }
+    
+
         activity()
             ->performedOn($crm)
             ->causedBy(auth()->user())
@@ -155,4 +194,56 @@ class CrmService
         $crm = Crm::where('odata', $leads_odata)->firstOrFail();
         return $crm->history()->orderBy('created_at', 'desc')->get();
     }
+
+    public function list_source($search = null, $pagging = 10)
+    {
+        return CrmSource::when($search, function ($query) use ($search) {
+            $query->where('source', 'like', "%$search%");
+        })->orderBy('created_at', 'desc')->paginate($pagging);
+    }
+
+    public function store_source($source, $status)
+    {
+        return CrmSource::create([
+            'odata' => (string) Str::uuid(),
+            'source' => $source,
+            'status' => $status
+        ]);
+    }
+
+    public function update_source($odata, $source, $status)
+    {
+        $crmSource = CrmSource::where('odata', $odata)->firstOrFail();
+        $crmSource->update([
+            'source' => $source,
+            'status' => $status
+        ]);
+        return $crmSource;
+    }
+
+    public function delete_source($odata)
+    {
+        $crmSource = CrmSource::where('odata', $odata)->firstOrFail();
+        $crmSource->delete();
+        return $crmSource;
+    }
+
+    public function list_parameter()
+    {
+        return Parameter::all();
+    }
+
+    public function update_parameter($rate_komisi, $bonus_repeat, $point, $unit_aktif, $target_occupancy)
+    {
+        $parameter = Parameter::where('id', 1)->firstOrFail();
+        $parameter->update([
+            'rate_komisi' => $rate_komisi,
+            'bonus_repeat' => $bonus_repeat,
+            'point' => $point,
+            'unit_aktif' => $unit_aktif,
+            'target_occupancy' => $target_occupancy
+        ]);
+        return $parameter;
+    }
+
 }

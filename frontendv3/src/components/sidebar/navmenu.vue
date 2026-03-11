@@ -47,42 +47,45 @@
 
                 <router-link :to="menuItem.path" class="sidebar-link sidebar-title" v-if="menuItem.type == 'link' && roles(menuItem.roles)"
                     :class="{ 'active': menuItem.active }" v-on:click="hidesecondmenu()"
-                    @click="setNavActive(menuItem, index)">
+                    @click="setNavActive(menuItem, index)"
+                    :title="menuItem.title">
                     <svg class="stroke-icon">
                         <use :xlink:href="iconPath + `#${menuItem.icon}`"></use>
                     </svg>
                     <svg class="fill-icon">
                         <use :xlink:href="iconPath + `#${menuItem.iconf}`"></use>
                     </svg>
-                    <span>
+                    <span style="display:none">
                         {{ menuItem.title }}
-                    </span> 
+                    </span>
                     <i class="fa fa-angle-right pull-right" v-if="menuItem.children"></i>
                 </router-link>
 
                 <a :href="menuItem.path" class="sidebar-link sidebar-title" v-if="menuItem.type == 'extLink'"
-                    @click="setNavActive(menuItem, index)">
+                    @click="setNavActive(menuItem, index)"
+                    :title="menuItem.title">
                     <svg class="stroke-icon">
                         <use :xlink:href="iconPath + `#${menuItem.icon}`"></use>
                     </svg>
                     <svg class="fill-icon">
                         <use :xlink:href="iconPath + `#${menuItem.iconf}`"></use>
                     </svg>
-                    <span>
+                    <span style="display:none">
                         {{ (menuItem.title) }}
                     </span>
                     <i class="fa fa-angle-right pull-right" v-if="menuItem.children"></i>
                 </a>
 
                 <a :href="menuItem.path" target="_blank" class="sidebar-link sidebar-title"
-                    v-if="menuItem.type == 'extTabLink'" @click="setNavActive(menuItem, index)">
+                    v-if="menuItem.type == 'extTabLink'" @click="setNavActive(menuItem, index)"
+                    :title="menuItem.title">
                     <svg class="stroke-icon">
                         <use :xlink:href="iconPath + `#${menuItem.icon}`"></use>
                     </svg>
                     <svg class="fill-icon">
                         <use :xlink:href="iconPath + `#${menuItem.iconf}`"></use>
                     </svg>
-                    <span>
+                    <span style="display:none">
                         {{ (menuItem.title) }}
                     </span>
                     <i class="fa fa-angle-right pull-right" v-if="menuItem.children"></i>

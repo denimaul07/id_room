@@ -1,5 +1,5 @@
 <template>
-    <div v-if="open" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4"
+    <div v-if="open" class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center px-4"
         @click.self="close">
         <div class="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden animate-scale" :style="{
         '--primary-color': primaryColor,
@@ -41,8 +41,8 @@
                     <label class="col-span-4 text-sm font-medium text-gray-700">
                         No Telp <span class="text-red-500">*</span>
                     </label>
-                    <div class="col-span-8 flex gap-2">
-                        <div ref="countryMenuRef" class="relative w-36">
+                    <div class="col-span-8 flex flex-col sm:flex-row gap-2">
+                        <div ref="countryMenuRef" class="relative w-full sm:w-36">
                             <button type="button" class="input w-full bg-white text-left pr-8 flex items-center gap-2"
                                 :disabled="countryCodes.length === 0" @click="toggleCountryMenu">
                                 <img v-if="selectedCountry && getCountryFlagUrl(selectedCountry)"

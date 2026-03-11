@@ -165,12 +165,12 @@ watch(drawerOpen, (val) => {
 
     <!-- BACKDROP -->
     <transition name="fade">
-        <div v-if="drawerOpen" @click="drawerOpen = false" class="fixed inset-0 bg-black/60 z-40" />
+        <div v-if="drawerOpen" @click="drawerOpen = false" class="fixed inset-0 bg-black/60 z-[60]" />
     </transition>
 
     <!-- DRAWER -->
     <transition name="drawer">
-        <aside v-if="drawerOpen" class="fixed inset-0 bg-gray-900 text-white z-50 flex flex-col">
+        <aside v-if="drawerOpen" class="fixed inset-0 bg-gray-900 text-white z-[61] flex flex-col">
 
             <!-- Header -->
             <div class="flex items-center justify-between px-6 h-16 border-b border-gray-800">

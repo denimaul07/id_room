@@ -20,21 +20,23 @@
       "type": "headtitle"
     },
 
-    {
-      "title": "Members",
-      "path": "/member",
-      "icon": "stroke-user",
-      "iconf": "fill-user",
-      "type": "link",
-      "roles": ["superAdmin", "admin"],
-      "active": false
-    },
+   
 
     {
       "title": "CRM",
       "path": "/crm",
       "icon": "stroke-task",
       "iconf": "fill-task",
+      "type": "link",
+      "roles": ["superAdmin", "admin"],
+      "active": false
+    },
+
+     {
+      "title": "Members",
+      "path": "/member",
+      "icon": "stroke-user",
+      "iconf": "fill-user",
       "type": "link",
       "roles": ["superAdmin", "admin"],
       "active": false

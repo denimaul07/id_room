@@ -21,6 +21,7 @@
                                 <Tab value="6"> <i class="fa fa-briefcase" /> Testimonial</Tab>
                                 <Tab value="7"> <i class="fa fa-shopping-cart" /> Jual & Sewa</Tab>
                                 <Tab value="8"> <i class="fa fa-cogs" /> PPN, Fee dan Point</Tab>
+                                <Tab value="9"> <i class="fa fa-users" /> CRM</Tab>
                             </TabList>
                             <TabPanels>
                                 <TabPanel value="0">
@@ -50,6 +51,9 @@
                                 <TabPanel value="8">
                                     <PpnTaxPoint />
                                 </TabPanel>
+                                <TabPanel value="9">
+                                    <CrmSettings />
+                                </TabPanel>
                             </TabPanels>
                         </Tabs>
                     </div>
@@ -75,4 +79,5 @@ import ServicesSettings from './services/index.vue';
 import TestimonialSettings from './testimoni/index.vue';
 import JualSewaSettings from './settings/jual_sewa.vue';
 import PpnTaxPoint from './settings/ppn_tax_point.vue';
+import CrmSettings from './crm/index.vue';
 </script>

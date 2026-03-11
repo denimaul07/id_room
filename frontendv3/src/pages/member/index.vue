@@ -7,82 +7,110 @@
                 <div class="card ms-2">
                     
                     <div class="card-body">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="d-flex gap-2">
-                                
-                            </div>
+                        <Tabs value="0" class="p-tab-active">
+                            <TabList  class="p-tab-active">
 
-                            <div class="ms-auto">
-                                <a-input-search
-                                    v-model:value="search"
-                                    placeholder="Cari Data"
-                                    style="width: 300px"
-                                />
-                            </div>
-                        </div>
+                                <Tab value="0"> <span style="color: #222 !important;">Customers Membership</span></Tab>
+                                <Tab value="1"> <span style="color: #222 !important;">All Customers</span></Tab>
+                            </TabList>
+                            <TabPanels>
+                                <TabPanel value="0">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="d-flex gap-2">
+                                            
+                                        </div>
 
-                        <div class="mb-3 row">
-                            <div class="table-responsive">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th class="text-center bg-dark">No</th>
-                                            <th class="text-center bg-dark text-nowrap">Action</th>
-                                            <th class="text-center bg-dark text-nowrap">Name</th>
-                                            <th class="text-center bg-dark text-nowrap">Email</th>
-                                            <th class="text-center bg-dark text-nowrap">No Telp</th>
-                                            <th class="text-center bg-dark text-nowrap">Jenis Kelamin</th>
-                                            <th class="text-center bg-dark text-nowrap">Birth Date</th>
-                                            <th class="text-center bg-dark text-nowrap">Membership</th>
-                                            <th class="text-center bg-dark text-nowrap">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                
-                                        <tr v-if="loading"> 
-                                            <td class="text-center" colspan="13"><a-skeleton active /></td>
-                                        </tr>
+                                        <div class="ms-auto">
+                                            <a-input-search
+                                                v-model:value="search"
+                                                placeholder="Cari Data"
+                                                style="width: 300px"
+                                            />
+                                        </div>
+                                    </div>
 
-                                        <tr v-else-if="state.listData.total==0">
-                                            <td class="text-center" colspan="13"><a-empty/></td>
-                                        </tr>
-                                    
-                                        <tr v-for="(data, index) in state.listData.data" :key="index" v-else>
-                                            <td class="text-center">{{ index + state.listData.from }}</td>
-                                            <td class="text-center">
-                                                <a-tooltip title="Detail User Member">
-                                                    <a-button type="primary" size="small" class="bg-dark me-2" @click="view(data)">
-                                                        <template #icon>
-                                                            <EyeOutlined />
-                                                        </template>
-                                                    </a-button>
-                                                </a-tooltip>
-                                            </td>
-                                            <td class="text-center">{{ data.name }}</td>
-                                            <td class="text-center">{{ data.email }}</td>
-                                            <td class="text-center">{{ data.phone }}</td>
-                                            <td class="text-center">{{ data.gender }}</td>
-                                            <td class="text-center">{{ data.birth_date }}</td>
-                                            <td class="text-center">{{ data.user_memberships.length > 0 ? data.user_memberships[0].membership.title : 'Non Member' }}</td>
-                                            <td class="text-center">
-                                                <span v-if="data.status_users == 0" class="badge bg-success">Aktif</span>
-                                                <span v-else-if="data.status_users == 1" class="badge bg-danger">Tidak</span>
-                                                <span v-else-if="data.status_users == 2" class="badge bg-warning text-dark">Harus Verifikasi Email</span>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                                    <div class="mb-3 row">
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="text-center bg-dark">No</th>
+                                                        <th class="text-center bg-dark text-nowrap">Action</th>
+                                                        <th class="text-center bg-dark text-nowrap">Name</th>
+                                                        <th class="text-center bg-dark text-nowrap">Email</th>
+                                                        <th class="text-center bg-dark text-nowrap">No Telp</th>
+                                                        <th class="text-center bg-dark text-nowrap">Jenis Kelamin</th>
+                                                        <th class="text-center bg-dark text-nowrap">Birth Date</th>
+                                                        <th class="text-center bg-dark text-nowrap">Membership</th>
+                                                        <th class="text-center bg-dark text-nowrap">Total Point</th>
+                                                        <th class="text-center bg-dark text-nowrap">Point Balance</th>
+                                                        <th class="text-center bg-dark text-nowrap">Total Stay</th>
+                                                        <th class="text-center bg-dark text-nowrap">Total Spending</th>
+                                                        <th class="text-center bg-dark text-nowrap">Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                            
+                                                    <tr v-if="loading"> 
+                                                        <td class="text-center" colspan="13"><a-skeleton active /></td>
+                                                    </tr>
 
-                            <div class="row py-2">
-                                <div class="col-sm-12 col-lg-4 col-xl-4 text-left">
-                                    Showing {{ state.listData.from }} to {{ state.listData.to }} of {{ state.listData.total }} entries
-                                </div>
-                                <div class="col-sm-12 col-lg-8 col-xl-8 text-end">
-                                    <a-pagination :current="state.listData.current_page" :total="state.listData.total" v-model:pageSize="pagging" @change="handlePageChange" />
-                                </div>
-                            </div>
-                        </div>
+                                                    <tr v-else-if="state.listData.total==0">
+                                                        <td class="text-center" colspan="13"><a-empty/></td>
+                                                    </tr>
+                                                
+                                                    <tr v-for="(data, index) in state.listData.data" :key="index" v-else>
+                                                        <td class="text-center">{{ index + state.listData.from }}</td>
+                                                        <td class="text-center">
+                                                            <a-tooltip title="Detail User Member">
+                                                                <a-button type="primary" size="small" class="bg-dark me-2" @click="view(data)">
+                                                                    <template #icon>
+                                                                        <EyeOutlined />
+                                                                    </template>
+                                                                </a-button>
+                                                            </a-tooltip>
+                                                        </td>
+                                                        <td class="text-center text-nowrap">{{ data.name }}</td>
+                                                        <td class="text-center text-nowrap">{{ data.email }}</td>
+                                                        <td class="text-center text-nowrap">{{ data.phone }}</td>
+                                                        <td class="text-center text-nowrap">{{ data.gender }}</td>
+                                                        <td class="text-center text-nowrap">{{ data.birth_date }}</td>
+                                                        <td class="text-center text-nowrap">{{ data.user_memberships.length > 0 ? data.user_memberships[0].membership.title : 'Non Member' }}</td>
+                                                        <td class="text-center">{{ data.total_credit_amount ? data.total_credit_amount : 0 }}</td>
+                                                        <td class="text-center">{{ data.wallet_point ? data.wallet_point.coin_balance : 0 }}</td>
+                                                        <td class="text-center">{{ data.total_stay ? data.total_stay : 0 }}</td>
+                                                        <td class="text-center">
+                                                            {{
+                                                                parseInt(data.total_transaction_amount)
+                                                                    ? parseInt(data.total_transaction_amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)
+                                                                    : 0
+                                                            }}
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <span v-if="data.status_users == 0" class="badge bg-success">Aktif</span>
+                                                            <span v-else-if="data.status_users == 1" class="badge bg-danger">Tidak</span>
+                                                            <span v-else-if="data.status_users == 2" class="badge bg-warning text-dark">Harus Verifikasi Email</span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <div class="row py-2">
+                                            <div class="col-sm-12 col-lg-4 col-xl-4 text-left">
+                                                Showing {{ state.listData.from }} to {{ state.listData.to }} of {{ state.listData.total }} entries
+                                            </div>
+                                            <div class="col-sm-12 col-lg-8 col-xl-8 text-end">
+                                                <a-pagination :current="state.listData.current_page" :total="state.listData.total" v-model:pageSize="pagging" @change="handlePageChange" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </TabPanel>
+                                <TabPanel value="1">
+                                    <all_member />
+                                </TabPanel>
+                            </TabPanels>    
+                        </Tabs>
                     </div>
                 </div>
             </div>
@@ -173,6 +201,12 @@
     } from '@ant-design/icons-vue';
     import Button from 'primevue/button';
     import ProgressBar from 'primevue/progressbar';
+    import Tabs from 'primevue/tabs';
+    import TabList from 'primevue/tablist';
+    import Tab from 'primevue/tab';
+    import TabPanels from 'primevue/tabpanels';
+    import TabPanel from 'primevue/tabpanel';
+    import all_member from './all_member.vue';
     const store = useStore();
     const pagging = ref(10);
     const search = ref('');
