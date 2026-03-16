@@ -145,6 +145,8 @@ class CrmService
                     'email' => $crm->email,
                     'phone' => $crm->notelp,
                     'birth_date' => $crm->tgl_lahir,
+                    'id_cro' => auth()->id(),
+                    'odata_cro' => auth()->user()->odata
                 ]);
             }else {
                 $user = User::create([
@@ -156,7 +158,9 @@ class CrmService
                     'birth_date' => $crm->tgl_lahir,
                     'gender' => $crm->jenis_kelamin,
                     'status_users' => 0,
-                    'change_password' => 1
+                    'change_password' => 1,
+                    'id_cro' => auth()->id(),
+                    'odata_cro' => auth()->user()->odata
                 ]);
 
                 User::where('id', $user->id)->update([

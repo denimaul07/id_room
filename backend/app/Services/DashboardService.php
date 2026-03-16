@@ -11,6 +11,9 @@ use App\Models\BookingPayment;
 use App\Models\UserMembership;
 use App\Models\Rooms;
 use App\Models\Crm;
+use App\Models\Properties;
+use App\Models\RoomSub;
+use App\Models\Parameter;
 
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Str;
@@ -1640,5 +1643,91 @@ class DashboardService
         }
         $booking->delete();
         return true;
+    }
+
+    public function getCRMData($month)
+    {
+        $property = Properties::where('isActive', 0)->count();
+        $room = RoomSub::where('status', 0)->count();
+
+        // Filter by month
+        $startOfMonth = $month . '-01';
+        $endOfMonth = date('Y-m-t', strtotime($startOfMonth));
+
+        // Total Booking (count bookings in month)
+        $totalBooking = Booking::where('status','COMPLETED')
+            ->whereBetween('checkin_date', [$startOfMonth, $endOfMonth])
+            ->count();
+
+        $startOfMonth = Carbon::parse($month)->startOfMonth();
+        $endOfMonth   = Carbon::parse($month)->endOfMonth();
+
+        $validStatus = ['PAID', 'PREPARED', 'COMPLETED'];
+
+        $roomNightsSold = Booking::whereIn('status', $validStatus)
+            ->where('checkin_date', '<=', $endOfMonth)
+            ->where('checkout_date', '>=', $startOfMonth)
+            ->get()
+            ->sum(function ($booking) use ($startOfMonth, $endOfMonth) {
+
+                $checkin  = Carbon::parse($booking->checkin_date);
+                $checkout = Carbon::parse($booking->checkout_date);
+
+                $start = $checkin->greaterThan($startOfMonth) ? $checkin : $startOfMonth;
+                $end   = $checkout->lessThan($endOfMonth) ? $checkout : $endOfMonth;
+
+                return $start->diffInDays($end);
+            });
+
+        // Total hari dalam bulan
+        $daysInMonth = $startOfMonth->daysInMonth;
+
+        // Available Room Nights
+        $availableRoomNights = $room * $daysInMonth;
+
+        // Occupancy Rate
+        $occupancyRate = $availableRoomNights > 0
+            ? round(($roomNightsSold / $availableRoomNights) * 100, 2)
+            : 0;
+
+        $parameter = Parameter::first();
+
+        // Total Revenue (sum of PAID booking transactions in month)
+        $totalRevenue = Transactions::where('status', 'PAID')
+            ->where('type', 'BOOKING')
+            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->sum('total_amount');
+
+        // Add-On Revenue (sum of PAID add-on transactions in month)
+        $addOnRevenue = Transactions::where('status', 'PAID')
+            ->where('type', 'ADDON')
+            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->sum('total_amount');
+
+        // Repeat Booking (count users with more than 1 booking in month)
+        $repeatBooking = Booking::where('status', 'COMPLETED')
+            ->whereBetween('checkin_date', [$startOfMonth, $endOfMonth])
+            ->groupBy('user_id')
+            ->havingRaw('COUNT(*) > 1')
+            ->get()
+            ->count();
+
+        // Repeat Rate (repeatBooking / totalBooking * 100)
+        $repeatRate = $totalBooking > 0 ? round(($repeatBooking / $totalBooking) * 100, 2) : 0;
+
+        $response = [
+            'total_properties' => $property,
+            'total_booking' => $totalBooking,
+            'room_nights_sold' => $roomNightsSold,
+            'occupancy_rate' => $occupancyRate,
+            'target_occupancy' => $parameter->target_occupancy ?? 0,
+            'total_revenue' => $totalRevenue,
+            'add_on_revenue' => $addOnRevenue,
+            'repeat_booking' => $repeatBooking,
+            'repeat_rate' => $repeatRate,
+            'total_komisi_cro' => $parameter && $parameter->rate_komisi ? round(($parameter->rate_komisi / 100) * $totalRevenue, 0) : 0,
+        ];
+
+        return $response;
     }
 }

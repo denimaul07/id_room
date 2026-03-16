@@ -270,7 +270,7 @@ $api->version('v1', function ($api) {
         $api->group(['middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
             $api->get('/summary', 'App\Http\Controllers\DashboardController@overview');
             $api->get('/booking-availability', 'App\Http\Controllers\DashboardController@bookingAvailability');
-            
+            $api->get('/crm', 'App\Http\Controllers\DashboardController@crm');
         });
     });
 

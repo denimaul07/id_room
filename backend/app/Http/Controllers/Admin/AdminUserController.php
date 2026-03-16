@@ -35,7 +35,7 @@ class AdminUserController extends Controller
             ->leftJoin('departments','departments.kode','=','users.kode')
             ->leftJoin('properties','properties.odata','=','users.kode')
             ->whereHas('roles', function ($query) {
-                $query->whereIn('name', ['admin', 'superAdmin','properties','receptionis']);
+                $query->whereIn('name', ['admin', 'superAdmin','properties','receptionis','admincro']);
             })
             ->where(function ($query) use ($request) {
                 $query->where('email', "like", "%" . $request->search . "%");

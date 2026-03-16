@@ -71,7 +71,7 @@ class AuthController extends Controller
         $isAdmin = false;
         if ($user && method_exists($user, 'getRoleNames')) {
             $roleNames = array_map('strtolower', $user->getRoleNames()->toArray());
-            if (in_array('admin', $roleNames) || in_array('superadmin', $roleNames) || in_array('properties', $roleNames) || in_array('receptionis', $roleNames)) {
+            if (in_array('admin', $roleNames) || in_array('superadmin', $roleNames) || in_array('properties', $roleNames) || in_array('receptionis', $roleNames) || in_array('admincro', $roleNames)) {
                 $isAdmin = true;
             }
         }

@@ -138,4 +138,11 @@ class DashboardController extends Controller
 
         return response()->json($response, 201);
     }
+
+    public function crm(Request $request)
+    {
+        $users = $this->dashboardService->getCRMData($request->month);
+
+        return response()->json($users);
+    }
 }

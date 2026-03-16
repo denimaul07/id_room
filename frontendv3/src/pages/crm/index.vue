@@ -666,12 +666,12 @@
     }
     .sticky-Action {
         position: sticky;
-        left: 50px; /* Adjust based on the width of the No column */
+        left: 2%; /* Adjust based on the width of the No column */
         z-index: 1;
     }
     .sticky-Status {
         position: sticky;
-        left: 150px; /* Adjust based on the width of the No and Action columns */
+        left: 4%; /* Adjust based on the width of the No and Action columns */
         z-index: 1;
     }
 </style>

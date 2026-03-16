@@ -1,12 +1,11 @@
 <template>
     <div>
 
-        <div class="container-fluid">
+        <div class="container-fluid  pb-5">
             <div class="row">
                 <Breadcrumbs main="Dashboard" />
             </div>
-        </div>
-        <div class="container-fluid">
+
             <div class="row widget-grid">
                 <div class="col-xxl-4 col-xl-4 col-sm-12 box-col-6">
                     <div class="card profile-box">
@@ -242,7 +241,8 @@
                         <Tab value="0"> <span style="color: #222 !important;">Dashboard Payment</span></Tab>
                         <Tab value="1"> <span style="color: #222 !important;">Dashboard Booking</span></Tab>
                         <Tab value="2"> <span style="color: #222 !important;">Dashboard Membership</span></Tab>
-                        <Tab value="3"> <span style="color: #222 !important;">Dashboard CRM</span></Tab>
+                        <Tab value="3"> <span style="color: #222 !important;">Dashboard Leads</span></Tab>
+                        <Tab value="4"> <span style="color: #222 !important;">Dashboard CRM</span></Tab>
                     </TabList>
                     <TabPanels>
                         <TabPanel value="0">
@@ -937,7 +937,7 @@
                                                 <div>
                                                     <h5>{{ crmSummary.total_crm }}</h5>
                                                     <span class="f-light">
-                                                        Total CRM {{ filterLabel }}
+                                                        Total Leads {{ filterLabel }}
                                                     </span>
                                                 </div>
                                             </div>
@@ -960,7 +960,7 @@
                                                 <div>
                                                     <h5>{{ crmSummary.total_needfu }}</h5>
                                                     <span class="f-light">
-                                                        Need Follow Up CRM {{ filterLabel }}
+                                                        Need Follow Up Leads {{ filterLabel }}
                                                     </span>
                                                 </div>
                                             </div>
@@ -983,7 +983,7 @@
                                                 <div>
                                                     <h5>{{ crmSummary.total_followup }}</h5>
                                                     <span class="f-light">
-                                                        In Progress CRM {{ filterLabel }}
+                                                        In Progress Leads {{ filterLabel }}
                                                     </span>
                                                 </div>
                                             </div>
@@ -1006,7 +1006,7 @@
                                                 <div>
                                                     <h5>{{ crmSummary.total_closing }}</h5>
                                                     <span class="f-light">
-                                                        Closed CRM {{ filterLabel }}
+                                                        Closed Leads {{ filterLabel }}
                                                     </span>
                                                 </div>
                                             </div>
@@ -1029,7 +1029,7 @@
                                                 <div>
                                                     <h5>{{ crmSummary.total_lost }}</h5>
                                                     <span class="f-light">
-                                                        Lost CRM {{ filterLabel }}
+                                                        Lost Leads {{ filterLabel }}
                                                     </span>
                                                 </div>
                                             </div>
@@ -1090,6 +1090,10 @@
                                     </div>
                                 </div>
                             </div>
+                        </TabPanel>
+                        
+                        <TabPanel value="4">
+                            <crm  />
                         </TabPanel>
                     </TabPanels>
                 </Tabs>
@@ -1284,6 +1288,7 @@
     import { useStore } from "vuex";
     import { useRouter } from "vue-router";
     import iconSpritePath from '@/assets/svg/icon-sprite.svg';
+    import crm from './crm.vue';
     import {
         EyeOutlined,
         ReloadOutlined,
@@ -1304,6 +1309,7 @@
     const isSuperAdmin = checkRole(['superAdmin','admin']);
     const isStaff = checkRole(['properties']);
     const isReceptionis = checkRole(['receptionis']);
+    const admincro = checkRole(['admincro']);
     const store = useStore();
     const router = useRouter();
     const user = store.getters["auth/currentUser"];
@@ -2940,6 +2946,9 @@
             return; // Stop execution immediately
         }else if (isReceptionis) {
             router.push({ name: "index_booking" });
+            return; // Stop execution immediately
+        }else if (admincro) {
+            router.push({ name: "crm" });
             return; // Stop execution immediately
         }
         

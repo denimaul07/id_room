@@ -16,6 +16,10 @@ class CRM extends Model
 
     public function scopeFilter($query, array $filters)
     {
+        if(auth()->user()->hasRole(['admincro'])){
+            $query->where('id_cro', auth()->id());
+        }
+
         $query->when($filters['status'] ?? null, function ($query, $status) {
             $query->where('status', $status);
         });
