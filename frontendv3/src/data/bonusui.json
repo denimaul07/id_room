@@ -20,7 +20,7 @@
       "type": "headtitle"
     },
 
-   
+  
 
     {
       "title": "CRM",
@@ -28,19 +28,31 @@
       "icon": "stroke-task",
       "iconf": "fill-task",
       "type": "link",
+      "roles": ["superAdmin", "admin","admincro"],
+      "active": false
+    },
+
+    {
+      "title": "Campaigns",
+      "path": "/campaigns",
+      "icon": "stroke-chat",
+      "iconf": "fill-chat",
+      "type": "link",
       "roles": ["superAdmin", "admin"],
       "active": false
     },
 
-     {
+    {
       "title": "Members",
       "path": "/member",
       "icon": "stroke-user",
       "iconf": "fill-user",
       "type": "link",
-      "roles": ["superAdmin", "admin"],
+      "roles": ["superAdmin", "admin","admincro"],
       "active": false
     },
+
+
 
     {
       "title": "Contacts",

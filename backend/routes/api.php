@@ -314,4 +314,13 @@ $api->version('v1', function ($api) {
     $api->group(['prefix' => 'points','middleware' => ['jwt.auth', 'role:users']], function ($api) {
         $api->get('/myPoints', 'App\Http\Controllers\PointsController@myPoints');
     });
+
+    $api->group(['prefix' => 'campaigns', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+        $api->get('/index', 'App\Http\Controllers\CampaignController@index');
+        $api->post('/store', 'App\Http\Controllers\CampaignController@store');
+        $api->post('/update', 'App\Http\Controllers\CampaignController@update');
+        $api->get('/export-template', 'App\Http\Controllers\CampaignController@exportTemplate');
+        $api->post('/upload', 'App\Http\Controllers\CampaignController@uploadContacts');
+        $api->get('/members', 'App\Http\Controllers\CampaignController@listMembers');
+    });
 });

@@ -28,6 +28,7 @@ const DashboardReceptionis = () => import('@/pages/dashboard/index_booking.vue')
 const contacts = () => import('@/pages/contacts/index.vue');
 const crm = () => import('@/pages/crm/index.vue');
 const referralCoupons = () => import('@/pages/coupon/index.vue');
+const campaigns = () => import('@/pages/campaigns/index.vue');
 
 const routes = [
   {
@@ -140,6 +141,20 @@ const routes = [
         path: '/crm',
         name: 'crm',
         component: crm,
+        meta: {
+          requiresAuth: true
+        }
+      },
+    ]
+  },
+  {
+    path: '/campaigns',
+    component: Body,
+    children: [
+      {
+        path: '/campaigns',
+        name: 'campaigns',
+        component: campaigns,
         meta: {
           requiresAuth: true
         }
