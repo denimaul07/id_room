@@ -543,8 +543,8 @@ const getYouTubeId = (value) => {
     }
 }
 
-const detailBanner = computed(() => normalizeInfoValue(currentInfo.value?.bannerSewaDetail))
-const detailColor = computed(() => normalizeInfoValue(currentInfo.value?.colorSewaDetail))
+const detailBanner = computed(() => normalizeInfoValue(currentInfo.value?.bannerJualDetail))
+const detailColor = computed(() => normalizeInfoValue(currentInfo.value?.colorJualDetail))
 
 const heroImage = computed(() => {
     if (detailBanner.value) {
@@ -557,7 +557,7 @@ const heroImage = computed(() => {
 })
 const detailTextColor = computed(() => detailColor.value || '#ffffff')
 const detailMutedColor = computed(() => detailColor.value || 'rgba(255, 255, 255, 0.9)')
-const detailAccentColor = computed(() => detailColor.value || '#10b981')
+const detailAccentColor = computed(() => '#10b981')
 const detailButtonTextColor = computed(() => '#ffffff')
 
 const galleryImages = computed(() => {
