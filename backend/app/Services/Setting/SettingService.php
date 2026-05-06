@@ -413,7 +413,7 @@ class SettingService
         );
 
         if (!empty($listingType)) {
-            $query->where('listing_type', $listingType);
+            $query->whereRaw("FIND_IN_SET(?, listing_type)", [$listingType]);
         }
 
         return $query

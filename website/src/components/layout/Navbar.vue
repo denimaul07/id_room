@@ -86,16 +86,23 @@ async function handleLogout() {
     }
 }
 
-// lock scroll when drawer open
 watch(drawerOpen, (val) => {
-    document.body.style.overflow = val ? 'hidden' : ''
+    if (val) {
+        document.body.style.overflow = 'hidden'
+        document.body.style.position = 'fixed'
+        document.body.style.width = '100%'
+    } else {
+        document.body.style.overflow = ''
+        document.body.style.position = ''
+        document.body.style.width = ''
+    }
 })
 </script>
 
 
 <template>
     <nav :style="{ backgroundColor: currentInfo?.navBarColor, color: currentInfo?.navBarTextColor }"
-        class="sticky top-0 z-50">
+        class="fixed top-0 left-0 right-0 w-full z-50">
         <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
 
             <!-- Logo -->

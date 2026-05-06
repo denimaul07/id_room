@@ -194,7 +194,7 @@ const pagedProperties = computed(() => {
 })
 
 const fetchProperties = async () => {
-    const res = await apiGetData('public/properties', { limit: 9 })
+    const res = await apiGetData('public/properties', { limit: 9, listing_type: 'Rent' })
     if (Array.isArray(res)) {
         rawProperties.value = res
     } else {

@@ -181,13 +181,19 @@
                             <th class="text-center bg-dark">Name</th>
                             <th class="text-center bg-dark">Phone</th>
                             <th class="text-center bg-dark">Status</th>
+                            <th class="text-center bg-dark">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-if="state.listContacts.length == 0">
-                            <td class="text-center" colspan="3"><a-empty/></td>
+                        <tr v-if="loadingContacts">
+                            <td class="text-center" colspan="5">
+                                <a-skeleton active />
+                            </td>
                         </tr>
-                        <tr v-for="(contact, index) in paginatedContacts" :key="index">
+                        <tr v-else-if="state.listContacts.length == 0">
+                            <td class="text-center" colspan="5"><a-empty/></td>
+                        </tr>
+                        <tr v-for="(contact, index) in paginatedContacts" :key="index" v-else>
                             <td class="text-center">{{ (currentPage - 1) * pageSize + index + 1 }}</td>
                             <td class="text-center">{{ contact.name }}</td>
                             <td class="text-center">{{ contact.phone }}</td>
@@ -195,6 +201,13 @@
                                 <span v-if="contact.status == 'pending'" class="badge bg-warning">Pending</span>
                                 <span v-else-if="contact.status == 'sent'" class="badge bg-success">Sent</span>
                                 <span v-else class="badge bg-danger">Failed</span>
+                            </td>
+                            <td class="text-center">
+                                <a-button type="primary" size="small" class="bg-dark me-2" @click="deleteContract(contact)">
+                                    <template #icon>
+                                        <DeleteOutlined />
+                                    </template>
+                                </a-button>
                             </td>
                         </tr>
                     </tbody>
@@ -322,27 +335,44 @@
             </a-modal>
 
             <a-modal v-model:visible="modalMembers" title="List Members" width="800px" :footer="false">
+                <div class="mb-2 d-flex align-items-center">
+                    <!-- <a-checkbox v-model:checked="selectAllMembers" @change="toggleSelectAllMembers">Select All</a-checkbox> -->
+                    <button class="btn btn-primary btn-sm ms-2" :disabled="selectedMembers.length === 0" @click="sendSelectedMembers">Kirim Data Terpilih</button>
+                </div>
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
                             <tr>
                                 <th class="text-center bg-dark">No</th>
+                                <th class="text-center bg-dark"><a-checkbox :checked="selectAllMembers" @change="toggleSelectAllMembers" /> Select All</th>
                                 <th class="text-center bg-dark">Name</th>
                                 <th class="text-center bg-dark">Phone</th>
                                 <th class="text-center bg-dark">Status</th>
+                                <th class="text-center bg-dark">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-if="state.listMembers.total == 0">
-                                <td class="text-center" colspan="4"><a-empty/></td>
+                                <td class="text-center" colspan="5"><a-empty/></td>
                             </tr>
                             <tr v-for="(member, index) in state.listMembers.data" :key="index">
                                 <td class="text-center">{{ (state.listMembers.current_page - 1) * state.listMembers.per_page + index + 1 }}</td>
+                                <td class="text-center">
+                                    <a-checkbox :checked="selectedMembers.includes(member.odata)" @change="() => toggleMemberSelection(member.odata)" :disabled="isMemberInCampaign(member)" />
+                                </td>
                                 <td class="text-center">{{ member.name }}</td>
                                 <td class="text-center">{{ member.phone }}</td>
                                 <td class="text-center">
                                     <span v-if="member.status_users == 0" class="badge bg-success">Active</span>
                                     <span v-else class="badge bg-danger">Inactive</span>
+                                    <span v-if="isMemberInCampaign(member)" class="badge bg-info ms-2">Sudah di campaign</span>
+                                </td>
+                                <td class="text-center">
+                                    <a-button type="primary" size="small" class="bg-dark me-2" @click="pilih(member)" :disabled="isMemberInCampaign(member)">
+                                        <template #icon>
+                                            <CheckOutlined />
+                                        </template>
+                                    </a-button>
                                 </td>
                             </tr>
                         </tbody>
@@ -377,13 +407,16 @@
     import * as XLSX from 'xlsx';
     import { useDebounceFn } from '@vueuse/core'
     import { ref, reactive, onMounted , watch, computed } from 'vue'
+    import { ref as vueRef } from 'vue';
     import { useStore } from "vuex";
     import {
-        EditOutlined, LoadingOutlined, PlusOutlined
+        CheckOutlined,
+        EditOutlined, DeleteOutlined, PlusOutlined
     } from '@ant-design/icons-vue';
     import Button from 'primevue/button';
     import ProgressBar from 'primevue/progressbar';
     const store = useStore();
+    const loadingContacts = ref(false);
     const pagging = ref(10);
     const search = ref('');
     const searchMembers = ref('');
@@ -636,17 +669,124 @@
         }
     };
 
-    const addMembers = async () => {
+    const selectedMembers = vueRef([]);
+    const selectAllMembers = vueRef(false);
+
+    const toggleSelectAllMembers = () => {
+        if (selectAllMembers.value) {
+            // Unselect all
+            selectedMembers.value = [];
+            selectAllMembers.value = false;
+        } else {
+            // Select all
+            if (state.listMembers.data && Array.isArray(state.listMembers.data)) {
+                selectedMembers.value = state.listMembers.data.map(m => m.odata);
+            }
+            selectAllMembers.value = true;
+        }
+    };
+
+    const toggleMemberSelection = (odata) => {
+        const idx = selectedMembers.value.indexOf(odata);
+        if (idx > -1) {
+            selectedMembers.value.splice(idx, 1);
+        } else {
+            selectedMembers.value.push(odata);
+        }
+        // Update selectAllMembers checkbox
+        if (state.listMembers.data && Array.isArray(state.listMembers.data)) {
+            selectAllMembers.value = selectedMembers.value.length === state.listMembers.data.length;
+        }
+    };
+
+    const sendSelectedMembers = async () => {
+        if (!selectedMembers.value.length) return;
         loading.value = true;
         const payload = {
-            page : state.listMembers.current_page,
-            search : searchMembers.value
+            odata: state.form.odata,
+            member_ids: selectedMembers.value
+        };
+        const response = await apiPostData('/campaigns/add-members-bulk', payload);
+        if (response) {
+            await getData();
+            await getContacts();
+            modalMembers.value = false;
+            moadlAddContact.value = false;
+            selectedMembers.value = [];
+            selectAllMembers.value = false;
+        }
+        loading.value = false;
+    };
+
+    const addMembers = async (page = state.listMembers.current_page, perPage = state.listMembers.per_page) => {
+        loading.value = true;
+        const payload = {
+            page: page,
+            search: searchMembers.value,
+            per_page: perPage
         };
         const response = await apiGetData('/campaigns/members', payload);
         state.listMembers = response.data;
         modalMembers.value = true;
+        // Reset selection when data changes
+        selectedMembers.value = [];
+        selectAllMembers.value = false;
         loading.value = false;
     };
+
+    const getContacts = async () => {
+        loadingContacts.value = true;
+        const params = {
+            odata: state.form.odata,
+            search: searchMembers.value
+        };
+        const response = await apiGetData('/campaigns/get-contacts', params);
+        state.listContacts = response.data
+        loadingContacts.value = false;
+    };
+
+    const pilih = async (member) => {
+        const payload = {
+            odata: state.form.odata,
+            member_id: member.odata
+        };
+        const response = await apiPostData('/campaigns/add-member', payload);
+        if(response){
+            await getData();
+            await getContacts();
+            modalMembers.value = false;
+            moadlAddContact.value = false;
+        }
+    };
+
+    const deleteContract = async (contact) => {
+        const confirmResult = await Swal.fire({
+            title: 'Are you sure?',
+            text: `Delete contact ${contact.name} - ${contact.phone}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, cancel'
+        });
+
+        if (confirmResult.isConfirmed) {
+            // Call API to delete contact
+            const response = await apiPostData('/campaigns/delete-contact', {
+                contact_id: contact.odata
+            });
+
+            if (response) {
+                await getContacts();
+                await getData();
+            }
+        }
+    };
+
+    // Helper untuk cek apakah member sudah ada di campaign contacts
+    function isMemberInCampaign(member) {
+        if (!state.listContacts || !Array.isArray(state.listContacts)) return false;
+        return state.listContacts.some(c => c.phone === member.phone);
+    }
 
     const downloadFormat = () => {
         apiExportExcel('/campaigns/export-template');
@@ -661,7 +801,7 @@
     }, 500));
 
     watch(searchMembers, useDebounceFn(async () => {
-        await addMembers();
+        await getContacts();
     }, 500));
 </script>
 

@@ -1,10 +1,12 @@
 <template>
   <Navbar />
+  <div class="pt-16">
   <router-view />
   <Footer />
   <ScrollToTop />
   <FloatingHelp v-if="!isDashboard" />
   <AppToast />
+  </div>
 </template>
 
 <script setup>

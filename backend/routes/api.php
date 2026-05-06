@@ -322,5 +322,9 @@ $api->version('v1', function ($api) {
         $api->get('/export-template', 'App\Http\Controllers\CampaignController@exportTemplate');
         $api->post('/upload', 'App\Http\Controllers\CampaignController@uploadContacts');
         $api->get('/members', 'App\Http\Controllers\CampaignController@listMembers');
+        $api->post('/add-member', 'App\Http\Controllers\CampaignController@addMember');
+        $api->get('/get-contacts', 'App\Http\Controllers\CampaignController@getContacts');
+        $api->post('/add-members-bulk', 'App\Http\Controllers\CampaignController@addMembersBulk');
+        $api->post('/delete-contact', 'App\Http\Controllers\CampaignController@deleteContact');
     });
 });

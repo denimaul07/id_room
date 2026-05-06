@@ -114,7 +114,16 @@ class CampaignService
             throw new HttpResponseException(response()->json(['error' => 'Campaign not found'], 404));
         }
 
+        // Ambil semua nomor yang sudah ada di campaign
+        $existingPhones = CampaignContact::where('campaign_id', $campaign->id)
+            ->pluck('phone')
+            ->toArray();
+
         foreach ($contacts as $contact) {
+            if (in_array($contact['phone'], $existingPhones)) {
+                // Skip jika nomor sudah ada
+                continue;
+            }
             CampaignContact::create([
                 'odata' => (string) Str::uuid(),
                 'campaign_id' => $campaign->id,
@@ -142,6 +151,113 @@ class CampaignService
                 ->orWhere('phone', 'like', "%$search%");
         }
 
-        return $contacts->select('name', 'phone', 'status_users')->paginate($paginate);
+        return $contacts->select('odata', 'name', 'phone', 'status_users')->paginate($paginate);
+    }
+
+    public function addMember($campaignOdata, $memberId)
+    {
+        $campaign = Campaign::where('odata', $campaignOdata)->first();
+        if (!$campaign) {
+            throw new HttpResponseException(response()->json(['error' => 'Campaign not found'], 404));
+        }
+
+        $user = User::where('odata', $memberId)->first();
+        if (!$user) {
+            throw new HttpResponseException(response()->json(['error' => 'User not found'], 404));
+        }
+
+        // Cek jika nomor sudah ada di campaign
+        $exists = CampaignContact::where('campaign_id', $campaign->id)
+            ->where('phone', $user->phone)
+            ->exists();
+        if ($exists) {
+            // Skip simpan jika sudah ada
+            return $campaign;
+        }
+
+        CampaignContact::create([
+            'odata' => (string) Str::uuid(),
+            'campaign_id' => $campaign->id,
+            'campaign_odata' => $campaign->odata,
+            'name' => $user->name,
+            'phone' => $user->phone
+        ]);
+
+        activity()
+            ->performedOn($campaign)
+            ->causedBy(Auth::user())
+            ->event('add_member')
+            ->log('added member to campaign');
+
+        return $campaign;
+    }
+
+    public function getContacts($campaignOdata, $search = null)
+    {
+        $campaign = CampaignContact::where('campaign_odata', $campaignOdata);
+
+        if ($search) {
+            $campaign->where('name', 'like', "%$search%")
+                ->orWhere('phone', 'like', "%$search%");
+        }
+
+        return $campaign->get();
+    }
+
+    public function addMembersBulk($campaignOdata, $memberIds)
+    {
+        $campaign = Campaign::where('odata', $campaignOdata)->first();
+        if (!$campaign) {
+            throw new HttpResponseException(response()->json(['error' => 'Campaign not found'], 404));
+        }
+
+        $users = User::whereIn('odata', $memberIds)->get();
+
+        // Ambil semua nomor yang sudah ada di campaign
+        $existingPhones = CampaignContact::where('campaign_id', $campaign->id)
+            ->pluck('phone')
+            ->toArray();
+
+        foreach ($users as $user) {
+            if (in_array($user->phone, $existingPhones)) {
+                // Skip jika nomor sudah ada
+                continue;
+            }
+            CampaignContact::create([
+                'odata' => (string) Str::uuid(),
+                'campaign_id' => $campaign->id,
+                'campaign_odata' => $campaign->odata,
+                'name' => $user->name,
+                'phone' => $user->phone
+            ]);
+        }
+
+        activity()
+            ->performedOn($campaign)
+            ->causedBy(Auth::user())
+            ->event('add_members_bulk')
+            ->log('added multiple members to campaign');
+
+        return $campaign;
+    }
+
+    public function deleteContact($contactOdata)
+    {
+        $contact = CampaignContact::where('odata', $contactOdata)->first();
+        if (!$contact) {
+            throw new HttpResponseException(response()->json(['error' => 'Contact not found'], 404));
+        }
+
+        $campaign = Campaign::where('id', $contact->campaign_id)->first();
+
+        $contact->delete();
+
+        activity()
+            ->performedOn($campaign)
+            ->causedBy(Auth::user())
+            ->event('delete_contact')
+            ->log('deleted contact from campaign');
+
+        return $campaign;
     }
 }

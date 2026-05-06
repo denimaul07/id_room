@@ -82,12 +82,65 @@ class CampaignController extends Controller
         return response()->json($response, 200);
     }
 
-    public function listMembers()
+    public function listMembers(Request $request)
     {
         $data = $this->campaignService->listMembers($request->search);
 
         $response = [
             'data' => $data
+        ];
+
+        return response()->json($response, 200);
+    }
+
+    public function addMember(Request $request)
+    {
+        $odata = $request->odata;
+        $memberId = $request->member_id;
+        $this->campaignService->addMember($odata, $memberId);
+
+        $response = [
+            'message' => 'Member added to campaign successfully'
+        ];
+
+        return response()->json($response, 200);
+    }
+
+    public function getContacts(Request $request)
+    {
+        $odata = $request->odata;
+        $search = $request->search;
+        $contacts = $this->campaignService->getContacts($odata, $search);
+
+        $response = [
+            'data' => $contacts
+        ];
+
+        return response()->json($response, 200);
+    }
+
+    public function addMembersBulk(Request $request)
+    {
+        $odata = $request->odata;
+        $memberIds = $request->member_ids;
+        foreach ($memberIds as $memberId) {
+            $this->campaignService->addMember($odata, $memberId);
+        }
+
+        $response = [
+            'message' => 'Members added to campaign successfully'
+        ];
+
+        return response()->json($response, 200);
+    }
+
+    public function deleteContact(Request $request)
+    {
+        $contactId = $request->contact_id;
+        $this->campaignService->deleteContact($contactId);
+
+        $response = [
+            'message' => 'Contact deleted successfully'
         ];
 
         return response()->json($response, 200);
