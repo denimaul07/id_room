@@ -10,6 +10,7 @@
                         <div class="d-flex align-items-center mb-3">
                             <div class="d-flex gap-2">
                                 <Button label="Tambah Campaign" icon="pi pi-plus" class="btn btn-dark" size="small" @click="add" />
+                                <Button label="WA Templates" icon="pi pi-whatsapp" class="btn btn-success" size="small" @click="goToWaTemplates" />
                             </div>
 
                             <div class="ms-auto">
@@ -48,10 +49,26 @@
                                         <tr v-for="(data, index) in state.listData.data" :key="index" v-else>
                                             <td class="text-center">{{ index + state.listData.from }}</td>
                                             <td class="text-center">
+                                                <a-tooltip title="Kirim Campaign via WhatsApp">
+                                                    <a-button type="primary" size="small" class="bg-success me-2" @click="kirimWA(data)">
+                                                        <template #icon>
+                                                            <CheckOutlined />
+                                                        </template>
+                                                    </a-button>
+                                                </a-tooltip>
+
                                                 <a-tooltip title="Edit Campaign">
                                                     <a-button type="primary" size="small" class="bg-dark me-2" @click="view(data)">
                                                         <template #icon>
                                                             <EditOutlined />
+                                                        </template>
+                                                    </a-button>
+                                                </a-tooltip>
+
+                                                <a-tooltip title="Delete Campaign">
+                                                    <a-button type="primary" size="small" danger @click="deleteData(data)">
+                                                        <template #icon>
+                                                            <DeleteOutlined />
                                                         </template>
                                                     </a-button>
                                                 </a-tooltip>
@@ -116,7 +133,33 @@
             <div class="row mb-3">
                 <label class="col-sm-4 col-form-label">Template Name</label>
                 <div class="col-sm-8">
-                    <a-input v-model:value="state.form.template_name" placeholder="Enter template name" />
+                    <a-select
+                        v-model:value="state.form.template_name"
+                        style="width: 100%"
+                        placeholder="Pilih template WA"
+                        :loading="loadingWaTemplates"
+                        show-search
+                        option-filter-prop="label"
+                        @dropdownVisibleChange="onTemplateDropdownOpen"
+                    >
+                        <a-select-option
+                            v-for="tpl in waTemplates"
+                            :key="tpl.name"
+                            :value="tpl.name"
+                            :label="tpl.name"
+                            :disabled="tpl.status !== 'APPROVED'"
+                        >
+                            <span class="font-monospace">{{ tpl.name }}</span>
+                            <span class="badge ms-2" :class="{
+                                'bg-success': tpl.status === 'APPROVED',
+                                'bg-warning text-dark': tpl.status === 'PENDING',
+                                'bg-danger': tpl.status === 'REJECTED',
+                            }">{{ tpl.status }}</span>
+                        </a-select-option>
+                    </a-select>
+                    <small class="text-muted">Hanya template dengan status <strong>APPROVED</strong> yang bisa dipilih.
+                        <a href="#" @click.prevent="goToWaTemplates">Kelola template →</a>
+                    </small>
                 </div>
             </div>
 
@@ -160,7 +203,7 @@
     
         </a-drawer>
 
-        <a-modal v-model:visible="modalContacts" title="Campaign Contacts" width="800px" :footer="false">
+        <a-modal v-model:visible="modalContacts" title="Campaign Contacts" style="top:20px" width="800px" :footer="false">
         
             <div class="mb-3 row">
                 <Button label="Add Contact" icon="pi pi-plus" class="btn btn-dark mb-3" size="small" @click="addContact" />
@@ -181,17 +224,18 @@
                             <th class="text-center bg-dark">Name</th>
                             <th class="text-center bg-dark">Phone</th>
                             <th class="text-center bg-dark">Status</th>
+                            <th class="text-center bg-dark">Error</th>
                             <th class="text-center bg-dark">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="loadingContacts">
-                            <td class="text-center" colspan="5">
+                            <td class="text-center" colspan="6">
                                 <a-skeleton active />
                             </td>
                         </tr>
                         <tr v-else-if="state.listContacts.length == 0">
-                            <td class="text-center" colspan="5"><a-empty/></td>
+                            <td class="text-center" colspan="6"><a-empty/></td>
                         </tr>
                         <tr v-for="(contact, index) in paginatedContacts" :key="index" v-else>
                             <td class="text-center">{{ (currentPage - 1) * pageSize + index + 1 }}</td>
@@ -201,6 +245,14 @@
                                 <span v-if="contact.status == 'pending'" class="badge bg-warning">Pending</span>
                                 <span v-else-if="contact.status == 'sent'" class="badge bg-success">Sent</span>
                                 <span v-else class="badge bg-danger">Failed</span>
+                            </td>
+                            <td class="text-center" style="max-width:220px">
+                                <a-tooltip v-if="contact.error_message" :title="contact.error_message">
+                                    <span class="text-danger small" style="cursor:pointer; word-break:break-word">
+                                        <i class="fa fa-exclamation-circle me-1"></i>{{ contact.error_message.length > 60 ? contact.error_message.substring(0, 60) + '…' : contact.error_message }}
+                                    </span>
+                                </a-tooltip>
+                                <span v-else class="text-muted small">-</span>
                             </td>
                             <td class="text-center">
                                 <a-button type="primary" size="small" class="bg-dark me-2" @click="deleteContract(contact)">
@@ -398,17 +450,178 @@
                 </div>
             </a-modal>
         </a-modal>
+
+        <!-- Modal Progress Kirim WA -->
+        <a-modal
+            v-model:visible="modalSendProgress"
+            title="Progres Pengiriman Campaign WhatsApp"
+            width="780px"
+            style="top:20px"
+            :footer="null"
+            :closable="!isSending || sendSummary.completed"
+            :maskClosable="!isSending || sendSummary.completed"
+            @cancel="onCloseProgressModal"
+        >
+            <!-- Header summary stats -->
+            <div class="progress-summary mb-3">
+                <div class="row g-2 text-center">
+                    <div class="col">
+                        <div class="stat-card stat-total">
+                            <div class="stat-value">{{ sendSummary.total }}</div>
+                            <div class="stat-label">Total</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="stat-card stat-queued">
+                            <div class="stat-value">{{ sendSummary.queued }}</div>
+                            <div class="stat-label">Antrian</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="stat-card stat-sending">
+                            <div class="stat-value">{{ sendSummary.sending }}</div>
+                            <div class="stat-label">Mengirim</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="stat-card stat-sent">
+                            <div class="stat-value">{{ sendSummary.sent }}</div>
+                            <div class="stat-label">Terkirim</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="stat-card stat-failed">
+                            <div class="stat-value">{{ sendSummary.failed }}</div>
+                            <div class="stat-label">Gagal</div>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Progress bar overall -->
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between mb-1 small">
+                        <span>Progress pengiriman</span>
+                        <span>{{ sendSummary.done }} / {{ sendSummary.total }}</span>
+                    </div>
+                    <div class="progress" style="height: 10px; border-radius: 999px;">
+                        <div
+                            class="progress-bar bg-success"
+                            :style="{ width: progressPercent + '%' }"
+                            style="transition: width 0.4s ease; border-radius: 999px;"
+                        ></div>
+                    </div>
+                </div>
+    
+                <!-- Status badge -->
+                <div class="mt-2 text-center">
+                    <span v-if="sendSummary.completed" class="badge bg-success fs-6 px-3 py-2">
+                        ✅ Semua selesai diproses!
+                    </span>
+                    <span v-else-if="isSending" class="badge bg-primary fs-6 px-3 py-2">
+                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                        Sedang mengirim...
+                    </span>
+                    <span v-else class="badge bg-secondary fs-6 px-3 py-2">
+                        Menunggu mulai...
+                    </span>
+                </div>
+            </div>
+
+            <!-- Filter tabs -->
+            <div class="mb-2 d-flex gap-2">
+                <button
+                    v-for="tab in progressTabs"
+                    :key="tab.key"
+                    class="btn btn-sm"
+                    :class="progressFilter === tab.key ? 'btn-dark' : 'btn-outline-secondary'"
+                    @click="progressFilter = tab.key"
+                >
+                    {{ tab.label }}
+                    <span class="badge ms-1" :class="progressFilter === tab.key ? 'bg-light text-dark' : 'bg-secondary'">
+                        {{ tab.count }}
+                    </span>
+                </button>
+            </div>
+
+            <!-- Contact list -->
+            <div class="progress-contact-list" style="max-height: 340px; overflow-y: auto;">
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="sticky-top bg-white" style="z-index:1">
+                        <tr>
+                            <th class="text-center bg-dark text-white" style="width:40px">No</th>
+                            <th class="bg-dark text-white">Nama</th>
+                            <th class="bg-dark text-white">Nomor</th>
+                            <th class="text-center bg-dark text-white">Status</th>
+                            <th class="bg-dark text-white">Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-if="filteredProgressContacts.length === 0">
+                            <td colspan="5" class="text-center text-muted py-3">Tidak ada data</td>
+                        </tr>
+                        <tr
+                            v-for="(c, idx) in filteredProgressContacts"
+                            :key="c.odata"
+                            :class="{
+                                'table-success': c.status === 'sent',
+                                'table-danger':  c.status === 'failed',
+                                'table-warning': c.status === 'sending',
+                            }"
+                        >
+                            <td class="text-center">{{ idx + 1 }}</td>
+                            <td>{{ c.name }}</td>
+                            <td>{{ c.phone }}</td>
+                            <td class="text-center">
+                                <span v-if="c.status === 'queued'" class="badge bg-secondary">Antri</span>
+                                <span v-else-if="c.status === 'sending'" class="badge bg-primary">
+                                    <span class="spinner-border spinner-border-sm" style="width:.65em;height:.65em"></span>
+                                    Mengirim
+                                </span>
+                                <span v-else-if="c.status === 'sent'" class="badge bg-success">✓ Terkirim</span>
+                                <span v-else-if="c.status === 'failed'" class="badge bg-danger">✗ Gagal</span>
+                                <span v-else class="badge bg-secondary">{{ c.status }}</span>
+                            </td>
+                            <td>
+                                <a-tooltip v-if="c.error_message" :title="c.error_message">
+                                    <span class="text-danger small" style="cursor:pointer">
+                                        <i class="fa fa-exclamation-circle me-1"></i>
+                                        {{ c.error_message.length > 55 ? c.error_message.substring(0, 55) + '…' : c.error_message }}
+                                    </span>
+                                </a-tooltip>
+                                <span v-else class="text-muted small">-</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Footer modal -->
+            <div class="mt-3 d-flex justify-content-between align-items-center">
+                <small class="text-muted">
+                    <i class="fa fa-info-circle me-1"></i>
+                    Pengiriman diproses via queue dengan jeda 2 detik per kontak untuk menghindari rate limit.
+                </small>
+                <button
+                    v-if="sendSummary.completed"
+                    class="btn btn-dark btn-sm"
+                    @click="onCloseProgressModal"
+                >
+                    Tutup
+                </button>
+            </div>
+        </a-modal>
     </div>
 </template> 
 
 
 <script setup>
-    import { apiGetData, apiPutData, apiPostData,apiExportExcel, processing, loadingButton, loadingSubmit, dayjs , Swal, waitingicon, loading, pesan } from '@/store/action';
+    import { apiGetData, apiPutData, apiPostData,apiExportExcel, apiPostDataWithReturn, processing, loadingButton, loadingSubmit, dayjs , Swal, waitingicon, loading, pesan } from '@/store/action';
     import * as XLSX from 'xlsx';
     import { useDebounceFn } from '@vueuse/core'
-    import { ref, reactive, onMounted , watch, computed } from 'vue'
+    import { ref, reactive, onMounted , watch, computed, onUnmounted, nextTick } from 'vue'
     import { ref as vueRef } from 'vue';
     import { useStore } from "vuex";
+    import { useRouter } from 'vue-router';
     import {
         CheckOutlined,
         EditOutlined, DeleteOutlined, PlusOutlined
@@ -416,6 +629,7 @@
     import Button from 'primevue/button';
     import ProgressBar from 'primevue/progressbar';
     const store = useStore();
+    const router = useRouter();
     const loadingContacts = ref(false);
     const pagging = ref(10);
     const search = ref('');
@@ -430,6 +644,30 @@
     const excelPreviewColumns = ref([]);
     const excelFile = ref(null);
     const imageBaseUrl = import.meta.env.VITE_PATH_FILE_BASE_URL + '/storage/'
+
+    // ─── WA Templates ────────────────────────────────────────────────────────
+    const waTemplates = ref([])
+    const loadingWaTemplates = ref(false)
+    const waTemplatesFetched = ref(false)
+
+    const fetchWaTemplates = async () => {
+        if (loadingWaTemplates.value) return
+        loadingWaTemplates.value = true
+        const res = await apiGetData('/whatsapp/templates')
+        waTemplates.value = res?.data || []
+        waTemplatesFetched.value = true
+        loadingWaTemplates.value = false
+    }
+
+    const onTemplateDropdownOpen = (open) => {
+        if (open && !waTemplatesFetched.value) {
+            fetchWaTemplates()
+        }
+    }
+
+    const goToWaTemplates = () => {
+        router.push({ name: 'wa-templates' })
+    }
     const excelPreviewPage = ref(1);
     const excelPreviewPageSize = ref(10);
     const excelPreviewTotal = computed(() => excelPreviewData.value.length);
@@ -788,6 +1026,199 @@
         return state.listContacts.some(c => c.phone === member.phone);
     }
 
+    const modalSendProgress  = ref(false);
+    const isSending          = ref(false);
+    const sendBatchKey       = ref('');
+    const sendProgressData   = ref({}); // { [contactOdata]: { name, phone, status, error_message } }
+    const sendSummary        = ref({ total: 0, sent: 0, failed: 0, sending: 0, queued: 0, done: 0, completed: false });
+    const progressFilter     = ref('all');
+    let   pollingTimer       = null;
+    
+    const progressPercent = computed(() => {
+        if (!sendSummary.value.total) return 0;
+        return Math.round((sendSummary.value.done / sendSummary.value.total) * 100);
+    });
+    
+    const progressTabs = computed(() => [
+        { key: 'all',     label: 'Semua',   count: sendSummary.value.total },
+        { key: 'queued',  label: 'Antri',   count: sendSummary.value.queued },
+        { key: 'sending', label: 'Proses',  count: sendSummary.value.sending },
+        { key: 'sent',    label: 'Terkirim',count: sendSummary.value.sent },
+        { key: 'failed',  label: 'Gagal',   count: sendSummary.value.failed },
+    ]);
+    
+    const filteredProgressContacts = computed(() => {
+        const contacts = Object.entries(sendProgressData.value).map(([odata, c]) => ({ odata, ...c }));
+        if (progressFilter.value === 'all') return contacts;
+        return contacts.filter(c => c.status === progressFilter.value);
+    });
+    
+    // ─── Ganti seluruh fungsi kirimWA dengan ini ─────────────────────────────────
+    
+    const kirimWA = async (data) => {
+        const contactCount = data.contacts?.length || 0;
+        const sentCount    = data.contacts?.filter(c => c.status === 'sent').length || 0;
+        const pendingCount = contactCount - sentCount;
+    
+        // Fetch template untuk detect variabel
+        let extraVarCount = 0;
+        if (!waTemplatesFetched.value) await fetchWaTemplates();
+        const tpl = waTemplates.value.find(t => t.name === data.template_name);
+        if (tpl?.components) {
+            const body = tpl.components.find(c => c.type === 'BODY');
+            if (body?.text) {
+                const matches = body.text.match(/\{\{\d+\}\}/g) || [];
+                const maxIdx  = Math.max(0, ...matches.map(m => parseInt(m.replace(/[{}]/g, ''))));
+                extraVarCount = Math.max(0, maxIdx - 2);
+            }
+        }
+    
+        // Build extra inputs HTML
+        let extraInputsHtml = '';
+        for (let i = 3; i <= 2 + extraVarCount; i++) {
+            extraInputsHtml += `
+                <div class="mb-2 text-start">
+                    <label class="form-label small fw-bold">Variabel {{${i}}}:</label>
+                    <input id="swal-var-${i}" class="swal2-input"
+                        style="width:100%;margin:0;height:34px;font-size:13px"
+                        placeholder="Nilai untuk {{${i}}}" />
+                </div>`;
+        }
+    
+        const confirmResult = await Swal.fire({
+            title: 'Kirim Campaign via WhatsApp?',
+            html: `
+                <div class="text-start small mb-3">
+                    Template: <strong>${data.template_name || '-'}</strong><br>
+                    Total kontak: <strong>${contactCount}</strong> &nbsp;|
+                    Belum terkirim: <strong>${pendingCount}</strong> &nbsp;|
+                    Sudah terkirim: <strong>${sentCount}</strong>
+                </div>
+                <div class="text-start small mb-2 text-muted">
+                    <i class="fa fa-info-circle me-1"></i>
+                    <strong>{{1}}</strong> = Nama Kontak &nbsp; <strong>{{2}}</strong> = Nomor HP
+                </div>
+                ${extraInputsHtml}
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Kirim!',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#28a745',
+            preConfirm: () => {
+                const extraParams = [];
+                for (let i = 3; i <= 2 + extraVarCount; i++) {
+                    extraParams.push(document.getElementById(`swal-var-${i}`)?.value || '');
+                }
+                return extraParams;
+            }
+        });
+    
+        if (!confirmResult.isConfirmed) return;
+    
+        // ── Dispatch ke backend ───────────────────────────────────────────────
+        processing.value = true;
+        const response = await apiPostDataWithReturn('/campaigns/send-wa', {
+            odata:        data.odata,
+            extra_params: confirmResult.value || [],
+        }, {}, false); // notif=false supaya tidak muncul sweetSuccess
+        processing.value = false;
+
+        if (!response?.success) return;
+
+        const batchKey = response.data?.batch_key;
+        if (!batchKey) {
+            Swal.fire('Info', response.data?.message || 'Campaign dikirim.', 'info');
+            await getData();
+            return;
+        }
+
+        sendBatchKey.value      = batchKey;
+        sendProgressData.value  = {};
+        sendSummary.value       = { 
+            total: response.data.total, 
+            sent: 0, failed: 0, sending: 0, 
+            queued: response.data.total, 
+            done: 0, completed: false 
+        };
+        progressFilter.value    = 'all';
+        isSending.value         = true;
+
+        // ── Tutup Swal dulu, lalu buka modal setelah Swal benar-benar hilang ──
+        Swal.close();
+        await nextTick();
+
+        modalSendProgress.value = true;
+        startProgressPolling(batchKey, data.odata);
+    };
+    
+    // ─── Polling progress ──────────────────────────────────────────────────────
+    
+    const startProgressPolling = (batchKey, campaignOdata) => {
+        stopProgressPolling();
+    
+        const poll = async () => {
+            try {
+                const res = await apiGetData('/campaigns/send-wa-progress', { batch_key: batchKey });
+                if (!res) return;
+
+                // apiGetData return response.data langsung — jadi contacts, summary, completed ada di root
+                const contacts  = res?.contacts;
+                const summary   = res?.summary;
+                const completed = res?.completed;
+
+                if (!contacts || !summary) return;
+
+                sendProgressData.value = contacts;
+                sendSummary.value      = { ...summary, completed };
+
+                if (completed) {
+                    isSending.value = false;
+                    stopProgressPolling();
+                    await getData();
+                }
+            } catch (e) {
+                console.error('Polling error', e);
+            }
+        };
+    
+        poll(); // langsung poll sekali
+        pollingTimer = setInterval(poll, 2500); // poll tiap 2.5 detik
+    };
+    
+    const stopProgressPolling = () => {
+        if (pollingTimer) {
+            clearInterval(pollingTimer);
+            pollingTimer = null;
+        }
+    };
+    
+    const onCloseProgressModal = () => {
+        stopProgressPolling();
+        modalSendProgress.value = false;
+        isSending.value         = false;
+    };
+
+    const deleteData = async (data) => {
+        const confirmResult = await Swal.fire({
+            title: 'Hapus Campaign',
+            text: `Apakah Anda yakin ingin menghapus campaign "${data.name}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        });
+
+        if (confirmResult.isConfirmed) {
+            loading.value = true;
+            const response = await apiPostData('/campaigns/delete', { odata: data.odata });
+            if (response) {
+                await getData();
+            }
+            loading.value = false;
+        }
+    };
+
     const downloadFormat = () => {
         apiExportExcel('/campaigns/export-template');
     };
@@ -795,6 +1226,8 @@
     onMounted(async() => {
         await getData();
     });
+
+    onUnmounted(() => stopProgressPolling());
 
     watch(search, useDebounceFn(async () => {
         await getData();
@@ -824,4 +1257,29 @@
         margin-top: 8px;
         color: #666;
     }
+
+    .progress-summary .stat-card {
+        border-radius: 8px;
+        padding: 8px 4px;
+        font-weight: 600;
+    }
+    .stat-card .stat-value {
+        font-size: 1.5rem;
+        line-height: 1.1;
+    }
+    .stat-card .stat-label {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        opacity: .75;
+    }
+    .stat-total   { background: #f0f0f0; color: #333; }
+    .stat-queued  { background: #e8e8e8; color: #555; }
+    .stat-sending { background: #e0f0ff; color: #0055cc; }
+    .stat-sent    { background: #e6f9ec; color: #1a7a36; }
+    .stat-failed  { background: #fff0f0; color: #c0392b; }
+    
+    .progress-contact-list::-webkit-scrollbar        { width: 5px; }
+    .progress-contact-list::-webkit-scrollbar-track  { background: #f5f5f5; }
+    .progress-contact-list::-webkit-scrollbar-thumb  { background: #ccc; border-radius: 4px; }
 </style>

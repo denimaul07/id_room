@@ -21,10 +21,7 @@
                     <div class="card-body flex-1 flex flex-col text-center">
                         <h3 class="text-2xl font-bold mb-2">{{ plan.title }}</h3>
                         <p class="text-secondary mb-4">{{ plan.desc }}</p>
-                        <div class="text-5xl font-bold text-primary my-4">{{ parseInt(plan.price).toLocaleString('id-ID', {
-                        style:
-                            'currency', currency: 'IDR'
-                    }).slice(0, -3) }} <span class="text-base font-normal text-secondary">/bulan</span></div>
+                        <div class="text-5xl font-bold text-primary my-4">{{ formatCurrency(plan.price) }} <span class="text-base font-normal text-secondary">/bulan</span></div>
                         <div class="text-left flex-1 pb-3">
                             <h4 class="font-semibold mb-2">Benefits</h4>
                             <ul class="space-y-2 text-sm text-secondary">
@@ -52,6 +49,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import { formatCurrency } from '@/utils/helpers'
 import { apiPostDataWithReturn, Swal, waitingicon, loadingButton, pesan } from '@/store/action'
 import { useInfoStore } from '@/store/info'
 import { useAuthStore } from '@/store/auth'

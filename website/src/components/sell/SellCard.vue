@@ -47,6 +47,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { formatCurrency } from '@/utils/helpers'
 
 const imageBaseUrl = import.meta.env.VITE_PATH_FILE_BASE_URL + '/storage/'
 const fallbackImage = 'https://images.unsplash.com/photo-1568605114967-8130f3a36994'
@@ -71,7 +72,7 @@ const imageUrl = computed(() => {
 const formattedPrice = computed(() => {
   const price = Number(props.item?.sale_price || props.item?.price || 0)
   return price
-    ? price.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)
+    ? formatCurrency(price)
     : 'Rp0'
 })
 

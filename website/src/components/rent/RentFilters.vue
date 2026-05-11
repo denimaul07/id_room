@@ -43,6 +43,44 @@
 
     </div>
 
+    <!-- Room Type -->
+    <div class="mb-4 border-b pb-4">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-purple-500"><i class="fas fa-bed"></i></span>
+        <span class="font-semibold">Tipe Kamar</span>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-for="rt in roomTypeOptions"
+          :key="rt.value"
+          @click="selectedRoomType = rt.value"
+          class="px-3 py-1 rounded-full text-sm font-semibold border transition-all"
+          :class="selectedRoomType === rt.value
+            ? 'bg-red-500 text-white border-red-500'
+            : 'bg-white text-gray-600 border-gray-300 hover:border-red-400'"
+        >{{ rt.label }}</button>
+      </div>
+    </div>
+
+    <!-- Furnishing -->
+    <div class="mb-4 border-b pb-4">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-purple-500"><i class="fas fa-couch"></i></span>
+        <span class="font-semibold">Furnishing</span>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-for="f in furnishingOptions"
+          :key="f.value"
+          @click="selectedFurnishing = f.value"
+          class="px-3 py-1 rounded-full text-sm font-semibold border transition-all"
+          :class="selectedFurnishing === f.value
+            ? 'bg-red-500 text-white border-red-500'
+            : 'bg-white text-gray-600 border-gray-300 hover:border-red-400'"
+        >{{ f.label }}</button>
+      </div>
+    </div>
+
     <!-- Price -->
     <div class="mb-4 border-b pb-4">
       <div class="flex items-center gap-2 mb-2">
@@ -77,7 +115,7 @@
 
     <!-- Apply Filter Button -->
     <button class="bg-gray-900 text-white w-full py-3 rounded-lg font-semibold mt-2" @click="applyFilters">
-      Apply Filter
+      Cari Akomodasi
     </button>
   </div>
 </template>
@@ -118,7 +156,23 @@ const propertyTypeList = computed(() =>
 )
 const selectedType = ref('')
 const selectedRentType = ref('')
+const selectedRoomType = ref('')
+const selectedFurnishing = ref('')
 const selectedFacilities = ref(Array.isArray(props.facilities) ? props.facilities : [])
+
+const roomTypeOptions = [
+  { label: 'All', value: '' },
+  { label: 'Studio', value: 'studio' },
+  { label: '1BR', value: '1br' },
+  { label: '2BR', value: '2br' },
+  { label: '3BR', value: '3br' },
+]
+
+const furnishingOptions = [
+  { label: 'All', value: '' },
+  { label: 'Full Furnished', value: 'full_furnished' },
+  { label: 'Unfurnished', value: 'unfurnished' },
+]
 
 const facilities = ref([])
 
@@ -215,6 +269,8 @@ const applyFilters = () => {
     endDate: endDate.value,
     type: selectedType.value,
     rentType: selectedRentType.value,
+    roomType: selectedRoomType.value,
+    furnishing: selectedFurnishing.value,
     facilities: selectedFacilities.value,
 
   })
@@ -225,6 +281,8 @@ const resetFilters = () => {
   selectedCity.value = ''
   selectedType.value = ''
   selectedRentType.value = ''
+  selectedRoomType.value = ''
+  selectedFurnishing.value = ''
   minPrice.value = null
   maxPrice.value = null
   selectedFacilities.value = []

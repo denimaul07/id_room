@@ -186,6 +186,7 @@
                             <th class="text-center bg-dark text-nowrap sticky-col sticky-left-1 col-no">No</th>
                             <th class="text-center bg-dark text-nowrap sticky-col sticky-left-2 col-action">Action</th>
                             <th class="text-center bg-dark text-nowrap">Name Room</th>
+                            <th class="text-center bg-dark text-nowrap">Room Type</th>
                             <th class="text-center bg-dark text-nowrap">Code Room</th>
                             <th class="text-center bg-dark text-nowrap">Type Bed</th>
                             <th class="text-center bg-dark text-nowrap">Price</th>
@@ -216,6 +217,7 @@
                                 </a-tooltip>
                             </td>
                             <td class="text-center text-nowrap">{{ data.name_room }}</td>
+                            <td class="text-center text-nowrap">{{ data.room_type || '-' }}</td>
                             <td class="text-center text-nowrap">{{ data.code_room }}</td>
                             <td class="text-center text-nowrap">{{ data.type_bed }}</td>
                             <td class="text-center text-nowrap">{{ formatCurrency(data.price) }}</td>
@@ -241,6 +243,19 @@
                     <label class="col-sm-4 col-form-label">Name Room</label>
                     <div class="col-sm-8">
                         <a-input v-model:value="state.formSub.name_room" placeholder="Masukan Name Room" />
+                    </div>
+                </div>
+
+                <div class="mb-3 row">
+                    <label class="col-sm-4 col-form-label">Room Type</label>
+                    <div class="col-sm-8">
+                        <a-select v-model:value="state.formSub.room_type" placeholder="Pilih Room Type" style="width: 100%">
+                            <a-select-option value="">-</a-select-option>
+                            <a-select-option value="studio">Studio</a-select-option>
+                            <a-select-option value="1br">1BR</a-select-option>
+                            <a-select-option value="2br">2BR</a-select-option>
+                            <a-select-option value="3br">3BR</a-select-option>
+                        </a-select>
                     </div>
                 </div>
 
@@ -364,6 +379,7 @@
 </template>
 
 <script setup>
+    import { formatCurrency } from '@/utils/helpers';
     import { apiGetData, apiPostData, apiPutData, apiDeleteData, processing, loadingButton, loadingSubmit, dayjs, Swal, waitingicon, loading, pesan } from '@/store/action';
     import { reactive, onMounted, ref, watch, computed } from 'vue';
     import { useDebounceFn } from '@vueuse/core';
@@ -405,6 +421,7 @@
             odata: '',
             name_room: '',
             code_room: '',
+            room_type: '',
             type_bad: '',
             sale: 0,
             price: 0,
@@ -514,6 +531,7 @@
             odata: '',
             name_room: '',
             code_room: '',
+            room_type: '',
             type_bad: [],
             sale: 0,
             price: 0,
@@ -536,6 +554,7 @@
             odata: state.formSub.odata,
             name_room: state.formSub.name_room,
             code_room: state.formSub.code_room,
+            room_type: state.formSub.room_type,
             type_bad: state.formSub.type_bad,
             price: state.formSub.price,
             price_month: state.formSub.price_month,
@@ -570,6 +589,7 @@
             odata: data.odata,
             name_room: data.name_room,
             code_room: data.code_room,
+            room_type: data.room_type || '',
             type_bad: data.type_bed,
             sale: data.sale,
             price: data.price,
@@ -607,11 +627,5 @@
         await getData(1);
     }, 500));
 
-    const formatCurrency = (value) => {
-        if (value === null || value === undefined || value === '') {
-            return '-';
-        }
-        return (value * 1).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3);
-    };
 
 </script>

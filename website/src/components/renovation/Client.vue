@@ -21,7 +21,7 @@
             </div>
             <div class="text-gray-700 text-base leading-relaxed">{{ t.text }}</div>
             <div class="flex items-center gap-3 mt-2">
-                <img :src="t.avatar" :alt="t.name" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow" />
+                <img :src="t.avatar" :alt="t.name" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow" loading="lazy" />
                 <div>
                 <div class="font-bold text-gray-900">{{ t.name }}</div>
                 <div class="text-gray-500 text-sm">{{ t.country }}</div>

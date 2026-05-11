@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <div>
         <div class="container-fluid pb-5">
             <div class="row">
@@ -120,12 +120,12 @@
                                                     </td>
                                                     <td class="text-center text-nowrap"> {{ item.type_coupon === 'all' ? 'All' : (item.type_coupon === 'member' ? 'Member' : 'Unknown') }}  </td>
                                                     <td class="text-center text-nowrap"> 
-                                                        {{ item.type === 'percentage' ? item.value + '%' : parseInt(item.value).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}
+                                                        {{ item.type === 'percentage' ? item.value + '%' : formatCurrency(item.value) }}
                                                     </td>
-                                                    <td class="text-center text-nowrap"> {{ parseInt(item.value_cashback || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }} </td>
-                                                    <td class="text-center text-nowrap"> {{ parseInt(item.minimum_transaction).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}  </td>
-                                                    <td class="text-center text-nowrap"> {{ parseInt(item.maximum_discount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}  </td>
-                                                    <td class="text-center text-nowrap"> {{ parseInt(item.usage_limit).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)}}  </td>
+                                                    <td class="text-center text-nowrap"> {{ formatCurrency(item.value_cashback || 0) }} </td>
+                                                    <td class="text-center text-nowrap"> {{ formatCurrency(item.minimum_transaction) }}  </td>
+                                                    <td class="text-center text-nowrap"> {{ formatCurrency(item.maximum_discount) }}  </td>
+                                                    <td class="text-center text-nowrap"> {{ formatCurrency(item.usage_limit)}}  </td>
                                                     <td class="text-center text-nowrap"> {{ item.usage_per_user }}  </td>
                                                     <td class="text-center text-nowrap"> {{ item.used_count }}  </td>
                                                     <td class="text-center text-nowrap"> {{ dayjs(item.start_date).format('DD MMM YYYY') }}  </td>
@@ -217,12 +217,12 @@
                                                     </td>
                                                     <td class="text-center text-nowrap"> {{ item.type_coupon === 'all' ? 'All' : (item.type_coupon === 'member' ? 'Member' : 'Unknown') }}  </td>   
                                                     <td class="text-center text-nowrap"> 
-                                                        {{ item.type === 'percentage' ? item.value + '%' : parseInt(item.value).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}
+                                                        {{ item.type === 'percentage' ? item.value + '%' : formatCurrency(item.value) }}
                                                     </td>
-                                                    <td class="text-center text-nowrap"> {{ parseInt(item.value_cashback || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }} </td>
-                                                    <td class="text-center text-nowrap"> {{ parseInt(item.minimum_transaction).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}  </td>
-                                                    <td class="text-center text-nowrap"> {{ parseInt(item.maximum_discount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}  </td>
-                                                    <td class="text-center text-nowrap"> {{ parseInt(item.usage_limit).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)}}  </td>
+                                                    <td class="text-center text-nowrap"> {{ formatCurrency(item.value_cashback || 0) }} </td>
+                                                    <td class="text-center text-nowrap"> {{ formatCurrency(item.minimum_transaction) }}  </td>
+                                                    <td class="text-center text-nowrap"> {{ formatCurrency(item.maximum_discount) }}  </td>
+                                                    <td class="text-center text-nowrap"> {{ formatCurrency(item.usage_limit)}}  </td>
                                                     <td class="text-center text-nowrap"> {{ item.usage_per_user }}  </td>
                                                     <td class="text-center text-nowrap"> {{ item.used_count }}  </td>
                                                     <td class="text-center text-nowrap"> {{ dayjs(item.start_date).format('DD MMM YYYY') }}  </td>
@@ -465,6 +465,7 @@
 </template>
 
 <script setup>
+    import { formatCurrency } from '@/utils/helpers';
     import { apiGetData, apiPostData,apiPutData,apiDeleteData, processing, loadingButton, loadingSubmit, dayjs , Swal, waitingicon, loading, pesan } from '@/store/action';
     import { reactive, onMounted, ref, watch } from 'vue'; 
     import Button from 'primevue/button';

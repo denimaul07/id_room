@@ -50,6 +50,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { formatCurrency } from '@/utils/helpers'
 import { useRoute } from 'vue-router'
 import dayjs from 'dayjs'
 const route = useRoute()
@@ -116,9 +117,7 @@ const priceInfo = computed(() => {
 })
 
 const formattedPrice = computed(() => {
-  return Number(priceInfo.value.value || 0)
-    .toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
-    .slice(0, -3)
+  return formatCurrency(priceInfo.value.value || 0)
 })
 
 const priceLabel = computed(() => priceInfo.value.label)

@@ -51,6 +51,7 @@ class PropertiesService
             'price_per_monthly' => $data['price_per_monthly'],
             'price_per_year' => $data['price_per_year'],
             'sale_price' => $data['sale_price'],
+            'furnished' => $data['furnished'] ?? null,
             'isActive' => $data['isActive'],
             'image' => $imagePath,
             'banner' => $bannerPath,
@@ -100,6 +101,7 @@ class PropertiesService
         $property->price_per_monthly = $data['price_per_monthly'];
         $property->price_per_year = $data['price_per_year'];
         $property->sale_price = $data['sale_price'];
+        $property->furnished = $data['furnished'] ?? null;
         $property->isActive = $data['isActive'];
         $property->url_video = $data['url_video'];
 

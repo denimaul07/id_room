@@ -11,11 +11,15 @@
                 <p class="text-gray-500">Mulai perjalananmu dari destinasi terbaik</p>
             </div>
             <div class="relative">
-                <div ref="scrollRef" class="flex gap-8 overflow-x-auto scroll-smooth pb-2 hide-scrollbar">
+                <!-- Skeleton -->
+                <div v-if="isLoading" class="flex gap-8 overflow-x-hidden pb-2">
+                    <div v-for="n in 3" :key="n" class="min-w-[320px] h-56 rounded-xl bg-gray-200 animate-pulse flex-shrink-0"></div>
+                </div>
+                <div v-else ref="scrollRef" class="flex gap-8 overflow-x-auto scroll-smooth pb-2 hide-scrollbar">
                     <div v-for="city in cities" :key="city.name"
                         class="relative min-w-[320px] h-56 rounded-xl overflow-hidden shadow group cursor-pointer">
-                        <img :src="imageBaseUrl + city.image" :alt="city.name"
-                            class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <LazyImage :src="imageBaseUrl + city.image" :alt="city.name"
+                            img-class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                         <div class="absolute left-0 bottom-0 p-5">
                             <h3 class="text-white text-xl font-bold mb-1">{{ city.name }}</h3>
@@ -61,18 +65,25 @@ import { storeToRefs } from 'pinia'
 import { useInfoStore } from '@/store/info'
 import { ref, watch, onMounted, computed } from 'vue'
 import { apiGetData } from '@/store/action'
+import LazyImage from '@/components/ui/LazyImage.vue'
 const cities = ref([])
+const isLoading = ref(true)
 
 const { data: info } = storeToRefs(useInfoStore())
 const currentInfo = computed(() => info.value?.[0] ?? {})
 
 const getData = async () => {
-    const response = await apiGetData('public/popular-city')
-    cities.value = response.data.map(city => ({
-        name: city.city.city,
-        image: city.image,
-        count: city.property_count,
-    }))
+    isLoading.value = true
+    try {
+        const response = await apiGetData('public/popular-city')
+        cities.value = response.data.map(city => ({
+            name: city.city.city,
+            image: city.image,
+            count: city.property_count,
+        }))
+    } finally {
+        isLoading.value = false
+    }
 }
 
 

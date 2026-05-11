@@ -1,5 +1,5 @@
 <template>
-    <div class="fixed bottom-3 left-3 right-3 sm:bottom-2 sm:left-auto sm:right-2 z-50 flex flex-col items-stretch sm:items-end gap-2 sm:gap-3">
+    <div class="fixed bottom-4 right-4 sm:bottom-2 sm:right-2 z-50 flex flex-col items-end gap-2 sm:gap-3">
 
         <!-- Action Buttons (muncul saat open) -->
         <transition name="fade-slide">
@@ -75,25 +75,37 @@
 
         <!-- Main Card -->
         <div @click="toggle"
-            class="rounded-xl shadow-xl p-2 w-full sm:rounded-2xl sm:p-3 sm:w-[240px] cursor-pointer hover:scale-[1.02] transition"
-            :style="{ backgroundColor: currentInfo.primaryColor, color: currentInfo.primaryTextColor }"
+            class="cursor-pointer hover:scale-[1.02] transition self-end"
         >
-            <div class="flex items-center gap-2 sm:gap-3">
+            <!-- Mobile: small circle -->
+            <div class="flex sm:hidden flex-col items-center gap-1">
+                <div
+                    class="flex items-center justify-center w-12 h-12 rounded-full shadow-xl"
+                    :style="{ backgroundColor: currentInfo.primaryColor, color: currentInfo.primaryTextColor }"
+                >
+                    <span class="text-xl">💬</span>
+                </div>
+                <span class="text-[10px] font-bold" :style="{ color: currentInfo.primaryColor }">Chat Admin</span>
+            </div>
+
+            <!-- Desktop: full card -->
+            <div
+                class="hidden sm:flex rounded-2xl shadow-xl p-3 w-[240px] items-center gap-3"
+                :style="{ backgroundColor: currentInfo.primaryColor, color: currentInfo.primaryTextColor }"
+            >
                 <img
-                src="https://i.pravatar.cc/100?img=32"
-                alt="Sales"
-                class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 sm:border-4 border-white"
+                    src="https://i.pravatar.cc/100?img=32"
+                    alt="Sales"
+                    class="w-12 h-12 rounded-full border-4 border-white flex-shrink-0"
                 />
                 <div class="flex-1">
-                <p class="text-xs sm:text-[13px] font-bold">Masih Bingung?</p>
-                <p class="text-[10px] sm:text-[11px] opacity-90">
-                    Mau sewa, beli atau renovasi properti? Yuk ngobrol dulu sama tim kami.
-                </p>
-                <button
-                    class="mt-1 sm:mt-2 bg-white text-black text-[10px] sm:text-[11px] font-bold px-2 sm:px-2.5 py-1 rounded-full"
-                >
-                    Chat Admin
-                </button>
+                    <p class="text-[13px] font-bold">Masih Bingung?</p>
+                    <p class="text-[11px] opacity-90">
+                        Mau sewa, beli atau renovasi properti? Yuk ngobrol dulu sama tim kami.
+                    </p>
+                    <button class="mt-2 bg-white text-black text-[11px] font-bold px-2.5 py-1 rounded-full">
+                        Chat Admin
+                    </button>
                 </div>
             </div>
         </div>

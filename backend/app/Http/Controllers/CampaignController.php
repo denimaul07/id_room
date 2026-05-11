@@ -64,6 +64,18 @@ class CampaignController extends Controller
         return response()->json($response, 200);
     }
 
+    public function destroy(Request $request)
+    {
+        $odata = $request->odata;
+        $this->campaignService->delete($odata);
+
+        $response = [
+            'message' => 'Campaign deleted successfully'
+        ];
+
+        return response()->json($response, 200);
+    }
+
     public function exportTemplate()
     {
         return $this->campaignService->exportTemplate();
@@ -145,4 +157,23 @@ class CampaignController extends Controller
 
         return response()->json($response, 200);
     }
+
+    public function sendWA(Request $request)
+    {
+        $campaignOdata = $request->odata;
+        $extraParams   = $request->extra_params ?? [];
+
+        $result = $this->campaignService->sendWA($campaignOdata, $extraParams);
+
+        // Langsung return response dari service
+        return $result;
+    }
+
+    public function sendWAProgress(Request $request)
+    {
+        $batchKey = $request->query('batch_key');
+        return $this->campaignService->sendWAProgress($batchKey); // langsung return, hapus yang lama
+    }
+
+    
 }

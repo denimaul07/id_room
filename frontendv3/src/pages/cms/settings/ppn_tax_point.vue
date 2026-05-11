@@ -10,14 +10,15 @@
                         <th class="text-center">PPN</th>
                         <th class="text-center">Fee</th>
                         <th class="text-center">Convert Point</th>
+                        <th class="text-center">Deposite</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-if="loading">
-                        <td colspan="5" class="text-center"><a-skeleton active /></td>
+                        <td colspan="6" class="text-center"><a-skeleton active /></td>
                     </tr>
                     <tr v-else-if="state.listData.length === 0">
-                        <td colspan="5" class="text-center">No PPN, Fee dan Point Settings Added</td>
+                        <td colspan="6" class="text-center">No PPN, Fee dan Point Settings Added</td>
                     </tr>
                     <tr v-for="(item, index) in state.listData" :key="index" v-else>
                         <td class="text-center">{{ index + 1 }}</td>
@@ -33,6 +34,7 @@
                         <td class="text-center"> {{ item.ppn }} %  </td>
                         <td class="text-center"> {{ item.fee }} %  </td>
                         <td class="text-center"> Rp. {{ parseInt(item.convert_point).toLocaleString() }}</td>
+                        <td class="text-center"> Rp. {{ parseInt(item.deposite).toLocaleString() }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -57,6 +59,13 @@
                 <label class="col-sm-4 col-form-label">Convert Point</label>
                 <div class="col-sm-8">
                     <input type="number" class="form-control" v-model="state.form.convert_point" placeholder="Enter Convert Point"/>
+                </div>
+            </div>
+
+            <div class="mb-3 row">
+                <label class="col-sm-4 col-form-label">Deposite</label>
+                <div class="col-sm-8">
+                    <input type="number" class="form-control" v-model="state.form.deposite" placeholder="Enter Deposite"/>
                 </div>
             </div>
             <template #footer>
@@ -88,6 +97,7 @@
             ppn: '',
             fee: '',
             convert_point: '',
+            deposite: '',
         },
     }); 
     
@@ -103,6 +113,7 @@
         state.form.ppn = item.ppn;
         state.form.fee = item.fee;
         state.form.convert_point = item.convert_point;
+        state.form.deposite = item.deposite;
         modalView.value = true;
     };
 
@@ -114,6 +125,7 @@
             ppn: state.form.ppn,
             fee: state.form.fee,
             convert_point: state.form.convert_point,
+            deposite: state.form.deposite,
         };
 
         const response = await apiPostData('/setting/ppn_tax_point', payload);

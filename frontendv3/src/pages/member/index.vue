@@ -1,15 +1,13 @@
-<template>
+﻿<template>
     <div>
         <div class="container-fluid pb-5">
             <div class="row">
                 <Breadcrumbs main="Members" title="List Members" />
 
                 <div class="card ms-2">
-                    
                     <div class="card-body">
                         <Tabs value="0" class="p-tab-active">
                             <TabList  class="p-tab-active">
-
                                 <Tab value="0"> <span style="color: #222 !important;">Customers Membership</span></Tab>
                                 <Tab value="1"> <span style="color: #222 !important;">All Customers</span></Tab>
                             </TabList>
@@ -82,7 +80,7 @@
                                                         <td class="text-center">
                                                             {{
                                                                 parseInt(data.total_transaction_amount)
-                                                                    ? parseInt(data.total_transaction_amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)
+                                                                    ? formatCurrency(data.total_transaction_amount)
                                                                     : 0
                                                             }}
                                                         </td>
@@ -192,6 +190,7 @@
 
 
 <script setup>
+    import { formatCurrency } from '@/utils/helpers';
     import { apiGetData, apiPutData, apiPostData,apiExportExcel, processing, loadingButton, loadingSubmit, dayjs , Swal, waitingicon, loading, pesan } from '@/store/action';
     import { useDebounceFn } from '@vueuse/core'
     import { ref, reactive, onMounted , watch} from 'vue'

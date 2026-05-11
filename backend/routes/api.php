@@ -319,6 +319,7 @@ $api->version('v1', function ($api) {
         $api->get('/index', 'App\Http\Controllers\CampaignController@index');
         $api->post('/store', 'App\Http\Controllers\CampaignController@store');
         $api->post('/update', 'App\Http\Controllers\CampaignController@update');
+        $api->post('/delete', 'App\Http\Controllers\CampaignController@destroy');
         $api->get('/export-template', 'App\Http\Controllers\CampaignController@exportTemplate');
         $api->post('/upload', 'App\Http\Controllers\CampaignController@uploadContacts');
         $api->get('/members', 'App\Http\Controllers\CampaignController@listMembers');
@@ -326,5 +327,18 @@ $api->version('v1', function ($api) {
         $api->get('/get-contacts', 'App\Http\Controllers\CampaignController@getContacts');
         $api->post('/add-members-bulk', 'App\Http\Controllers\CampaignController@addMembersBulk');
         $api->post('/delete-contact', 'App\Http\Controllers\CampaignController@deleteContact');
+        $api->post('/send-wa', 'App\Http\Controllers\CampaignController@sendWA');
+        $api->get('/send-wa-progress', 'App\Http\Controllers\CampaignController@sendWAProgress');
+    });
+
+    $api->group(['prefix' => 'whatsapp', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {
+        // Settings
+        $api->get('/settings', 'App\Http\Controllers\WhatsappController@getSettings');
+        $api->post('/settings', 'App\Http\Controllers\WhatsappController@updateSettings');
+        // Templates (proxy ke Meta API)
+        $api->get('/templates', 'App\Http\Controllers\WhatsappController@getTemplates');
+        $api->post('/templates', 'App\Http\Controllers\WhatsappController@createTemplate');
+        $api->delete('/templates', 'App\Http\Controllers\WhatsappController@deleteTemplate');
+        $api->post('/templates/delete', 'App\Http\Controllers\WhatsappController@deleteTemplate');
     });
 });

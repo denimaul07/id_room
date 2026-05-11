@@ -123,6 +123,8 @@ class PublicController extends Controller
             $max_price = $request->max_price;
             $sort = $request->sort;
             $price_sort = $request->price_sort;
+            $room_type = $request->room_type;
+            $furnished = $request->furnished;
             if (is_string($facilities)) {
                 $facilities = array_filter(explode(',', $facilities));
             }
@@ -136,7 +138,9 @@ class PublicController extends Controller
                 $min_price,
                 $max_price,
                 $sort,
-                $price_sort
+                $price_sort,
+                $room_type,
+                $furnished
             );
             $response = [
                 'data' => $properties

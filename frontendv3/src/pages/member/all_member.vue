@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <div>
         <div class="d-flex align-items-center mb-3">
             <div class="d-flex gap-2">
@@ -84,7 +84,7 @@
                             <td class="text-center">
                                 {{
                                     parseInt(data.total_transaction_amount)
-                                        ? parseInt(data.total_transaction_amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)
+                                        ? formatCurrency(data.total_transaction_amount)
                                         : 0
                                 }}
                             </td>
@@ -248,6 +248,7 @@
 
 
 <script setup>
+    import { formatCurrency } from '@/utils/helpers';
     import { apiGetData, apiPutData, apiPostData,apiExportExcel, processing, loadingButton, loadingSubmit, dayjs , Swal, waitingicon, loading, pesan } from '@/store/action';
     import { useDebounceFn } from '@vueuse/core'
     import { ref, reactive, onMounted , watch} from 'vue'

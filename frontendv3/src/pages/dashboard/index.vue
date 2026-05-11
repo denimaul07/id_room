@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <div>
 
         <div class="container-fluid  pb-5">
@@ -401,7 +401,7 @@
                                                                 <td class="text-center sticky-column">{{ index + 1 }}</td>
                                                                 <td class="text-nowrap text-center">{{ item.user }}</td>
                                                                 <td class="text-nowrap">{{ item.activity }}</td>
-                                                                <td class="text-nowrap text-left">{{ item.amount.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)}}</td>
+                                                                <td class="text-nowrap text-left">{{ formatCurrency(item.amount)}}</td>
                                                                 <td class="text-nowrap text-center">
                                                                     <span
                                                                         :class="[
@@ -461,7 +461,7 @@
                                                                 <td class="text-center sticky-column">{{ index + state.listProperty.from }}</td>
                                                                 <td class="text-nowrap text-left">{{ item.property }}</td>
                                                                 <td class="text-nowrap text-center">{{ item.booking_today }}</td>
-                                                                <td class="text-nowrap text-left">{{ item.revenue.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)}}</td>
+                                                                <td class="text-nowrap text-left">{{ formatCurrency(item.revenue)}}</td>
                                                             </tr>
                                                         </tbody>
                                                     </table>
@@ -1150,7 +1150,7 @@
                             </tr>
                             <tr>
                                 <th>Jumlah Tagihan</th>
-                                <td>{{ parseInt(state.bookingDetail.amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                <td>{{ formatCurrency(state.bookingDetail.amount) }}</td>
                             </tr>
                             <tr>
                                 <th>Tanggal Dibuat</th>
@@ -1212,19 +1212,19 @@
                             </tr>
                             <tr>
                                 <th>Harga Dasar</th>
-                                <td>{{ parseInt(state.bookingDetail.booking?.base_price || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                <td>{{ formatCurrency(state.bookingDetail.booking?.base_price || 0) }}</td>
                                 <th>Diskon</th>
-                                <td>{{ parseInt(state.bookingDetail.booking?.discount_amount || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                <td>{{ formatCurrency(state.bookingDetail.booking?.discount_amount || 0) }}</td>
                             </tr>
                             <tr>
                                 <th>Pajak</th>
-                                <td>{{ parseInt(state.bookingDetail.booking?.tax_amount || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                <td>{{ formatCurrency(state.bookingDetail.booking?.tax_amount || 0) }}</td>
                                 <th>Service Fee</th>
-                                <td>{{ parseInt(state.bookingDetail.booking?.service_fee || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                <td>{{ formatCurrency(state.bookingDetail.booking?.service_fee || 0) }}</td>
                             </tr>
                             <tr>
                                 <th>Total Bayar</th>
-                                <td colspan="3">{{ parseInt(state.bookingDetail.booking?.grand_total || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                <td colspan="3">{{ formatCurrency(state.bookingDetail.booking?.grand_total || 0) }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1281,6 +1281,7 @@
 
 <script setup>
 
+    import { formatCurrency } from '@/utils/helpers';
     import { apiGetData, apiCetakPDF, apiExportExcel, processing, loadingButton, loadingSubmit, dayjs , Swal, waitingicon, loading, pesan } from '@/store/action';
     import axios from 'axios';
     import { useDebounceFn } from '@vueuse/core'

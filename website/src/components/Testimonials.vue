@@ -14,8 +14,19 @@
         <p class="text-white/80"></p>
       </div>
 
+      <!-- Skeleton -->
+      <div v-if="realData.length === 0" class="flex gap-6 overflow-hidden pb-2">
+        <div v-for="n in 3" :key="n" class="flex-shrink-0 w-[340px] bg-white/10 rounded-2xl p-8 space-y-4">
+          <div class="w-16 h-16 bg-gray-600 rounded-full mx-auto animate-pulse"></div>
+          <div class="h-4 bg-gray-600 rounded w-3/4 mx-auto animate-pulse"></div>
+          <div class="h-3 bg-gray-600 rounded w-full animate-pulse"></div>
+          <div class="h-3 bg-gray-600 rounded w-5/6 mx-auto animate-pulse"></div>
+          <div class="h-3 bg-gray-600 rounded w-1/2 mx-auto animate-pulse"></div>
+        </div>
+      </div>
+
       <!-- Slider -->
-      <div class="relative overflow-hidden">
+      <div v-else class="relative overflow-hidden">
         <div
           class="flex gap-6 transition-transform duration-500 ease-out"
           :style="sliderStyle"
@@ -28,6 +39,7 @@
             <img
               :src="item.image ? imageBaseUrl + item.image : '/default-avatar.png'"
               class="w-16 h-16 rounded-full mx-auto mb-4 object-cover"
+              loading="lazy"
             />
 
             <p class="text-gray-700 mb-4 leading-relaxed">

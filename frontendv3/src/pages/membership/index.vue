@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <div>
         <div class="container-fluid pb-5">
             <div class="row">
@@ -69,7 +69,7 @@
                                                         </td>
                                                         <td class="text-center">{{ data.title }}</td>
                                                         <td class="text-center">{{ data.desc }}</td>
-                                                        <td class="text-center">{{ (data.price * 1).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                                        <td class="text-center">{{ formatCurrency(data.price) }}</td>
                                                         <td class="text-center">{{ data.discount_percent }}%</td>
                                                         <td class="text-center">
                                                             {{ 
@@ -257,6 +257,7 @@
 
 
 <script setup>
+    import { formatCurrency } from '@/utils/helpers';
     import { apiGetData, apiPutData, apiPostData,apiExportExcel, processing, loadingButton, loadingSubmit, dayjs , Swal, waitingicon, loading, pesan } from '@/store/action';
     import axios from 'axios';
     import { useDebounceFn } from '@vueuse/core'

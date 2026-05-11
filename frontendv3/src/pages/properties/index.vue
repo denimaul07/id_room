@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <div>
         <div class="container-fluid pb-5">
             <div class="row">
@@ -80,7 +80,7 @@
                                                             {{ data.listing_type }}
                                                         </td>
                                                         <td class="text-center text-nowrap">{{ data.address }}</td>
-                                                        <td class="text-center text-nowrap">{{ (data.price_per_night * 1).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                                        <td class="text-center text-nowrap">{{ formatCurrency(data.price_per_night) }}</td>
                                                     
                                                         <td class="text-center text-nowrap sticky-col sticky-right-1 col-status">
                                                             <span v-if="data.isActive == 0" class="badge bg-success">Active</span>
@@ -230,6 +230,18 @@
                          
 
                             <div class="mb-3 row">
+                                <label class="col-sm-4 col-form-label">Furnished</label>
+                                <div class="col-sm-8">
+                                    <a-select v-model:value="state.form.furnished" placeholder="Select Furnished" style="width: 100%;">
+                                        <a-select-option value="">-</a-select-option>
+                                        <a-select-option value="full_furnished">Full Furnished</a-select-option>
+                                        <a-select-option value="semi_furnished">Semi Furnished</a-select-option>
+                                        <a-select-option value="unfurnished">Unfurnished</a-select-option>
+                                    </a-select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3 row">
                                 <label class="col-sm-4 col-form-label">Status</label>
                                 <div class="col-sm-8">
                                     <a-select v-model:value="state.form.isActive" placeholder="Select Status" style="width: 100%;">
@@ -332,6 +344,7 @@
 </template>
 
 <script setup>
+    import { formatCurrency } from '@/utils/helpers';
     import { apiGetData, apiPutData, apiPostData,apiExportExcel, processing, loadingButton, loadingSubmit, dayjs , Swal, waitingicon, loading, pesan } from '@/store/action';
     import { useDebounceFn } from '@vueuse/core'
     import { ref, reactive, onUnmounted, onMounted, computed , watch} from 'vue'
@@ -431,6 +444,7 @@
             price_per_monthly: 0,
             price_per_year: 0,
             sale_price: 0,
+            furnished: '',
             images: "",
             banner: "",
             url_video: "",
@@ -497,6 +511,7 @@
             price_per_monthly: 0,
             price_per_year: 0,
             sale_price: 0,
+            furnished: '',
             images: "",
             banner: "",
             url_video: "",
@@ -529,6 +544,7 @@
             price_per_monthly: data.price_per_monthly,
             price_per_year: data.price_per_year,
             sale_price: data.sale_price,
+            furnished: data.furnished || '',
             images: data.image,
             banner: data.banner,
             isActive: data.isActive,
@@ -559,6 +575,7 @@
         payload.append('price_per_monthly', state.form.price_per_monthly);
         payload.append('price_per_year', state.form.price_per_year);
         payload.append('sale_price', state.form.sale_price);
+        payload.append('furnished', state.form.furnished);
         payload.append('isActive', state.form.isActive);
         payload.append('url_video', state.form.url_video);
         if(state.form.images instanceof File){

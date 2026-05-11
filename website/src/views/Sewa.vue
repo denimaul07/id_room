@@ -129,6 +129,8 @@ const endDate = ref('')
 const facilities = ref([])
 const sortBy = ref('')
 const priceSort = ref('')
+const roomType = ref('')
+const furnished = ref('')
 const pagging = ref(12)
 const { data: info } = storeToRefs(useInfoStore())
 const currentInfo = computed(() => info.value?.[0] ?? {})
@@ -152,6 +154,8 @@ const fetchProperties = async (page = properties.value.current_page) => {
         facilities: facilities.value,
         sort: sortBy.value,
         price_sort: priceSort.value,
+        room_type: roomType.value,
+        furnished: furnished.value,
     }
     try {
         const response = await apiGetData('public/properties-sewa', payload)
@@ -177,6 +181,8 @@ function syncFiltersFromQuery(query) {
     startDate.value = query.startDate || ''
     endDate.value = query.endDate || ''
     priceSort.value = query.priceSort || ''
+    roomType.value = query.roomType || ''
+    furnished.value = query.furnished || ''
 }
 
 onMounted(() => {
@@ -212,6 +218,8 @@ const onApplyFilters = (filters) => {
     endDate.value = filters?.endDate || ''
     sortBy.value = ''
     priceSort.value = ''
+    roomType.value = filters?.roomType || ''
+    furnished.value = filters?.furnishing || ''
     fetchProperties(1)
 }
 
@@ -227,6 +235,8 @@ const onResetFilters = () => {
     endDate.value = ''
     sortBy.value = ''
     priceSort.value = ''
+    roomType.value = ''
+    furnished.value = ''
     fetchProperties(1)
 }
 

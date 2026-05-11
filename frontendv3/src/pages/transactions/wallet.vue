@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <div>
         <div class="container-fluid pb-5">
             <div class="row">
@@ -91,9 +91,9 @@
                                                 <span v-else-if="data.source === 'CANCEL'">Cancel Booking</span>
                                                 <span v-else>{{ data.source }}</span>
                                             </td>
-                                            <td class="text-center">{{ parseInt(data.amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
-                                            <td class="text-center">{{ parseInt(data.balance_before).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
-                                            <td class="text-center">{{ parseInt(data.balance_after).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                            <td class="text-center">{{ formatCurrency(data.amount) }}</td>
+                                            <td class="text-center">{{ formatCurrency(data.balance_before) }}</td>
+                                            <td class="text-center">{{ formatCurrency(data.balance_after) }}</td>
                                             <td class="text-center">{{ data.description }}</td>
                                             <td class="text-center">{{ dayjs(data.created_at).format('DD MMM YYYY HH:mm:ss') }}</td>
                                         </tr>
@@ -159,19 +159,19 @@
                             <tr>
                                 <th>Amount</th>
                                 <td>
-                                    {{ state.detail.amount ? parseInt(state.detail.amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) : '-' }}
+                                    {{ state.detail.amount ? formatCurrency(state.detail.amount) : '-' }}
                                 </td>
                             </tr>
                             <tr>
                                 <th>Balance Before</th>
                                 <td>
-                                    {{ state.detail.balance_before ? parseInt(state.detail.balance_before).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) : '-' }}
+                                    {{ state.detail.balance_before ? formatCurrency(state.detail.balance_before) : '-' }}
                                 </td>
                             </tr>
                             <tr>
                                 <th>Balance After</th>
                                 <td>
-                                    {{ state.detail.balance_after ? parseInt(state.detail.balance_after).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) : '-' }}
+                                    {{ state.detail.balance_after ? formatCurrency(state.detail.balance_after) : '-' }}
                                 </td>
                             </tr>
                             <tr>
@@ -197,6 +197,7 @@
 
 <script setup>
     import { apiGetData, apiPutData, apiPostData,apiExportExcel, processing, loadingButton, loadingSubmit, dayjs , Swal, waitingicon, loading, pesan } from '@/store/action';
+    import { formatCurrency } from '@/utils/helpers';
     import { useDebounceFn } from '@vueuse/core'
     import { ref, reactive, onMounted , watch } from 'vue'
     import { useStore } from "vuex";

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <div>
         <div class="container-fluid pb-5">
             <div class="row">
@@ -69,7 +69,7 @@
                                                         <td class="text-center text-nowrap">{{ data.invoice_code}}</td>
                                                         <td class="text-center text-nowrap">{{ data.user.name }}</td>
                                                         <td class="text-center text-nowrap">{{ data.membership.title }}</td>
-                                                        <td class="text-center text-nowrap">{{ parseInt(data.amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                                        <td class="text-center text-nowrap">{{ formatCurrency(data.amount) }}</td>
                                                         <td class="text-center text-nowrap">{{ data.payment_method }}</td>
                                                         <td class="text-center text-nowrap">
                                                             <a-tag :color="data.status == 'PAID' ? 'green' : data.status == 'PENDING' ? 'orange' : 'red'">{{ data.status }}</a-tag>
@@ -212,7 +212,7 @@
                             </tr>
                             <tr>
                                 <th>Jumlah Tagihan</th>
-                                <td>{{ parseInt(state.detail.amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                <td>{{ formatCurrency(state.detail.amount) }}</td>
                             </tr>
                             <tr>
                                 <th>Tanggal Dibuat</th>
@@ -279,7 +279,7 @@
                                 <th>Membership</th>
                                 <td>
                                     {{ state.detail.membership?.title || '-' }}<br>
-                                    <span v-if="state.detail.membership">Harga: {{ parseInt(state.detail.membership.price).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}<br>Diskon: {{ state.detail.membership.discount_percent }}%<br>Durasi: {{ state.detail.membership.duration }} bulan</span>
+                                    <span v-if="state.detail.membership">Harga: {{ formatCurrency(state.detail.membership.price) }}<br>Diskon: {{ state.detail.membership.discount_percent }}%<br>Durasi: {{ state.detail.membership.duration }} bulan</span>
                                 </td>
                             </tr>
                             <tr>
@@ -288,7 +288,7 @@
                             </tr>
                             <tr>
                                 <th>Jumlah Tagihan</th>
-                                <td>{{ parseInt(state.detail.transactions?.amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                <td>{{ formatCurrency(state.detail.transactions?.amount) }}</td>
                             </tr>
                             <tr>
                                 <th>Tanggal Dibayar</th>
@@ -340,6 +340,7 @@
 
 <script setup>
     import { apiGetData, apiPutData, apiPostData,apiExportExcel, processing, loadingButton, loadingSubmit, dayjs , Swal, waitingicon, loading, pesan } from '@/store/action';
+    import { formatCurrency } from '@/utils/helpers';
     import { useDebounceFn } from '@vueuse/core'
     import { ref, reactive, onMounted , watch } from 'vue'
     import { useStore } from "vuex";

@@ -33,18 +33,30 @@
                     </button>
                 </div>
             </div>
+            <!-- Skeleton -->
+            <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div v-for="n in 3" :key="n" class="bg-white rounded-xl shadow overflow-hidden">
+                    <div class="h-56 w-full bg-gray-200 animate-pulse"></div>
+                    <div class="p-5 space-y-3">
+                        <div class="h-4 bg-gray-200 rounded w-1/3 animate-pulse"></div>
+                        <div class="h-5 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+                        <div class="h-4 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+                        <div class="h-4 bg-gray-200 rounded w-2/3 animate-pulse"></div>
+                        <div class="h-8 bg-gray-200 rounded w-36 mx-auto mt-4 animate-pulse"></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div v-for="property in pagedProperties" :key="property.id"
                     class="bg-white rounded-xl shadow hover:-translate-y-2 transition duration-300 overflow-hidden">
                     <!-- Image & Price -->
-                    <div class="relative">
-                        <img :src="property.image" alt="property" class="h-56 w-full object-cover" />
+                    <div class="relative h-56">
+                        <LazyImage :src="property.image" alt="property" img-class="w-full h-full object-cover" />
                         <div
                             class="absolute bottom-0 left-0 bg-black bg-opacity-70 text-white px-4 py-2 text-lg font-bold rounded-tr-xl">
-                            {{ (property.price || 0).toLocaleString('id-ID', {
-                                style: 'currency', currency: 'IDR'
-                            }).slice(0, -3) }}
+                            {{ formatCurrency(property.price || 0) }}
                         </div>
                         <div class="absolute top-4 left-4 flex flex-wrap gap-1">
                             <span v-for="tag in property.rentTags" :key="tag.label"
@@ -111,14 +123,17 @@
 
 <script setup>
 import { apiGetData } from '@/store/action'
+import { formatCurrency } from '@/utils/helpers'
 import { storeToRefs } from 'pinia'
 import { useInfoStore } from '@/store/info'
 import { ref, watch, onMounted, computed } from 'vue'
+import LazyImage from '@/components/ui/LazyImage.vue'
 
 const { data: info } = storeToRefs(useInfoStore())
 const currentInfo = computed(() => info.value?.[0] ?? {})
 
 const rawProperties = ref([])
+const isLoading = ref(true)
 const imageBaseUrl = import.meta.env.VITE_PATH_FILE_BASE_URL + '/storage/'
 const fallbackImage = 'https://images.unsplash.com/photo-1568605114967-8130f3a36994'
 
@@ -194,11 +209,16 @@ const pagedProperties = computed(() => {
 })
 
 const fetchProperties = async () => {
-    const res = await apiGetData('public/properties', { limit: 9, listing_type: 'Rent' })
-    if (Array.isArray(res)) {
-        rawProperties.value = res
-    } else {
-        rawProperties.value = res?.data || []
+    isLoading.value = true
+    try {
+        const res = await apiGetData('public/properties', { limit: 9, listing_type: 'Rent' })
+        if (Array.isArray(res)) {
+            rawProperties.value = res
+        } else {
+            rawProperties.value = res?.data || []
+        }
+    } finally {
+        isLoading.value = false
     }
 }
 

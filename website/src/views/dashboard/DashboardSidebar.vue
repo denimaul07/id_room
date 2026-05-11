@@ -35,8 +35,7 @@
                             <div class="tier-label">
                                 {{ membershipTitle }}
                             </div>
-                            <div class="tier-point">{{ parseInt(user?.balance || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
-                                                            .slice(0, -3) }}</div>
+                            <div class="tier-point">{{ formatCurrency(user?.balance || 0) }}</div>
                             <button
                                     class="mt-3 px-4 py-2 rounded-lg font-semibold w-full transition" :style="{ background: currentInfo.primaryColor, color: currentInfo.primaryTextColor }"
                                     @click="topUpSaldo()"
@@ -181,8 +180,7 @@
                     <div class="tier-label">
                         {{ membershipTitle }}
                     </div>
-                    <div class="tier-point">{{ parseInt(user?.balance || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
-                                                    .slice(0, -3) }}</div>
+                    <div class="tier-point">{{ formatCurrency(user?.balance || 0) }}</div>
                     <button
                             class="mt-3 px-4 py-2 rounded-lg font-semibold w-full transition" :style="{ background: currentInfo.primaryColor, color: currentInfo.primaryTextColor }"
                             @click="topUpSaldo()"
@@ -306,6 +304,7 @@
 <script setup>
     import { computed, onMounted, ref } from 'vue'
     import { apiGetData, apiPostData, Swal } from '@/store/action'
+    import { formatCurrency } from '@/utils/helpers'
     const showSidebar = ref(false)
     import { storeToRefs } from 'pinia'
     import { useAuthStore } from '@/store/auth'

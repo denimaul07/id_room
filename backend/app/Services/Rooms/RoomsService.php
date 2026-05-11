@@ -141,6 +141,7 @@ class RoomsService
             'id_room' => $room->id,
             'name_room' => $data['name_room'],
             'code_room' => $data['code_room'],
+            'room_type' => $data['room_type'] ?? null,
             'include_breakfast' => $data['include_breakfast'],
             'smoking_area' => $data['smoking_area'],
             'type_bed' => $data['type_bad'],
@@ -171,6 +172,7 @@ class RoomsService
 
         $subRoom->name_room = $data['name_room'];
         $subRoom->code_room = $data['code_room'];
+        $subRoom->room_type = $data['room_type'] ?? null;
         $subRoom->include_breakfast = $data['include_breakfast'];
         $subRoom->smoking_area = $data['smoking_area'];
         $subRoom->type_bed = $data['type_bad'];

@@ -29,6 +29,7 @@ const contacts = () => import('@/pages/contacts/index.vue');
 const crm = () => import('@/pages/crm/index.vue');
 const referralCoupons = () => import('@/pages/coupon/index.vue');
 const campaigns = () => import('@/pages/campaigns/index.vue');
+const waTemplates = () => import('@/pages/campaigns/whatsapp.vue');
 
 const routes = [
   {
@@ -155,6 +156,20 @@ const routes = [
         path: '/campaigns',
         name: 'campaigns',
         component: campaigns,
+        meta: {
+          requiresAuth: true
+        }
+      },
+    ]
+  },
+  {
+    path: '/wa-templates',
+    component: Body,
+    children: [
+      {
+        path: '/wa-templates',
+        name: 'wa-templates',
+        component: waTemplates,
         meta: {
           requiresAuth: true
         }

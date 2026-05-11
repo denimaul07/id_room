@@ -1,5 +1,5 @@
 <template>
-    <section class="relative flex items-center bg-center bg-cover h-[220px] md:h-[280px] lg:h-[260px]"
+    <section class="relative flex items-start md:items-center bg-center bg-cover min-h-[220px] md:h-[280px] lg:h-[260px] pt-8 md:pt-0"
         :style="{ backgroundImage: `url(${heroImage})` }">
         <div class="absolute inset-0 bg-gradient-to-r "></div>
         <div class="relative z-10 max-w-7xl mx-auto px-4 w-full">
@@ -42,9 +42,14 @@
                             <span class="font-semibold">{{ createdAt }}</span>
                         </div>
                     </div>
+                    <!-- Mobile price -->
+                    <div class="flex items-baseline gap-2 mt-3 md:hidden">
+                        <span class="text-lg font-bold" :style="{ color: detailAccentColor }">{{ formattedPrice }}</span>
+                        <span class="text-xs opacity-80" :style="{ color: detailMutedColor }">/ {{ priceLabel }}</span>
+                    </div>
                 </div>
 
-                <div class="flex items-center gap-3">
+                <div class="hidden md:flex items-center gap-3">
                     <div class="hidden md:flex items-center gap-2">
                         <button class="w-10 h-10 rounded-lg text-white flex items-center justify-center"
                             :style="{ backgroundColor: detailAccentColor }" @click="shareProperty">
@@ -90,7 +95,7 @@
                 
                     <!-- PHOTO GALLERY - Traveloka 3x2 -->
                     <section class="max-w-7xl mx-auto mt-6">
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-2 h-[380px]">
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-2 h-[280px] md:h-[380px]">
 
                         <!-- LEFT BIG IMAGE -->
                         <div
@@ -105,7 +110,7 @@
                         </div>
 
                         <!-- RIGHT 3x2 GRID -->
-                        <div class="md:col-span-2 grid grid-cols-3 grid-rows-2 gap-2 h-full">
+                        <div class="hidden md:grid md:col-span-2 grid-cols-3 grid-rows-2 gap-2 h-full">
 
                         <div
                             v-for="(img, i) in images.slice(1,7)"
@@ -290,7 +295,7 @@
                                                 <div>
 
                                                     <!-- TABLE HEADER -->
-                                                    <div class="grid grid-cols-12 bg-gray-50 border-y text-sm font-semibold text-gray-700">
+                                                    <div class="hidden md:grid grid-cols-12 bg-gray-50 border-y text-sm font-semibold text-gray-700">
                                                         <div class="col-span-4 px-6 py-3">Pilihan Kamar</div>
                                                         <div class="col-span-2 text-center py-3">Tamu</div>
                                                         <div class="col-span-3 text-right px-6 py-3">Harga/kamar/malam</div>
@@ -301,90 +306,110 @@
                                                     <!-- RATE LOOP -->
                                                     <div v-for="subRoom in room.sub_rooms"
                                                         :key="subRoom.odata"
-                                                        class="grid grid-cols-12 items-center border-b last:border-0 px-6 py-5">
+                                                        class="border-b last:border-0">
 
-                                                        <!-- DESCRIPTION -->
-                                                        <div class="col-span-4">
-                                                            <div class="font-semibold text-gray-900">
-                                                                {{ subRoom.name_room }} - {{ subRoom.code_room }}
-                                                            </div>
-
-                                                            <div class="text-sm text-gray-500 mt-1">
-                                                                {{ subRoom.type_bed }} Bed
-                                                            </div>
-
-                                                            <div class="mt-3 space-y-1 text-xs">
-                                                                <div class="inline-flex items-center bg-green-400 text-white  px-2 py-1 rounded-full" v-if="subRoom.include_breakfast==='Y'">
-                                                                    <i class="fas fa-utensils mr-1"></i>Termasuk Sarapan
+                                                        <!-- MOBILE CARD -->
+                                                        <div class="md:hidden p-4">
+                                                            <div class="flex items-start justify-between gap-3">
+                                                                <div class="flex-1 min-w-0">
+                                                                    <div class="font-semibold text-gray-900 text-sm">{{ subRoom.name_room }} - {{ subRoom.code_room }}</div>
+                                                                    <div class="text-xs text-gray-500 mt-0.5">{{ subRoom.type_bed }} Bed</div>
+                                                                    <div class="flex flex-wrap gap-1 mt-2 text-xs">
+                                                                        <span class="inline-flex items-center bg-green-400 text-white px-2 py-1 rounded-full" v-if="subRoom.include_breakfast==='Y'">
+                                                                            <i class="fas fa-utensils mr-1"></i>Termasuk Sarapan
+                                                                        </span>
+                                                                        <span class="inline-flex items-center bg-yellow-400 text-white px-2 py-1 rounded-full" v-if="subRoom.include_breakfast==='N'">
+                                                                            <i class="fas fa-times mr-1"></i>Tidak Termasuk Sarapan
+                                                                        </span>
+                                                                        <span v-if="subRoom.smoking_area==='Y'" class="inline-flex items-center bg-red-100 text-red-600 px-2 py-1 rounded-full">
+                                                                            <i class="fas fa-smoking mr-1"></i>Smoking
+                                                                        </span>
+                                                                        <span v-else class="inline-flex items-center bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                                                                            <i class="fas fa-smoking-ban mr-1"></i>Non-Smoking
+                                                                        </span>
+                                                                    </div>
                                                                 </div>
-                                                                
-                                                                <div class="inline-flex items-center bg-yellow-400 text-white px-2 py-1 rounded-full" v-if="subRoom.include_breakfast==='N'">
-                                                                    <i class="fas fa-times mr-1"></i>Tidak Termasuk Sarapan
-                                                                </div>
-
-                                                                <div v-if="subRoom.smoking_area==='Y'" class="inline-flex items-center bg-red-100 text-red-600 px-2 py-1 rounded-full">
-                                                                    <i class="fas fa-smoking mr-1"></i>
-                                                                    Smoking Area
-                                                                </div>
-
-                                                                <div v-else class="inline-flex items-center bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                                                                    <i class="fas fa-smoking-ban mr-1"></i>
-                                                                    Non-Smoking
+                                                                <div class="text-right flex-shrink-0">
+                                                                    <div class="text-base font-bold text-orange-500">{{ formatCurrency(subRoom.price) }}</div>
+                                                                    <div class="text-xs text-gray-400">/malam</div>
+                                                                    <div class="text-xs text-red-500 font-semibold mt-1" v-if="parseInt(subRoom.total_room) - parseInt(subRoom.booked_count) <= 5">
+                                                                        {{ parseInt(subRoom.total_room) - parseInt(subRoom.booked_count) }} kamar tersisa
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-
-                                                        <!-- TAMU -->
-                                                        <div class="col-span-2 text-center text-gray-400 text-lg">
-                                                            <i
-                                                                class="fas fa-user"
-                                                                v-for="n in room.capacity"
-                                                                :key="n"
-                                                            ></i>
-                                                        </div>
-
-                                                        <!-- PRICE -->
-                                                        <div class="col-span-3 text-right">
-                                                            <div class="text-2xl font-bold text-orange-500">
-                                                                {{
-                                                                parseInt(subRoom.price)
-                                                                    ? parseInt(subRoom.price)
-                                                                        .toLocaleString('id-ID', {
-                                                                        style: 'currency',
-                                                                        currency: 'IDR'
-                                                                        })
-                                                                        .replace(',00', '')
-                                                                    : '-'
-                                                                }}
-                                                            </div>
-
-                                                            <div class="text-xs text-gray-400">
-                                                                Di luar pajak & biaya
-                                                            </div>
-
-                                                            <div class="text-xs text-red-500 font-semibold mt-1" v-if="parseInt(subRoom.total_room) - parseInt(subRoom.booked_count) <= 5">
-                                                                {{ parseInt(subRoom.total_room) - parseInt(subRoom.booked_count) }} kamar tersisa pada pilihan ini
-                                                            </div>
-                                                            <div class="text-xs text-green-500 font-semibold mt-1" v-else>
-                                                                Tersedia banyak kamar pada pilihan ini
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- JUMLAH -->
-                                                        <div class="col-span-1 text-center text-sm text-gray-600">
-                                                            x1
-                                                        </div>
-
-                                                        <!-- ACTION -->
-                                                        <div class="col-span-2 flex flex-col items-center gap-2">
                                                             <button
-                                                                class="px-5 py-2 rounded-lg font-semibold text-sm transition"
+                                                                class="mt-3 w-full py-2 rounded-lg font-semibold text-sm transition"
                                                                 :style="{ backgroundColor: currentInfo.primaryColor, color: currentInfo.primaryTextColor }"
                                                                 :disabled="parseInt(subRoom.total_room) - parseInt(subRoom.booked_count) <= 0"
                                                                 @click="bookRoom(room)"
                                                             >
                                                                 Pilih
                                                             </button>
+                                                        </div>
+
+                                                        <!-- DESKTOP TABLE ROW -->
+                                                        <div class="hidden md:grid grid-cols-12 items-center border-t px-6 py-5">
+
+                                                            <!-- DESCRIPTION -->
+                                                            <div class="col-span-4">
+                                                                <div class="font-semibold text-gray-900">
+                                                                    {{ subRoom.name_room }} - {{ subRoom.code_room }}
+                                                                </div>
+                                                                <div class="text-sm text-gray-500 mt-1">
+                                                                    {{ subRoom.type_bed }} Bed
+                                                                </div>
+                                                                <div class="mt-3 space-y-1 text-xs">
+                                                                    <div class="inline-flex items-center bg-green-400 text-white px-2 py-1 rounded-full" v-if="subRoom.include_breakfast==='Y'">
+                                                                        <i class="fas fa-utensils mr-1"></i>Termasuk Sarapan
+                                                                    </div>
+                                                                    <div class="inline-flex items-center bg-yellow-400 text-white px-2 py-1 rounded-full" v-if="subRoom.include_breakfast==='N'">
+                                                                        <i class="fas fa-times mr-1"></i>Tidak Termasuk Sarapan
+                                                                    </div>
+                                                                    <div v-if="subRoom.smoking_area==='Y'" class="inline-flex items-center bg-red-100 text-red-600 px-2 py-1 rounded-full">
+                                                                        <i class="fas fa-smoking mr-1"></i>
+                                                                        Smoking Area
+                                                                    </div>
+                                                                    <div v-else class="inline-flex items-center bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                                                                        <i class="fas fa-smoking-ban mr-1"></i>
+                                                                        Non-Smoking
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- TAMU -->
+                                                            <div class="col-span-2 text-center text-gray-400 text-lg">
+                                                                <i class="fas fa-user" v-for="n in room.capacity" :key="n"></i>
+                                                            </div>
+
+                                                            <!-- PRICE -->
+                                                            <div class="col-span-3 text-right">
+                                                                <div class="text-2xl font-bold text-orange-500">
+                                                                    {{ formatCurrency(subRoom.price) }}
+                                                                </div>
+                                                                <div class="text-xs text-gray-400">Di luar pajak & biaya</div>
+                                                                <div class="text-xs text-red-500 font-semibold mt-1" v-if="parseInt(subRoom.total_room) - parseInt(subRoom.booked_count) <= 5">
+                                                                    {{ parseInt(subRoom.total_room) - parseInt(subRoom.booked_count) }} kamar tersisa pada pilihan ini
+                                                                </div>
+                                                                <div class="text-xs text-green-500 font-semibold mt-1" v-else>
+                                                                    Tersedia banyak kamar pada pilihan ini
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- JUMLAH -->
+                                                            <div class="col-span-1 text-center text-sm text-gray-600">x1</div>
+
+                                                            <!-- ACTION -->
+                                                            <div class="col-span-2 flex flex-col items-center gap-2">
+                                                                <button
+                                                                    class="px-5 py-2 rounded-lg font-semibold text-sm transition"
+                                                                    :style="{ backgroundColor: currentInfo.primaryColor, color: currentInfo.primaryTextColor }"
+                                                                    :disabled="parseInt(subRoom.total_room) - parseInt(subRoom.booked_count) <= 0"
+                                                                    @click="bookRoom(room)"
+                                                                >
+                                                                    Pilih
+                                                                </button>
+                                                            </div>
+
                                                         </div>
 
                                                     </div>
@@ -487,10 +512,12 @@
 
 <script setup>
     import { computed, onMounted, ref, onBeforeUnmount, watch } from 'vue'
+    import LazyImage from '@/components/ui/LazyImage.vue'
     import { storeToRefs } from 'pinia'
     import { useRoute } from 'vue-router'
     import { useHead } from '@vueuse/head'
     import { apiGetData } from '@/store/action'
+    import { formatCurrency } from '@/utils/helpers'
     import { useInfoStore } from '@/store/info'
     import { useAuthStore } from '@/store/auth'
     import LoginModal from '@/components/auth/LoginModal.vue'
@@ -703,57 +730,7 @@
         }
     })
 
-    // --- LazyImage local component ---
-    import { defineComponent, h, ref as vref, onMounted as vonMounted, watch as vwatch } from 'vue'
-    const LazyImage = defineComponent({
-        name: 'LazyImage',
-        props: {
-            src: { type: String, required: true },
-            alt: { type: String, default: '' },
-            class: { type: String, default: '' }
-        },
-        setup(props) {
-            const observer = vref(null)
-            const el = vref(null)
-            const loaded = vref(false)
-            const imageSrc = vref('')
-            const aspect = vref('')
-            function setAspect(e) {
-                const img = e.target
-                if (!img.naturalWidth || !img.naturalHeight) return
-                aspect.value = `${img.naturalWidth} / ${img.naturalHeight}`
-            }
-            vonMounted(() => {
-                observer.value = new window.IntersectionObserver(([entry]) => {
-                    if (entry.isIntersecting) {
-                        imageSrc.value = props.src
-                        loaded.value = true
-                        observer.value && observer.value.disconnect()
-                    }
-                }, { threshold: 0.1 })
-                if (el.value) observer.value.observe(el.value)
-            })
-            watch(() => props.src, (val) => { if (loaded.value) imageSrc.value = val })
-            return () => h('div', {
-                style: {
-                    position: 'relative',
-                    width: '100%',
-                    height: '100%',
-                    aspectRatio: aspect.value || undefined
-                }
-            }, [
-                !loaded.value && h('div', { class: 'absolute inset-0 bg-gray-200 animate-pulse shimmer rounded-xl' }),
-                h('img', {
-                    ref: el,
-                    src: imageSrc.value,
-                    alt: props.alt,
-                    class: props.class,
-                    style: !loaded.value ? 'opacity:0;' : '',
-                    onLoad: setAspect
-                })
-            ])
-        }
-})
+    // --- LazyImage is imported from @/components/ui/LazyImage.vue ---
 
     const priceInfo = computed(() => {
         const candidates = [
@@ -772,9 +749,7 @@
     })
 
     const formattedPrice = computed(() => {
-        return Number(priceInfo.value.value || 0)
-            .toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
-            .slice(0, -3)
+        return formatCurrency(priceInfo.value.value || 0)
     })
 
     const priceLabel = computed(() => priceInfo.value.label)
@@ -796,9 +771,7 @@
 
     const formatRoomPrice = (value) => {
         if (value === null || value === undefined || value === '') return '-'
-        return Number(value)
-            .toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
-            .slice(0, -3)
+        return formatCurrency(value)
     }
 
     const getRoomPriceInfo = (room) => {

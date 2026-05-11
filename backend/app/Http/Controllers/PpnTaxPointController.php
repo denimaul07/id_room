@@ -31,6 +31,7 @@ class PpnTaxPointController extends Controller
             'ppn',
             'fee',
             'convert_point',
+            'deposite',
         ]));
         return response()->json(['message' => 'PPN Tax Point updated successfully'], 200);
     }

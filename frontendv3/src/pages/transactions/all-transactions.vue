@@ -1,4 +1,4 @@
-<template>
+﻿<template>
     <div>
         <div class="container-fluid pb-5">
             <div class="row">
@@ -77,7 +77,7 @@
                                             </td>
                                             <td class="text-center">{{ data.user.name }}</td>
                                             <td class="text-center">{{ data.type }}</td>
-                                            <td class="text-center">{{ parseInt(data.total_amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                            <td class="text-center">{{ formatCurrency(data.total_amount) }}</td>
                                             <td class="text-center">{{ data.payment_method }}</td>
                                             <td class="text-center">{{ data.description }}</td>
                                             <td class="text-center">
@@ -136,7 +136,7 @@
                                 </tr>
                                 <tr>
                                     <th>Nominal Top Up</th>
-                                    <td>{{ parseInt(state.detail.topup.amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                    <td>{{ formatCurrency(state.detail.topup.amount) }}</td>
                                 </tr>
                                 <tr>
                                     <th>Deskripsi</th>
@@ -170,7 +170,7 @@
                                 </tr>
                                 <tr>
                                     <th>Saldo Setelah Top Up</th>
-                                    <td>{{ parseInt(state.detail.user?.balance || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                    <td>{{ formatCurrency(state.detail.user?.balance || 0) }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -201,7 +201,7 @@
                                 </tr>
                                 <tr>
                                     <th>Jumlah Tagihan</th>
-                                    <td>{{ parseInt(state.detail.booking_payments?.amount || state.detail.amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                    <td>{{ formatCurrency(state.detail.booking_payments?.amount || state.detail.amount) }}</td>
                                 </tr>
                                 <tr>
                                     <th>Tanggal Dibuat</th>
@@ -249,19 +249,19 @@
                                 </tr>
                                 <tr>
                                     <th>Harga Dasar</th>
-                                    <td>{{ parseInt(state.detail.booking_payments?.booking?.base_price || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                    <td>{{ formatCurrency(state.detail.booking_payments?.booking?.base_price || 0) }}</td>
                                     <th>Diskon</th>
-                                    <td>{{ parseInt(state.detail.booking_payments?.booking?.discount_amount || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                    <td>{{ formatCurrency(state.detail.booking_payments?.booking?.discount_amount || 0) }}</td>
                                 </tr>
                                 <tr>
                                     <th>Pajak</th>
-                                    <td>{{ parseInt(state.detail.booking_payments?.booking?.tax_amount || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                    <td>{{ formatCurrency(state.detail.booking_payments?.booking?.tax_amount || 0) }}</td>
                                     <th>Service Fee</th>
-                                    <td>{{ parseInt(state.detail.booking_payments?.booking?.service_fee || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                    <td>{{ formatCurrency(state.detail.booking_payments?.booking?.service_fee || 0) }}</td>
                                 </tr>
                                 <tr>
                                     <th>Total Bayar</th>
-                                    <td colspan="3">{{ parseInt(state.detail.booking_payments?.booking?.grand_total || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                    <td colspan="3">{{ formatCurrency(state.detail.booking_payments?.booking?.grand_total || 0) }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -324,7 +324,7 @@
                                 </tr>
                                 <tr>
                                     <th>Jumlah Tagihan</th>
-                                    <td>{{ parseInt(state.detail.amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                    <td>{{ formatCurrency(state.detail.amount) }}</td>
                                 </tr>
                                 <tr>
                                     <th>Tanggal Dibuat</th>
@@ -397,7 +397,7 @@
                                 </tr>
                                 <tr>
                                     <th>Nominal Refund</th>
-                                    <td>{{ parseInt(state.detail.refund.amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }}</td>
+                                    <td>{{ formatCurrency(state.detail.refund.amount) }}</td>
                                 </tr>
                                 <tr>
                                     <th>Deskripsi</th>
@@ -423,6 +423,7 @@
 
 <script setup>
     import { apiGetData, apiPutData, apiPostData,apiExportExcel, processing, loadingButton, loadingSubmit, dayjs , Swal, waitingicon, loading, pesan } from '@/store/action';
+    import { formatCurrency } from '@/utils/helpers';
     import { useDebounceFn } from '@vueuse/core'
     import { ref, reactive, onMounted , watch } from 'vue'
     import { useStore } from "vuex";

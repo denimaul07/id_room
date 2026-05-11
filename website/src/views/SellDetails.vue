@@ -1,5 +1,5 @@
 <template>
-    <section class="relative flex items-center bg-center bg-cover h-[220px] md:h-[280px] lg:h-[260px]"
+    <section class="relative flex items-start md:items-center bg-center bg-cover min-h-[220px] md:h-[280px] lg:h-[260px] pt-8 md:pt-0"
         :style="{ backgroundImage: `url(${heroImage})` }">
         <div class="absolute inset-0 bg-gradient-to-r "></div>
         <div class="relative z-10 max-w-7xl mx-auto px-4 w-full">
@@ -42,9 +42,14 @@
                             <span class="font-semibold">{{ createdAt }}</span>
                         </div>
                     </div>
+                    <!-- Mobile price -->
+                    <div class="flex items-baseline gap-2 mt-3 md:hidden">
+                        <span class="text-lg font-bold" :style="{ color: detailAccentColor }">{{ formattedPrice }}</span>
+                        <span class="text-xs opacity-80" :style="{ color: detailMutedColor }">/ {{ priceLabel }}</span>
+                    </div>
                 </div>
 
-                <div class="flex items-center gap-3">
+                <div class="hidden md:flex items-center gap-3">
                     <div class="hidden md:flex items-center gap-2">
                         <button class="w-10 h-10 rounded-lg text-white flex items-center justify-center"
                             :style="{ backgroundColor: detailAccentColor }" @click="shareProperty">
@@ -86,31 +91,31 @@
                 <div>
                     <!-- PHOTO GALLERY - Mirip RentDetails -->
                     <section class="max-w-7xl mx-auto mt-6">
-                        <div class="grid grid-cols-1 md:grid-cols-5 gap-2 h-[380px]">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-2 h-[280px] md:h-[380px]">
 
                             <!-- LEFT BIG IMAGE -->
                             <div
                                 class="md:col-span-3 relative rounded-xl overflow-hidden cursor-pointer group bg-gray-100"
                                 @click="setActiveImage(0)"
                             >
-                                <img
+                                <LazyImage
                                     :src="galleryImages[0] || fallbackImage"
-                                    class="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+                                    img-class="w-full h-full object-cover transition duration-500 group-hover:scale-105"
                                 />
                                 <div class="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition"></div>
                             </div>
 
                             <!-- RIGHT 3x2 GRID -->
-                            <div class="md:col-span-2 grid grid-cols-3 grid-rows-2 gap-2 h-full">
+                            <div class="hidden md:grid md:col-span-2 grid-cols-3 grid-rows-2 gap-2 h-full">
                                 <div
                                     v-for="(img, i) in galleryImages.slice(1,7)"
                                     :key="i"
                                     class="relative rounded-xl overflow-hidden cursor-pointer group bg-gray-100"
                                     @click="setActiveImage(i + 1)"
                                 >
-                                    <img
+                                    <LazyImage
                                         :src="img"
-                                        class="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+                                        img-class="w-full h-full object-cover transition duration-500 group-hover:scale-105"
                                     />
 
                                     <div
@@ -330,26 +335,19 @@
                                                                 </div>
 
                                                                 <!-- RIGHT PRICE + CTA -->
-                                                                <div class="text-right min-w-[180px]">
+                                                                <div class="flex flex-row md:flex-col md:text-right items-center justify-between md:items-end md:min-w-[180px] gap-3 pt-3 md:pt-0 border-t md:border-0">
 
-                                                                    <div class="text-2xl font-bold text-gray-900">
-                                                                        {{
-                                                                            parseInt(subRoom.sale)
-                                                                                ? parseInt(subRoom.sale)
-                                                                                    .toLocaleString('id-ID', {
-                                                                                        style: 'currency',
-                                                                                        currency: 'IDR'
-                                                                                    }).replace(',00', '')
-                                                                                : '-'
-                                                                        }}
-                                                                    </div>
-
-                                                                    <div class="text-xs text-gray-400 mb-3">
-                                                                        Harga per unit
+                                                                    <div>
+                                                                        <div class="text-xl md:text-2xl font-bold text-gray-900">
+                                                                            {{ formatCurrency(subRoom.sale) }}
+                                                                        </div>
+                                                                        <div class="text-xs text-gray-400">
+                                                                            Harga per unit
+                                                                        </div>
                                                                     </div>
 
                                                                     <button
-                                                                        class="w-full px-4 py-2 rounded-lg font-semibold text-sm transition"
+                                                                        class="flex-shrink-0 md:w-full px-4 py-2 rounded-lg font-semibold text-sm transition"
                                                                         :style="{
                                                                             backgroundColor: currentInfo.primaryColor,
                                                                             color: currentInfo.primaryTextColor
@@ -482,10 +480,12 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import LazyImage from '@/components/ui/LazyImage.vue'
 import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import { useHead } from '@vueuse/head'
 import { apiGetData, apiPostDataWithReturn, Swal  } from '@/store/action'
+import { formatCurrency } from '@/utils/helpers'
 import { useInfoStore } from '@/store/info'
 
 const route = useRoute()
@@ -600,9 +600,7 @@ const prevImage = () => {
 }
 
 const formattedPrice = computed(() => {
-    return Number(property.value?.sale_price || 0)
-        .toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
-        .slice(0, -3)
+    return formatCurrency(property.value?.sale_price || 0)
 })
 
 const priceLabel = computed(() => 'Sale')
@@ -623,9 +621,7 @@ const propertyRooms = computed(() => {
 
 const formatRoomPrice = (value) => {
     if (value === null || value === undefined || value === '') return '-'
-    return Number(value)
-        .toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })
-        .slice(0, -3)
+    return formatCurrency(value)
 }
 
 const getRoomPriceInfo = (room) => {

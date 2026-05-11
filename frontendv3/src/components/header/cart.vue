@@ -26,8 +26,8 @@
               <span v-if="item.type==0">{{ item.namabarang }}</span>
               <span v-if="item.type==1">{{ item.nmbarangjasa }}</span>
 
-              <h6 class="font-primary mb-0" v-if="item.type==0">{{ item.harga_barang.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }} x {{ item.qty + ' ' + item.unit }}</h6>
-              <h6 class="font-primary mb-0" v-if="item.type==1">{{ item.hargajasa.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3) }} x {{ item.qty + ' ' + item.unit }}</h6>
+              <h6 class="font-primary mb-0" v-if="item.type==0">{{ formatCurrency(item.harga_barang) }} x {{ item.qty + ' ' + item.unit }}</h6>
+              <h6 class="font-primary mb-0" v-if="item.type==1">{{ formatCurrency(item.hargajasa) }} x {{ item.qty + ' ' + item.unit }}</h6>
             </div>
             <div class="close-circle">
               <button class="btn btn-link text-danger ms-5" @click="removebarang(item.idkeranjang)"><i class="fa fa-times"></i></button>
@@ -47,6 +47,7 @@
 
 <script setup>
   import { Api } from '@/api/Api';
+  import { formatCurrency } from '@/utils/helpers';
   import { ref, onMounted, computed } from 'vue'
   import {useStore } from "vuex";
   import Swal from 'sweetalert2';

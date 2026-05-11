@@ -157,3 +157,17 @@ Route::get('storage/campaigns/{filename}', function ($filename) {
     $response->header('Content-Type', $type);
     return $response;
 });
+
+Route::get('storage/wa_media/{filename}', function ($filename) {
+    $path = storage_path('app/public/wa_media/' . $filename);
+    // $path =  Storage::disk('public')->makeDirectory('foto/'. $filename);
+    if (!File::exists($path)) {
+        abort(404);
+    }
+
+    $file = File::get($path);
+    $type = File::mimeType($path);
+    $response = Response::make($file, 200);
+    $response->header('Content-Type', $type);
+    return $response;
+});

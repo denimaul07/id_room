@@ -26,13 +26,14 @@
                         :src="imageBaseUrl + img.image"
                         :alt="img.alt"
                         class="w-full h-full object-cover rounded-xl transition-transform duration-300 cursor-pointer hover:scale-110"
+                        loading="lazy"
                         @click="openModal(imageBaseUrl + img.image, img.alt)"
                     />
                 </div>
                 <!-- Modal -->
                 <div v-if="modalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
                     <div class="relative max-w-3xl w-full mx-4">
-                        <img :src="modalImg" :alt="modalAlt" class="rounded-2xl w-full max-h-[80vh] object-contain shadow-2xl animate-fadein" />
+                        <img :src="modalImg" :alt="modalAlt" class="rounded-2xl w-full max-h-[80vh] object-contain shadow-2xl animate-fadein" loading="lazy" />
                         <button @click="closeModal" class="absolute top-2 right-2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 shadow-lg transition-colors duration-200">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>

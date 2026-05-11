@@ -45,6 +45,13 @@
                                         </template>
                                     </a-button>
                                 </a-tooltip>
+                                <a-tooltip title="Delete Facility" placement="top">
+                                    <a-button type="primary" size="small" class="bg-danger" @click="deleteItem(data)">
+                                        <template #icon>
+                                            <i class="fa fa-trash"></i>
+                                        </template>
+                                    </a-button>
+                                </a-tooltip>
                             </td>
                             <td class="text-center text-nowrap">{{ data.facility?.name || '-' }}</td>
                             <td class="text-center text-nowrap">{{ formatType(data.facility?.type) }}</td>
@@ -211,32 +218,6 @@
         }
     };
 
-    const deleteItem = async (item) => {
-        Swal.fire({
-            title: 'Are you sure?',
-            text: "You won't be able to revert this!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                processing.value = true;
-                pesan.value = 'Mohon tunggu sedang proses...';
-                const response = await apiDeleteData('/property_facilities/index', {
-                    odata: item.odata
-                });
-
-                if (response) {
-                    processing.value = false;
-                    getData();
-                }else{
-                    processing.value = false;
-                }
-            }
-        });
-    };
 
     const handlePageChange = async (page) => {
         await getData(page);
@@ -273,6 +254,34 @@
             return list.includes('Property');
         });
     });
+
+
+    const deleteItem = async (item) => {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                processing.value = true;
+                pesan.value = 'Mohon tunggu sedang proses...';
+                const response = await apiDeleteData('/property_facilities/index', {
+                    odata: item.odata
+                });
+
+                if (response) {
+                    processing.value = false;
+                    getData();
+                }else{
+                    processing.value = false;
+                }
+            }
+        });
+    };
 
     onMounted(async () => {
         await getFacilities();

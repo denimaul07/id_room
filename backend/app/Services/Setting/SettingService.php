@@ -358,6 +358,7 @@ class SettingService
             'ppn',
             'fee',
             'convert_point',
+            'deposite',
         ]);
     }
 
@@ -432,7 +433,9 @@ class SettingService
         $min_price = null,
         $max_price = null,
         $sort = null,
-        $price_sort = null
+        $price_sort = null,
+        $room_type = null,
+        $furnished = null
     ) {
         return Properties::with(['facilities.facility'])
             ->where('listing_type', 'like', '%Rent%')
@@ -441,6 +444,14 @@ class SettingService
             })
             ->when($type, function ($query, $type) {
                 return $query->where('type', $type);
+            })
+            ->when($furnished, function ($query, $furnished) {
+                return $query->where('furnished', $furnished);
+            })
+            ->when($room_type, function ($query, $room_type) {
+                return $query->whereHas('rooms.subRooms', function ($q) use ($room_type) {
+                    $q->where('room_type', $room_type);
+                });
             })
             ->when($facilities, function ($query, $facilities) {
                 return $query->whereHas('facilities', function ($facilityQuery) use ($facilities) {

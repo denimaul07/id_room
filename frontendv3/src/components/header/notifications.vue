@@ -234,7 +234,7 @@
                                     <a href="#" rel="noopener noreferrer" @click="download(data.id_data, data.penawaranharga)">{{ data.penawaranharga }}</a>
                                 </td>
                                 <td class="text-nowrap">{{ data.nmbarang }}</td>
-                                <td>  {{ data.hargajasa.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -2) }}</td>
+                                <td>  {{ formatCurrency(data.hargajasa) }}</td>
                                 <td>{{ data.qty + ' ' + (data.unit ? data.unit : '') }}</td>
                                 <td>{{ data.jenis }}</td>
                                 <td>{{ data.jenispo }}</td>
@@ -759,6 +759,7 @@
 </template>
 
 <script setup>
+    import { formatCurrency } from '@/utils/helpers';
     import { apiGetData, apiPostData, apiDownloadFile,apiCetakPDF, processing, loadingButton, loadingSubmit, dayjs , Swal, waitingicon, loading, pesan } from '@/store/action';
     import { Api } from '@/api/Api';
     import CKEditor from '@ckeditor/ckeditor5-vue';

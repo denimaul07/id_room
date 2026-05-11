@@ -1,6 +1,6 @@
-<template>
+﻿<template>
     <div class="dashboard-crm">
-            <h2>Dashboard CRM</h2>
+        <h2>Dashboard CRM</h2>
     </div>
     <div class="row mb-4">
         <div class="col-md-4">
@@ -44,11 +44,11 @@
             <div style="background:#1a4971;color:#fff;padding:6px 12px;border-radius:4px;font-weight:bold;">KPI CUSTOMER & CRO</div>
             <table class="table table-sm mt-2">
                 <tbody>
-                    <tr><td>Total Revenue</td><td>{{ parseInt(state.kpioperational.total_revenue).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)}}</td></tr>
-                    <tr><td>Add-On Revenue</td><td>{{ parseInt(state.kpioperational.add_on_revenue).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)}}</td></tr>
+                    <tr><td>Total Revenue</td><td>{{ formatCurrency(state.kpioperational.total_revenue)}}</td></tr>
+                    <tr><td>Add-On Revenue</td><td>{{ formatCurrency(state.kpioperational.add_on_revenue)}}</td></tr>
                     <tr><td>Repeat Booking</td><td>{{ state.kpioperational.repeatBooking }}</td></tr>
                     <tr><td>Repeat Rate</td><td>{{ state.kpioperational.repeatRate }}%</td></tr>
-                    <tr><td>Total Komisi CRO</td><td>{{ parseInt(state.kpioperational.totalKomisiCRO).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }).slice(0, -3)}}</td></tr>
+                    <tr><td>Total Komisi CRO</td><td>{{ formatCurrency(state.kpioperational.totalKomisiCRO)}}</td></tr>
                 </tbody>
             </table>
         </div>
@@ -57,6 +57,7 @@
 </template>
 
 <script setup>
+    import { formatCurrency } from '@/utils/helpers';
     import { apiGetData, apiCetakPDF, apiExportExcel, processing, loadingButton, loadingSubmit, dayjs , Swal, waitingicon, loading, pesan } from '@/store/action';
     import { useDebounceFn } from '@vueuse/core'
     import { ref, reactive, onUnmounted, onMounted, computed , watch, nextTick} from 'vue'
