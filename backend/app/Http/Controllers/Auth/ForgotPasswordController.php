@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-
+use App\Jobs\SendWAForgotPassword;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
-
 use Illuminate\Http\Request;
 
 
@@ -32,10 +32,16 @@ class ForgotPasswordController extends Controller
 
                 $frontendUrl = config('app.frontend_url') . "/forgot_password?token=$token&email=" . urlencode($user->email);
 
-
-
                 $user->notify(new \App\Notifications\ResetPasswordNotification($frontendUrl));
 
+                // Kirim WA jika user punya nomor telepon
+                if ($user->phone) {
+                    try {
+                        SendWAForgotPassword::dispatch($user->email, $frontendUrl);
+                    } catch (\Exception $e) {
+                        Log::warning('Gagal dispatch SendWAForgotPassword', ['error' => $e->getMessage()]);
+                    }
+                }
             }
 
         );

@@ -192,7 +192,7 @@ const submitForgotPassword = async () => {
     forgotLoading.value = true
     try {
         await Api.post('/auth/forgot-password', { email: forgotEmail.value })
-        Swal.fire({ icon: 'success', title: 'Berhasil', html: 'Link reset password telah dikirim ke email Anda.' })
+        Swal.fire({ icon: 'success', title: 'Berhasil', html: 'Link reset password telah dikirim ke email dan whatsapp Anda.' })
         forgotOpen.value = false
     } catch (e) {
         Swal.fire({ icon: 'error', title: 'Gagal', html: e?.response?.data?.message || 'Gagal mengirim email reset password.' })

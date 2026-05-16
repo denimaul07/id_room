@@ -411,11 +411,12 @@ const buildComponents = () => {
         const header = { type: 'HEADER', format: form.headerFormat }
         if (form.headerFormat === 'TEXT') {
             header.text = form.headerText
-        } else if (
-            form.headerFormat === 'IMAGE' ||
-            form.headerFormat === 'VIDEO' ||
-            form.headerFormat === 'DOCUMENT'
-        )
+        } else if (['IMAGE', 'VIDEO', 'DOCUMENT'].includes(form.headerFormat)) {
+            const mediaUrl = form.headerExampleUrl || defaultMediaForFormat.value
+            if (mediaUrl) {
+                header.example = { header_handle: [mediaUrl] }
+            }
+        }
         components.push(header)
     }
 
@@ -434,14 +435,23 @@ const buildComponents = () => {
     if (form.hasFooter && form.footerText) {
         components.push({ type: 'FOOTER', text: form.footerText })
     }
-
+    
     if (form.buttons.length) {
         components.push({
             type: 'BUTTONS',
-            buttons: form.buttons.map(btn => {
+            buttons: form.buttons.map((btn, idx) => {
                 const b = { type: btn.type, text: btn.text }
-                if (btn.type === 'URL')          b.url          = btn.url
+
+                if (btn.type === 'URL') {
+                    b.url = btn.url
+                    // ✅ Jika URL mengandung {{1}}, wajib sertakan example
+                    if (btn.url && btn.url.includes('{{')) {
+                        b.example = [btn.url.replace(/\{\{\d+\}\}/g, 'https://idroom.id/verified/contoh-token-123')]
+                    }
+                }
+
                 if (btn.type === 'PHONE_NUMBER') b.phone_number = btn.phone_number
+
                 return b
             })
         })

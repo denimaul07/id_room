@@ -84,12 +84,21 @@ class WhatsAppService
         array   $params             = [],
         array   $templateComponents = [],
         ?string $uploadedMediaId    = null,
-        string  $language           = 'id'
+        string  $language           = 'id',
+        string  $mediaLink          = '',
+        ?string $couponCode         = null,
+        array   $urlParams          = [],  // ✅ tambah ini untuk URL button {{1}}, {{2}}, dst
+        array   $rawComponents      = [],  // jika diisi, langsung pakai tanpa parsing templateComponents
     ): array {
         $countVars = function (string $text): int {
             preg_match_all('/\{\{\d+\}\}/', $text, $m);
             return count($m[0]);
         };
+
+        // Jika rawComponents diberikan, skip proses parsing templateComponents
+        if (!empty($rawComponents)) {
+            $msgComponents = $rawComponents;
+        } else {
 
         $msgComponents = [];
 
@@ -107,17 +116,25 @@ class WhatsAppService
                             'parameters' => $this->buildTextParams($varCount, $params),
                         ];
                     }
-                } elseif (in_array($format, ['IMAGE', 'VIDEO', 'DOCUMENT']) && $uploadedMediaId) {
-                    $mediaType       = strtolower($format);
-                    $msgComponents[] = [
-                        'type'       => 'header',
-                        'parameters' => [[
-                            'type'   => $mediaType,
-                            $mediaType => [
-                                'id' => (string) $uploadedMediaId,
-                            ],
-                        ]],
-                    ];
+                } elseif (in_array($format, ['IMAGE', 'VIDEO', 'DOCUMENT'])) {
+                    $mediaType = strtolower($format);
+                    if ($uploadedMediaId) {
+                        $msgComponents[] = [
+                            'type'       => 'header',
+                            'parameters' => [[
+                                'type'     => $mediaType,
+                                $mediaType => ['id' => (string) $uploadedMediaId],
+                            ]],
+                        ];
+                    } elseif ($mediaLink) {
+                        $msgComponents[] = [
+                            'type'       => 'header',
+                            'parameters' => [[
+                                'type'     => $mediaType,
+                                $mediaType => ['link' => $mediaLink],
+                            ]],
+                        ];
+                    }
                 }
     
             } elseif ($type === 'BODY') {
@@ -128,9 +145,53 @@ class WhatsAppService
                         'parameters' => $this->buildTextParams($varCount, $params),
                     ];
                 }
+            } elseif ($type === 'BUTTONS') {
+                foreach (($comp['buttons'] ?? []) as $btnIndex => $btn) {
+                    $btnType = strtoupper($btn['type'] ?? '');
+
+                    if ($btnType === 'COPY_CODE' && $couponCode) {
+                        // ✅ langsung pakai $couponCode parameter, hapus resolveCouponCode()
+                        $msgComponents[] = [
+                            'type'       => 'button',
+                            'sub_type'   => 'copy_code',
+                            'index'      => (string) $btnIndex,
+                            'parameters' => [[
+                                'type'        => 'coupon_code',
+                                'coupon_code' => $couponCode,
+                            ]],
+                        ];
+                    } elseif ($btnType === 'URL') {
+                        // Cek ada variabel {{n}} di URL
+                        preg_match_all('/\{\{(\d+)\}\}/', $btn['url'] ?? '', $m);
+                        if (!empty($m[1])) {
+                            // ✅ Pakai $urlParams, bukan $params
+                            $urlParamIndex = 0;
+                            foreach ($m[1] as $idx) {
+                                $msgComponents[] = [
+                                    'type'       => 'button',
+                                    'sub_type'   => 'url',
+                                    'index'      => (string) $btnIndex,
+                                    'parameters' => [[
+                                        'type' => 'text',
+                                        'text' => $urlParams[$urlParamIndex] ?? $params[(int)$idx - 1] ?? '',
+                                    ]],
+                                ];
+                                $urlParamIndex++;
+                            }
+                        }
+                    }
+                    // QUICK_REPLY & PHONE_NUMBER tidak butuh parameters
+                }
+
+                if (!empty($buttonParams)) {
+                    foreach ($buttonParams as $bp) {
+                        $msgComponents[] = $bp;
+                    }
+                }
             }
-            // FOOTER & BUTTONS (QUICK_REPLY) tidak butuh parameters
         }
+
+        } // end else (rawComponents empty)
 
         $template = [
             'name'     => $templateName,
@@ -147,11 +208,20 @@ class WhatsAppService
             'template'          => $template,
         ];
 
+        Log::info('WhatsAppService: sendTemplate payload', [
+            'to'         => $toPhone,
+            'template'   => $templateName,
+            'language'   => $language,
+            'components' => $msgComponents,
+            'payload'    => $payload,
+        ]);
+
         $response = Http::withToken($this->settings->access_token)
             ->post("https://graph.facebook.com/v19.0/{$this->settings->phone_number_id}/messages", $payload);
 
         if (!$response->successful()) {
             $body = $response->json();
+            Log::error('WhatsAppService: sendTemplate failed', ['response' => $body, 'payload' => $payload]);
             $msg  = $body['error']['message'] ?? json_encode($body);
             throw new \RuntimeException($msg);
         }

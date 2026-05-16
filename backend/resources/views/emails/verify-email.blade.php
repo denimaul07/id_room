@@ -14,8 +14,11 @@
                 <table width="600" cellpadding="0" cellspacing="0"
                     style="background:#ffffff;border-radius:14px;overflow:hidden;">
                     <tr>
-                        <td style="background:#0f172a;padding:24px;text-align:center;">
-                            <img src="{{ asset('storage/logo/logo.webp') }}"  alt="ID Room">
+                        <td style="background:#ffffff;padding:24px;text-align:center;border-bottom:2px solid #e2e8f0;">
+                            <img src="{{ rtrim(config('app.url'), '/') . '/storage/logo/logo.png' }}"
+                                 alt="ID Room"
+                                 width="160"
+                                 style="max-width:160px;height:auto;display:block;margin:0 auto;">
                         </td>
                     </tr>
 

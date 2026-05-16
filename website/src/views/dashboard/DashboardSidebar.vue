@@ -28,6 +28,9 @@
                                 <button @click="copyReferral(referralCode)">
                                     <i class="fa fa-copy"></i>
                                 </button>
+                                <button @click="showQr = true" title="Show QR Code">
+                                    <i class="fa fa-qrcode"></i>
+                                </button>
                             </div>
                         </div>
                         <!-- TIER -->
@@ -158,6 +161,9 @@
                         <strong class="ref-code">{{ referralCode }}</strong>
                         <button @click="copyReferral(referralCode)">
                             <i class="fa fa-copy"></i>
+                        </button>
+                        <button @click="showQr = true" title="Show QR Code">
+                            <i class="fa fa-qrcode"></i>
                         </button>
                     </div>
 
@@ -298,6 +304,25 @@
             </div>
         </transition>
         <!-- END Modal Tukar Point -->
+
+        <!-- QR Code Modal -->
+        <transition name="fade">
+            <div v-if="showQr" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60" @click.self="showQr = false">
+                <div class="bg-white rounded-2xl shadow-lg p-6 relative flex flex-col items-center" style="min-width:260px;">
+                    <button class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 text-xl" @click="showQr = false"><i class="fa fa-times"></i></button>
+                    <h3 class="font-bold text-lg mb-4">QR Code</h3>
+                    <img
+                        v-if="user?.qr_code"
+                        :src="imageBaseUrl + user.qr_code"
+                        alt="QR Code Referral"
+                        class="w-48 h-48 object-contain border rounded mb-3"
+                    />
+                    <div v-else class="w-48 h-48 flex items-center justify-center border rounded mb-3 text-gray-400 text-sm">QR Code belum tersedia</div>
+                    <span class="font-mono text-sm font-semibold tracking-widest">{{ referralCode }}</span>
+                </div>
+            </div>
+        </transition>
+        <!-- END QR Code Modal -->
     </div>
 </template>
 
@@ -306,6 +331,7 @@
     import { apiGetData, apiPostData, Swal } from '@/store/action'
     import { formatCurrency } from '@/utils/helpers'
     const showSidebar = ref(false)
+    const showQr = ref(false)
     import { storeToRefs } from 'pinia'
     import { useAuthStore } from '@/store/auth'
     import { useMembershipStore } from '@/store/membership'

@@ -597,10 +597,6 @@
 
             <!-- Footer modal -->
             <div class="mt-3 d-flex justify-content-between align-items-center">
-                <small class="text-muted">
-                    <i class="fa fa-info-circle me-1"></i>
-                    Pengiriman diproses via queue dengan jeda 2 detik per kontak untuk menghindari rate limit.
-                </small>
                 <button
                     v-if="sendSummary.completed"
                     class="btn btn-dark btn-sm"
@@ -610,6 +606,8 @@
                 </button>
             </div>
         </a-modal>
+
+
     </div>
 </template> 
 
@@ -1072,7 +1070,15 @@
                 extraVarCount = Math.max(0, maxIdx - 2);
             }
         }
-    
+
+        let hasCopyCode = false;
+        if (tpl?.components) {
+            const buttons = tpl.components.find(c => c.type === 'BUTTONS');
+            if (buttons?.buttons) {
+                hasCopyCode = buttons.buttons.some(b => b.type === 'COPY_CODE');
+            }
+        }
+        
         // Build extra inputs HTML
         let extraInputsHtml = '';
         for (let i = 3; i <= 2 + extraVarCount; i++) {
@@ -1082,6 +1088,16 @@
                     <input id="swal-var-${i}" class="swal2-input"
                         style="width:100%;margin:0;height:34px;font-size:13px"
                         placeholder="Nilai untuk {{${i}}}" />
+                </div>`;
+        }
+
+        if (hasCopyCode) {
+            extraInputsHtml += `
+                <div class="mb-2 text-start">
+                    <label class="form-label small fw-bold">Kode Kupon (Copy Code Button):</label>
+                    <input id="swal-coupon-code" class="swal2-input"
+                        style="width:100%;margin:0;height:34px;font-size:13px"
+                        placeholder="Contoh: PROMO50" />
                 </div>`;
         }
     
@@ -1110,45 +1126,57 @@
                 for (let i = 3; i <= 2 + extraVarCount; i++) {
                     extraParams.push(document.getElementById(`swal-var-${i}`)?.value || '');
                 }
-                return extraParams;
+
+                const couponCode = hasCopyCode 
+                    ? (document.getElementById('swal-coupon-code')?.value || null)
+                    : null;
+
+                console.log('preConfirm result:', { extraParams, couponCode }); // ← tambah ini
+                return { extraParams, couponCode };
             }
         });
     
         if (!confirmResult.isConfirmed) return;
-    
+
+        // ── Buka modal progress dulu sebelum API call ────────────────────────
+        sendBatchKey.value     = '';
+        sendProgressData.value = {};
+        sendSummary.value      = { total: 0, sent: 0, failed: 0, sending: 0, queued: 0, done: 0, completed: false };
+        progressFilter.value   = 'all';
+        isSending.value        = true;
+        Swal.close();
+        await nextTick();
+        modalSendProgress.value = true;
+
         // ── Dispatch ke backend ───────────────────────────────────────────────
-        processing.value = true;
         const response = await apiPostDataWithReturn('/campaigns/send-wa', {
             odata:        data.odata,
-            extra_params: confirmResult.value || [],
-        }, {}, false); // notif=false supaya tidak muncul sweetSuccess
-        processing.value = false;
+            extra_params: confirmResult.value?.extraParams || [],  // ✅ ambil dari .extraParams
+            coupon_code:  confirmResult.value?.couponCode  || null, // ✅ ambil dari .couponCode
+        }, {}, false);
 
-        if (!response?.success) return;
+        if (!response?.success) {
+            modalSendProgress.value = false;
+            isSending.value         = false;
+            return;
+        }
 
         const batchKey = response.data?.batch_key;
         if (!batchKey) {
+            modalSendProgress.value = false;
+            isSending.value         = false;
             Swal.fire('Info', response.data?.message || 'Campaign dikirim.', 'info');
             await getData();
             return;
         }
 
-        sendBatchKey.value      = batchKey;
-        sendProgressData.value  = {};
-        sendSummary.value       = { 
+        sendBatchKey.value = batchKey;
+        sendSummary.value  = { 
             total: response.data.total, 
             sent: 0, failed: 0, sending: 0, 
             queued: response.data.total, 
             done: 0, completed: false 
         };
-        progressFilter.value    = 'all';
-        isSending.value         = true;
-
-        // ── Tutup Swal dulu, lalu buka modal setelah Swal benar-benar hilang ──
-        Swal.close();
-        await nextTick();
-
-        modalSendProgress.value = true;
         startProgressPolling(batchKey, data.odata);
     };
     

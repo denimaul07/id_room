@@ -291,7 +291,7 @@ const onSubmit = async () => {
     Swal.fire({
         icon: 'success',
         title: 'Berhasil',
-        html: 'Registrasi berhasil. Silakan cek email Anda untuk verifikasi.',
+        html: 'Registrasi berhasil. Silakan cek email atau WhatsApp Anda untuk verifikasi.',
         confirmButtonColor: primaryColor.value
     })
     resetForm()

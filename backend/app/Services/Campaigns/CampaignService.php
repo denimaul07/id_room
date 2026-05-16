@@ -5,6 +5,7 @@ namespace App\Services\Campaigns;
 use App\Models\Campaign;
 use App\Models\CampaignContact;
 use App\Models\User;
+use App\Models\WaSetting;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -285,7 +286,7 @@ class CampaignService
         return $campaign;
     }
 
-    public function sendWA($campaignOdata, array $extraParams = [])
+    public function sendWA($campaignOdata, array $extraParams = [], ?string $couponCode = null)
     {
         $campaign = Campaign::with('contacts')
             ->where('odata', $campaignOdata)
@@ -305,15 +306,45 @@ class CampaignService
         $language           = $tplDetail['language'] ?? 'id';
         $templateComponents = $tplDetail['components'] ?? [];
 
+        \Illuminate\Support\Facades\Log::info('CampaignService: sendWA template detail', [
+            'template_name'      => $campaign->template_name,
+            'language'           => $language,
+            'templateComponents' => $templateComponents,
+        ]);
+
         // ── Upload media sekali (jika template punya HEADER media) ───────────
         $uploadedMediaId = null;
-        $hasMediaHeader  = collect($templateComponents)->contains(function ($c) {
+        $mediaLink       = '';
+
+        $headerComp = collect($templateComponents)->first(function ($c) {
             return strtoupper($c['type'] ?? '') === 'HEADER'
                 && in_array(strtoupper($c['format'] ?? ''), ['IMAGE', 'VIDEO', 'DOCUMENT']);
         });
 
-        if ($hasMediaHeader && $campaign->images) {
-            $uploadedMediaId = $wa->uploadMedia($campaign->images);
+        if ($headerComp) {
+            // Upload file campaign jika ada
+            if ($campaign->images) {
+                $uploadedMediaId = $wa->uploadMedia($campaign->images);
+            }
+
+            // Fallback: pakai URL dari WA Settings sesuai format header
+            if (!$uploadedMediaId) {
+                $waSettings   = WaSetting::first();
+                $headerFormat = strtoupper($headerComp['format'] ?? '');
+                $mediaLink = match ($headerFormat) {
+                    'IMAGE'    => $waSettings->media_url          ?? '',
+                    'VIDEO'    => $waSettings->media_video_url    ?? '',
+                    'DOCUMENT' => $waSettings->media_document_url ?? '',
+                    default    => '',
+                };
+            }
+
+            \Illuminate\Support\Facades\Log::info('CampaignService: sendWA media', [
+                'headerFormat'    => strtoupper($headerComp['format'] ?? ''),
+                'campaignImages'  => $campaign->images,
+                'uploadedMediaId' => $uploadedMediaId,
+                'mediaLink'       => $mediaLink,
+            ]);
         }
 
         // ── Buat batch key & inisialisasi cache progress ──────────────────────
@@ -336,6 +367,7 @@ class CampaignService
         // ── Dispatch jobs dengan delay antar contact ──────────────────────────
         $delaySeconds = 0;
         foreach ($pending as $contact) {
+         // CampaignService.php — di dalam loop foreach $pending
             SendWACampaignContact::dispatch(
                 $contact->odata,
                 $campaign->odata,
@@ -343,8 +375,10 @@ class CampaignService
                 $language,
                 $templateComponents,
                 $uploadedMediaId,
-                $extraParams,   // <-- dari parameter, bukan $request
-                $batchKey,
+                $extraParams,
+                $batchKey,        // ✅ nilai tetap sama, hanya nama parameter di Job yang berubah
+                $mediaLink,
+                $couponCode,   // ✅ tambah parameter baru
             )->delay(now()->addSeconds($delaySeconds));
 
             $delaySeconds += 2;

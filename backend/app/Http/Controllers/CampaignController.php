@@ -162,8 +162,9 @@ class CampaignController extends Controller
     {
         $campaignOdata = $request->odata;
         $extraParams   = $request->extra_params ?? [];
+        $coupon_code = $request->coupon_code;
 
-        $result = $this->campaignService->sendWA($campaignOdata, $extraParams);
+        $result = $this->campaignService->sendWA($campaignOdata, $extraParams, $coupon_code);
 
         // Langsung return response dari service
         return $result;

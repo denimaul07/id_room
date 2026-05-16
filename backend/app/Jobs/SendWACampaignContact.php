@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Models\Campaign;
 use App\Models\CampaignContact;
 use App\Services\WhatsApp\WhatsAppService;
 use Illuminate\Bus\Queueable;
@@ -17,32 +16,34 @@ class SendWACampaignContact implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries   = 3;
-    public int $backoff = 10;
-
     public function __construct(
         protected string  $contactOdata,
         protected string  $campaignOdata,
         protected string  $templateName,
         protected string  $language,
-        protected array   $templateComponents,  // di-resolve sekali sebelum dispatch
-        protected ?string $uploadedMediaId,     // di-upload sekali sebelum dispatch
+        protected array   $templateComponents,
+        protected ?string $uploadedMediaId,
         protected array   $extraParams  = [],
         protected string  $jobBatchKey  = '',
+        protected string  $mediaLink    = '',
+        protected ?string $couponCode   = null,  // ✅
     ) {}
 
     public function handle(): void
     {
         $contact = CampaignContact::where('odata', $this->contactOdata)->first();
-        if (!$contact) return;
 
-        $contact->update(['status' => 'sending', 'error_message' => null]);
-        $this->updateProgress($contact->odata, 'sending', null);
+        if (!$contact) {
+            $this->updateProgress($this->contactOdata, 'failed', 'Contact not found');
+            return;
+        }
+
+        $contact->update(['status' => 'sending']);
+        $this->updateProgress($this->contactOdata, 'sending');
 
         try {
             $wa = new WhatsAppService();
 
-            // params: {{1}}=name, {{2}}=phone, {{3+}}=extraParams
             $params = array_merge(
                 [$contact->name, $contact->phone],
                 $this->extraParams
@@ -55,10 +56,12 @@ class SendWACampaignContact implements ShouldQueue
                 templateComponents: $this->templateComponents,
                 uploadedMediaId:    $this->uploadedMediaId,
                 language:           $this->language,
+                mediaLink:          $this->mediaLink,
+                couponCode:         $this->couponCode,  // ✅
             );
 
             $contact->update(['status' => 'sent', 'error_message' => null]);
-            $this->updateProgress($contact->odata, 'sent', null);
+            $this->updateProgress($this->contactOdata, 'sent');
 
         } catch (\Throwable $e) {
             Log::error('SendWACampaignContact failed', [
@@ -67,48 +70,20 @@ class SendWACampaignContact implements ShouldQueue
             ]);
 
             $contact->update(['status' => 'failed', 'error_message' => $e->getMessage()]);
-            $this->updateProgress($contact->odata, 'failed', $e->getMessage());
-        }
-
-        $this->checkCampaignCompletion();
-    }
-
-    public function failed(\Throwable $e): void
-    {
-        $contact = CampaignContact::where('odata', $this->contactOdata)->first();
-        if ($contact) {
-            $contact->update(['status' => 'failed', 'error_message' => $e->getMessage()]);
-            $this->updateProgress($contact->odata, 'failed', $e->getMessage());
+            $this->updateProgress($this->contactOdata, 'failed', $e->getMessage());
         }
     }
 
-    // ─── Helpers ─────────────────────────────────────────────────────────────
-
-    private function updateProgress(string $contactOdata, string $status, ?string $error): void
+    private function updateProgress(string $odata, string $status, ?string $errorMessage = null): void
     {
-        if (!$this->jobBatchKey) return;
+        $data = Cache::get("campaign_progress:{$this->jobBatchKey}", []);
 
-        $key  = "campaign_progress:{$this->jobBatchKey}";
-        $data = Cache::get($key, []);
-
-        if (isset($data[$contactOdata])) {
-            $data[$contactOdata]['status']        = $status;
-            $data[$contactOdata]['error_message'] = $error;
-            $data[$contactOdata]['updated_at']    = now()->toIso8601String();
+        if (isset($data[$odata])) {
+            $data[$odata]['status']        = $status;
+            $data[$odata]['error_message'] = $errorMessage;
+            $data[$odata]['updated_at']    = now()->toIso8601String();
         }
 
-        Cache::put($key, $data, now()->addHours(2));
-    }
-
-    private function checkCampaignCompletion(): void
-    {
-        $total = CampaignContact::where('campaign_odata', $this->campaignOdata)->count();
-        $done  = CampaignContact::where('campaign_odata', $this->campaignOdata)
-                    ->whereIn('status', ['sent', 'failed'])
-                    ->count();
-
-        if ($total > 0 && $total === $done) {
-            Campaign::where('odata', $this->campaignOdata)->update(['status' => 'completed']);
-        }
+        Cache::put("campaign_progress:{$this->jobBatchKey}", $data, now()->addHours(2));
     }
 }
