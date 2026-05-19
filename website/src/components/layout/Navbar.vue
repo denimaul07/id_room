@@ -46,18 +46,12 @@ async function handleLogout() {
         buttonsStyling: false
     })
     if (result.isConfirmed) {
-        let success = false
-        let message = 'Anda telah logout.'
-        try {
-            const res = await Api.post('/auth/logout', {}, { withCredentials: true })
-            if (res && res.data && res.data.message) {
-                message = res.data.message
-            }
-            success = true
-        } catch (e) {
-            message = e?.response?.data?.message || 'Logout gagal, silakan coba lagi.'
-        }
-    
+        // Hapus auth LANGSUNG supaya tidak nyangkut walau API lambat/gagal
+        authStore.clearAuth()
+
+        // Kirim request logout ke server (background, tidak di-await)
+        Api.post('/auth/logout', {}, { withCredentials: true }).catch(() => {})
+
         const modal = document.getElementById('logoutModal');
         const card  = document.getElementById('logoutCard');
         const icon  = document.getElementById('logoutIcon');
@@ -75,11 +69,10 @@ async function handleLogout() {
             icon.style.transition = "transform .4s cubic-bezier(.34,1.56,.64,1)";
         }, 400);
 
-        // auto close + stay di login
+        // auto close + redirect
         setTimeout(() => {
             card.classList.add('scale-90','opacity-0');
             modal.classList.add('opacity-0');
-            authStore.clearAuth()
             window.location.href = '/'
         }, 4000);
 
@@ -213,7 +206,7 @@ watch(drawerOpen, (val) => {
                     </button>
                     <button
                         class="w-full bg-white text-gray-900 py-3 text-sm hover:bg-gray-100 flex items-center gap-2 justify-center"
-                        @click="handleLogout; drawerOpen = false">
+                        @click="drawerOpen = false; handleLogout()">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

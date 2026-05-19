@@ -118,14 +118,16 @@ class RefreshTokenController extends Controller
 
     public function logout(Request $request)
     {
-        $rt = $request->refresh_token;
+        // Baca dari HttpOnly cookie (dikirim otomatis) ATAU dari body
+        $rt = $request->cookie('refresh_token') ?? $request->refresh_token;
 
         if ($rt) {
             RefreshToken::where('token', hash('sha256', $rt))->update(['revoked' => true]);
         }
 
-        // auth()->logout();
+        // Hapus cookie refresh_token di browser
+        $expiredCookie = cookie('refresh_token', '', -1, '/', null, false, true, false, 'Lax');
 
-        return response()->json(['message' => 'Logged out']);
+        return response()->json(['message' => 'Logged out'])->withCookie($expiredCookie);
     }
 }

@@ -33,7 +33,7 @@ class SendWAForgotPassword implements ShouldQueue
             // Template button di Meta: https://idroom.id/forgot_password?{{1}}
             // {{1}} = hanya query string: "token=TOKEN&email=EMAIL"
             $parsed    = parse_url($this->resetUrl);
-            $urlSuffix = $parsed['query'] ?? ''; // "token=...&email=..."
+            $urlSuffix = '?' . ($parsed['query'] ?? ''); // "token=...&email=..."
 
             // Fetch language dari Meta (opsional, default 'id')
             $tplDetail = $wa->getTemplateDetail($templateName);

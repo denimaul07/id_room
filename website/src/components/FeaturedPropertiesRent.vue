@@ -183,7 +183,7 @@ const properties = computed(() => {
             ? item.facilities.map((entry) => entry.facility).filter(Boolean)
             : []
         return {
-            id: item.odata || item.id,
+            id: item.slug,
             title: item.properties,
             location: item.address,
             price,

@@ -522,6 +522,7 @@
     import { useAuthStore } from '@/store/auth'
     import LoginModal from '@/components/auth/LoginModal.vue'
     import SearchProperty from '@/components/home/SearchProperty.vue'
+    import dayjs from 'dayjs'
 
     const authStore = useAuthStore()
     const { token } = storeToRefs(authStore)

@@ -399,6 +399,7 @@ class SettingService
     {
         $query = Properties::with(['facilities.facility'])->select(
             'odata',
+            'slug',
             'properties',
             'type',
             'listing_type',

@@ -172,7 +172,7 @@ const properties = computed(() => {
             ? item.facilities.map((entry) => entry.facility).filter(Boolean)
             : []
         return {
-            id: item.odata || item.id,
+            id: item.slug,
             title: item.properties,
             location: item.address,
             price,
@@ -197,7 +197,6 @@ const pagedProperties = computed(() => {
 })
 
 const fetchProperties = async () => {
-    const res = await apiGetData('public/properties', { limit: 9, listing_type: 'Sale' })
     isLoading.value = true
     try {
         const res = await apiGetData('public/properties', { limit: 9, listing_type: 'Sale' })
