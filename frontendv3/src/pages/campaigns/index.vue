@@ -287,25 +287,44 @@
                 />
             </div>
 
-            <a-modal 
-                v-model:visible="moadlAddContact" 
-                title="Add Contact" 
-                width="500px" 
+            <a-modal
+                v-model:visible="moadlAddContact"
+                title="Tambah Kontak Campaign"
+                width="480px"
                 :footer="false"
             >
-                <div class="container text-center">
-                    <div class="row align-items-center justify-content-center">
-
-                        <!-- LEFT SIDE (BUTTON) -->
-                        <div class="col-6 d-flex flex-column justify-content-center align-items-center">
-                            <Button label="Add Contact Members" icon="pi pi-plus" class="btn btn-dark" size="small" @click="addMembers" />
+                <div class="import-source-grid">
+                    <div class="import-source-card" @click="addMembers()">
+                        <div class="import-source-icon bg-dark-soft">
+                            <i class="fa fa-users"></i>
                         </div>
-
-                        <!-- RIGHT SIDE (UPLOAD) -->
-                        <div class="col-6 d-flex flex-column justify-content-center align-items-center">
-                            <Button label="Upload Excel" icon="pi pi-upload" class="btn btn-primary mb-2" size="small" @click="uploadExcel" />
+                        <div class="import-source-info">
+                            <div class="import-source-title">Members</div>
+                            <div class="import-source-desc">Pilih dari data member terdaftar</div>
                         </div>
+                        <i class="fa fa-chevron-right import-source-arrow"></i>
+                    </div>
 
+                    <div class="import-source-card" @click="addFromCrm()">
+                        <div class="import-source-icon bg-info-soft">
+                            <i class="fa fa-address-book"></i>
+                        </div>
+                        <div class="import-source-info">
+                            <div class="import-source-title">CRM / Leads</div>
+                            <div class="import-source-desc">Pilih dari data leads CRM</div>
+                        </div>
+                        <i class="fa fa-chevron-right import-source-arrow"></i>
+                    </div>
+
+                    <div class="import-source-card" @click="uploadExcel()">
+                        <div class="import-source-icon bg-primary-soft">
+                            <i class="fa fa-file-excel"></i>
+                        </div>
+                        <div class="import-source-info">
+                            <div class="import-source-title">Upload Excel</div>
+                            <div class="import-source-desc">Import kontak dari file .xlsx / .xls</div>
+                        </div>
+                        <i class="fa fa-chevron-right import-source-arrow"></i>
                     </div>
                 </div>
             </a-modal>
@@ -384,6 +403,91 @@
                     <br>
                     <ProgressBar mode="indeterminate" class="mt-3" style="height: 6px" v-if="loadingSubmit"></ProgressBar>
                 </template>
+            </a-modal>
+
+            <!-- Modal CRM Leads -->
+            <a-modal v-model:visible="modalCrm" title="List CRM / Leads" width="860px" :footer="false">
+                <div class="mb-3 d-flex align-items-center gap-2">
+                    <a-input-search
+                        v-model:value="searchCrm"
+                        placeholder="Cari nama / nomor..."
+                        style="width:260px"
+                        @search="fetchCrm(1)"
+                    />
+                    <button
+                        class="btn btn-primary btn-sm ms-auto"
+                        :disabled="selectedCrm.length === 0"
+                        @click="sendSelectedCrm"
+                    >
+                        <i class="fa fa-paper-plane me-1"></i>
+                        Kirim Terpilih ({{ selectedCrm.length }})
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="text-center bg-dark">No</th>
+                                <th class="text-center bg-dark">
+                                    <a-checkbox :checked="selectAllCrm" @change="toggleSelectAllCrm" /> Pilih
+                                </th>
+                                <th class="text-center bg-dark">Nama</th>
+                                <th class="text-center bg-dark">No. Telp</th>
+                                <th class="text-center bg-dark">Status</th>
+                                <th class="text-center bg-dark">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="loadingCrm">
+                                <td class="text-center" colspan="6"><a-skeleton active /></td>
+                            </tr>
+                            <tr v-else-if="!state.listCrm.data || state.listCrm.data.length === 0">
+                                <td class="text-center" colspan="6"><a-empty /></td>
+                            </tr>
+                            <tr v-for="(lead, index) in state.listCrm.data" :key="index" v-else>
+                                <td class="text-center">{{ (state.listCrm.current_page - 1) * state.listCrm.per_page + index + 1 }}</td>
+                                <td class="text-center">
+                                    <a-checkbox
+                                        :checked="selectedCrm.includes(lead.odata)"
+                                        @change="() => toggleCrmSelection(lead.odata)"
+                                        :disabled="isCrmInCampaign(lead)"
+                                    />
+                                </td>
+                                <td class="text-center">{{ lead.nama }}</td>
+                                <td class="text-center">{{ lead.notelp }}</td>
+                                <td class="text-center">
+                                    <span class="badge bg-warning" v-if="lead.status === 'NEEDFU'">Need FU</span>
+                                    <span class="badge bg-info" v-else-if="lead.status === 'FOLLOWUP'">Follow Up</span>
+                                    <span class="badge bg-success" v-else-if="lead.status === 'CLOSING'">Closing</span>
+                                    <span class="badge bg-danger" v-else-if="lead.status === 'LOST'">Lost</span>
+                                    <span class="badge bg-secondary" v-else>{{ lead.status }}</span>
+                                    <span v-if="isCrmInCampaign(lead)" class="badge bg-info ms-1">Sudah di campaign</span>
+                                </td>
+                                <td class="text-center">
+                                    <a-button type="primary" size="small" class="bg-dark" @click="pilihCrm(lead)" :disabled="isCrmInCampaign(lead)">
+                                        <template #icon><CheckOutlined /></template>
+                                    </a-button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <div>
+                        Showing {{ (state.listCrm.current_page - 1) * state.listCrm.per_page + 1 }} to
+                        {{ Math.min(state.listCrm.current_page * state.listCrm.per_page, state.listCrm.total) }} of
+                        {{ state.listCrm.total }} entries
+                    </div>
+                    <a-pagination
+                        :current="state.listCrm.current_page"
+                        :total="state.listCrm.total"
+                        :pageSize="state.listCrm.per_page"
+                        show-size-changer
+                        :pageSizeOptions="[5,10,20,50,100]"
+                        @change="page => fetchCrm(page)"
+                        @showSizeChange="(page, size) => fetchCrm(1, size)"
+                    />
+                </div>
             </a-modal>
 
             <a-modal v-model:visible="modalMembers" title="List Members" width="800px" :footer="false">
@@ -637,6 +741,7 @@
     const modalContacts = ref(false);
     const moadlAddContact = ref(false);
     const modalMembers = ref(false);
+    const modalCrm = ref(false);
     const modalPreviewExcel = ref(false);
     const excelPreviewData = ref([]);
     const excelPreviewColumns = ref([]);
@@ -686,6 +791,7 @@
         listData: {},
         listContacts: {},
         listMembers: {},
+        listCrm: {},
         form: {
             odata: "",
             name: "",
@@ -1024,6 +1130,91 @@
         return state.listContacts.some(c => c.phone === member.phone);
     }
 
+    // ─── CRM ──────────────────────────────────────────────────────────────────
+    const loadingCrm    = ref(false);
+    const searchCrm     = ref('');
+    const selectedCrm   = ref([]);
+    const selectAllCrm  = ref(false);
+
+    const fetchCrm = async (page = 1, perPage = state.listCrm?.per_page ?? 10) => {
+        loadingCrm.value = true;
+        const res = await apiGetData('/campaigns/crm', { page, per_page: perPage, search: searchCrm.value });
+        state.listCrm    = res.data;
+        selectedCrm.value  = [];
+        selectAllCrm.value = false;
+        loadingCrm.value = false;
+    };
+
+    const addFromCrm = async () => {
+        searchCrm.value = '';
+        await fetchCrm(1);
+        modalCrm.value = true;
+    };
+
+    const isCrmInCampaign = (lead) => {
+        if (!state.listContacts || !Array.isArray(state.listContacts)) return false;
+        return state.listContacts.some(c => c.phone === lead.notelp);
+    };
+
+    const toggleCrmSelection = (odata) => {
+        const idx = selectedCrm.value.indexOf(odata);
+        if (idx > -1) selectedCrm.value.splice(idx, 1);
+        else selectedCrm.value.push(odata);
+        if (state.listCrm.data) {
+            selectAllCrm.value = selectedCrm.value.length === state.listCrm.data.length;
+        }
+    };
+
+    const toggleSelectAllCrm = () => {
+        if (selectAllCrm.value) {
+            selectedCrm.value  = [];
+            selectAllCrm.value = false;
+        } else {
+            if (state.listCrm.data) {
+                selectedCrm.value = state.listCrm.data.map(l => l.odata);
+            }
+            selectAllCrm.value = true;
+        }
+    };
+
+    const pilihCrm = async (lead) => {
+        loading.value = true;
+        const res = await apiPostData('/campaigns/add-crm-bulk', {
+            odata:   state.form.odata,
+            crm_ids: [lead.odata]
+        });
+        if (res) {
+            await getData();
+            await getContacts();
+            modalCrm.value        = false;
+            moadlAddContact.value = false;
+        }
+        loading.value = false;
+    };
+
+    const sendSelectedCrm = async () => {
+        if (!selectedCrm.value.length) return;
+        loading.value = true;
+        const res = await apiPostData('/campaigns/add-crm-bulk', {
+            odata:   state.form.odata,
+            crm_ids: selectedCrm.value
+        });
+        if (res) {
+            await getData();
+            await getContacts();
+            modalCrm.value        = false;
+            moadlAddContact.value = false;
+            selectedCrm.value  = [];
+            selectAllCrm.value = false;
+        }
+        loading.value = false;
+    };
+
+    watch(searchCrm, useDebounceFn(async () => {
+        await fetchCrm(1);
+    }, 400));
+    // ──────────────────────────────────────────────────────────────────────────
+
     const modalSendProgress  = ref(false);
     const isSending          = ref(false);
     const sendBatchKey       = ref('');
@@ -1310,4 +1501,45 @@
     .progress-contact-list::-webkit-scrollbar        { width: 5px; }
     .progress-contact-list::-webkit-scrollbar-track  { background: #f5f5f5; }
     .progress-contact-list::-webkit-scrollbar-thumb  { background: #ccc; border-radius: 4px; }
+
+    /* Import source cards */
+    .import-source-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 4px 0 8px;
+    }
+    .import-source-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: border-color .18s, box-shadow .18s, background .18s;
+        background: #fff;
+    }
+    .import-source-card:hover {
+        border-color: #333;
+        box-shadow: 0 2px 10px rgba(0,0,0,.08);
+        background: #fafafa;
+    }
+    .import-source-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+    .bg-dark-soft    { background: #e9e9eb; color: #222; }
+    .bg-info-soft    { background: #daf0fb; color: #0077aa; }
+    .bg-primary-soft { background: #dde8ff; color: #2255cc; }
+    .import-source-info { flex: 1; }
+    .import-source-title { font-weight: 600; font-size: .93rem; color: #1a1a1a; }
+    .import-source-desc  { font-size: .78rem; color: #888; margin-top: 1px; }
+    .import-source-arrow { color: #bbb; font-size: 13px; }
 </style>

@@ -329,6 +329,8 @@ $api->version('v1', function ($api) {
         $api->post('/delete-contact', 'App\Http\Controllers\CampaignController@deleteContact');
         $api->post('/send-wa', 'App\Http\Controllers\CampaignController@sendWA');
         $api->get('/send-wa-progress', 'App\Http\Controllers\CampaignController@sendWAProgress');
+        $api->get('/crm', 'App\Http\Controllers\CampaignController@listCrm');
+        $api->post('/add-crm-bulk', 'App\Http\Controllers\CampaignController@addCrmBulk');
     });
 
     $api->group(['prefix' => 'whatsapp', 'middleware' => ['jwt.auth', 'role:superAdmin|admin']], function ($api) {

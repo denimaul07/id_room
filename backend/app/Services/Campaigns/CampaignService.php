@@ -4,6 +4,7 @@ namespace App\Services\Campaigns;
 
 use App\Models\Campaign;
 use App\Models\CampaignContact;
+use App\Models\CRM;
 use App\Models\User;
 use App\Models\WaSetting;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -262,6 +263,55 @@ class CampaignService
             ->causedBy(Auth::user())
             ->event('add_members_bulk')
             ->log('added multiple members to campaign');
+
+        return $campaign;
+    }
+
+    public function listCrm($search = null, $paginate = 10)
+    {
+        $query = CRM::select('odata', 'nama', 'notelp', 'status');
+
+        if ($search) {
+            $query->where('nama', 'like', "%$search%")
+                ->orWhere('notelp', 'like', "%$search%");
+        }
+
+        return $query->orderBy('created_at', 'desc')->paginate($paginate);
+    }
+
+    public function addCrmBulk($campaignOdata, $crmIds)
+    {
+        $campaign = Campaign::where('odata', $campaignOdata)->first();
+        if (!$campaign) {
+            throw new HttpResponseException(response()->json(['error' => 'Campaign not found'], 404));
+        }
+
+        $leads = CRM::whereIn('odata', $crmIds)->get();
+
+        $existingPhones = CampaignContact::where('campaign_id', $campaign->id)
+            ->pluck('phone')
+            ->toArray();
+
+        foreach ($leads as $lead) {
+            $phone = $lead->notelp;
+            if (!$phone || in_array($phone, $existingPhones)) {
+                continue;
+            }
+            CampaignContact::create([
+                'odata'          => (string) Str::uuid(),
+                'campaign_id'    => $campaign->id,
+                'campaign_odata' => $campaign->odata,
+                'name'           => $lead->nama,
+                'phone'          => $phone,
+            ]);
+            $existingPhones[] = $phone;
+        }
+
+        activity()
+            ->performedOn($campaign)
+            ->causedBy(Auth::user())
+            ->event('add_crm_bulk')
+            ->log('added CRM leads to campaign');
 
         return $campaign;
     }

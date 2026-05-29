@@ -146,6 +146,22 @@ class CampaignController extends Controller
         return response()->json($response, 200);
     }
 
+    public function listCrm(Request $request)
+    {
+        $data = $this->campaignService->listCrm($request->search, $request->per_page ?? 10);
+
+        return response()->json(['data' => $data], 200);
+    }
+
+    public function addCrmBulk(Request $request)
+    {
+        $odata   = $request->odata;
+        $crmIds  = $request->crm_ids;
+        $this->campaignService->addCrmBulk($odata, $crmIds);
+
+        return response()->json(['message' => 'CRM leads added to campaign successfully'], 200);
+    }
+
     public function deleteContact(Request $request)
     {
         $contactId = $request->contact_id;
